@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			 xmlns:views="clr-namespace:FamilyMoney.Views"
+			 xmlns:vm="using:FamilyMoney.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:DataType="vm:AccountViewModel"
+             x:Class="FamilyMoney.Views.AccountView"
+			 >
+	<UserControl.Styles>
+		<Style Selector="Button.selected">
+			<Setter Property="Background" Value="{DynamicResource SystemListLowColor}" />
+		</Style>
+		<Style Selector="Button:pointerover">
+			<Setter Property="Background" Value="Red" />
+		</Style>
+	</UserControl.Styles>
+	<Grid Margin="10 0 0 0">	
+		<Grid.RowDefinitions>
+			<RowDefinition Height="50" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<Button Classes.selected="{Binding IsSelected}" 
+				Command="{Binding SelectCommand}" 
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"
+				Margin="0 0 5 0"
+				>
+			<Grid ColumnDefinitions="* auto">
+				<StackPanel Orientation="Horizontal">
+					<!--<i:Interaction.Behaviors>
+					<ia:EventTriggerBehavior EventName="Tapped">
+						<InvokeCommandAction Command="{Binding SelectCommand}"/>
+					</ia:EventTriggerBehavior>
+				</i:Interaction.Behaviors>-->
+
+					<Image Stretch="Uniform"
+						   Source="{Binding Image}"
+						   IsVisible="{Binding Image, 
+								Converter={x:Static ObjectConverters.IsNotNull}}"
+						   Width="50"
+						   Margin="0 0 5 0"
+						   VerticalAlignment="Center"/>
+					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+				</StackPanel>
+				<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" 
+						   VerticalAlignment="Center" 
+						   HorizontalAlignment="Right" 
+						   Margin="0 0 10 0" />
+			</Grid>			
+		</Button>
+
+		<ItemsControl Grid.Row="1"
+					  ItemsSource="{Binding Children}"
+					  IsVisible="{Binding !!Children.Count}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<views:AccountView/>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</Grid>
+
+</UserControl>
