@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace FamilyMoney.Views
+namespace FamilyMoney.Views;
+
+public partial class AccountView : UserControl
 {
-    public partial class AccountView : UserControl
+    public AccountView()
     {
-        public AccountView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

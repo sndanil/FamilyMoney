@@ -1,8 +1,7 @@
 ﻿using ReactiveUI;
 
-namespace FamilyMoney.ViewModels
+namespace FamilyMoney.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-    public class ViewModelBase : ReactiveObject
-    {
-    }
 }
