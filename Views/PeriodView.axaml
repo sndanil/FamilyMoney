@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:vm="using:FamilyMoney.ViewModels"
+			 x:DataType="vm:PeriodViewModel"
+             x:Class="FamilyMoney.Views.PeriodView">
+	<Grid ColumnDefinitions="auto auto auto">
+		<Button Command="{Binding PrevCommand}">&lt;</Button>
+		<Button Grid.Column="1" MinWidth="200">
+			<TextBlock Text="{Binding Text}" HorizontalAlignment="Center"></TextBlock>
+		</Button>
+		<Button Grid.Column="2" Command="{Binding NextCommand}">&gt;</Button>
+	</Grid>
+</UserControl>

@@ -20,16 +20,18 @@
 		<cv:GridLengthConverter x:Key="gridLengthConverter" />
 	</Window.Resources>
 
-	<Grid>
+	<Grid RowDefinitions="50 *">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="{Binding LeftSideWidth, Mode=TwoWay, Converter={StaticResource gridLengthConverter}}" />
 			<ColumnDefinition Width="4" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 
-		<views:AccountView DataContext="{Binding Total}" Margin="0 5 0 0"/>
+		<views:PeriodView DataContext="{Binding Period}" Margin="0 5 0 0"/>
+
+		<views:AccountView Grid.Row="1" DataContext="{Binding Total}" Margin="0 5 0 0"/>
 		
-		<GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
+		<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
 
 	</Grid>
 

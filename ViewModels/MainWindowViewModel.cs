@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using DynamicData;
 using ReactiveUI;
+using System;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 
@@ -13,8 +14,18 @@ public class MainWindowViewModel : ViewModelBase
     private AccountViewModel? _total = null;
     private AccountViewModel? _selectedAccount = null;
 
+    private PeriodViewModel _period;
+
     public MainWindowViewModel()
     {
+        _period = new PeriodViewModel 
+        { 
+            From = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+            To = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(1).AddDays(-1),
+            PeriodType = PeriodType.Month 
+        };
+        _period.PropertyChanged += (e, a) => this.RaisePropertyChanged(nameof(Period));
+
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);
     }
 
@@ -22,6 +33,12 @@ public class MainWindowViewModel : ViewModelBase
     { 
         get => _leftSideWidth; 
         set => this.RaiseAndSetIfChanged(ref _leftSideWidth, value); 
+    }
+
+    public PeriodViewModel Period
+    {
+        get => _period;
+        set => this.RaiseAndSetIfChanged(ref _period, value);
     }
 
     public AccountViewModel? Total
