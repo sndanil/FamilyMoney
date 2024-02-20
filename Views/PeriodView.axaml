@@ -9,6 +9,16 @@
 	<Grid ColumnDefinitions="auto auto auto">
 		<Button Command="{Binding PrevCommand}">&lt;</Button>
 		<Button Grid.Column="1" MinWidth="200">
+			<Button.Flyout>
+				<MenuFlyout>
+					<MenuItem Width="200" Header="Месяц" Command="{Binding ToMonthCommand}" />
+					<MenuItem Header="Квартал" Command="{Binding ToQuaterCommand}" />
+					<MenuItem Header="Год" Command="{Binding ToYearCommand}" />
+					<MenuItem Header="Выбрать" Command="{Binding ToCustomCommand}" />
+					<MenuItem Header="-" />
+					<MenuItem Header="Всё время" Command="{Binding ToAllCommand}" />
+				</MenuFlyout>
+			</Button.Flyout>
 			<TextBlock Text="{Binding Text}" HorizontalAlignment="Center"></TextBlock>
 		</Button>
 		<Button Grid.Column="2" Command="{Binding NextCommand}">&gt;</Button>

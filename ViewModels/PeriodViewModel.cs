@@ -24,6 +24,12 @@ public class PeriodViewModel: ViewModelBase
     public ICommand NextCommand { get; }
     public ICommand PrevCommand { get; }
 
+    public ICommand ToMonthCommand { get; }
+    public ICommand ToQuaterCommand { get; }
+    public ICommand ToYearCommand { get; }
+    public ICommand ToCustomCommand { get; }
+    public ICommand ToAllCommand { get; }
+
     public PeriodViewModel()
     {
         NextCommand = ReactiveCommand.CreateFromTask(() =>
@@ -35,6 +41,36 @@ public class PeriodViewModel: ViewModelBase
         PrevCommand = ReactiveCommand.CreateFromTask(() =>
         {
             Shift(-1);
+            return Task.CompletedTask;
+        });
+
+        ToMonthCommand = ReactiveCommand.CreateFromTask(() => 
+        {
+            PeriodType = PeriodType.Month;
+            return Task.CompletedTask;
+        });
+
+        ToQuaterCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            PeriodType = PeriodType.Quater;
+            return Task.CompletedTask;
+        });
+
+        ToYearCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            PeriodType = PeriodType.Year;
+            return Task.CompletedTask;
+        });
+
+        ToCustomCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            PeriodType = PeriodType.Custom;
+            return Task.CompletedTask;
+        });
+
+        ToAllCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            PeriodType = PeriodType.All;
             return Task.CompletedTask;
         });
     }
