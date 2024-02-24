@@ -66,20 +66,22 @@ public class MainWindowViewModel : ViewModelBase
             {
                 Name = "Альфа-банк",
                 Amount = 1000,
+                Image = await LoadImage("D:\\Projects\\alfabank.png"),
             },
             new AccountViewModel(this)
             {
                 Name = "Сбер",
                 Amount = 1000,
+                Image = await LoadImage("D:\\Projects\\sber-new.png"),
             },
         });
+    }
 
-        foreach (var total in _total.Children)
+    private async Task<Avalonia.Media.IImage> LoadImage(string path)
+    {
+        await using (var stream = System.IO.File.OpenRead(path))
         {
-            await using (var stream = System.IO.File.OpenRead("D:\\Projects\\logo-sber.png"))
-            {
-                total.Image = await Task.Run(() => Bitmap.DecodeToWidth(stream, 400));
-            }
+            return await Task.Run(() => Bitmap.DecodeToWidth(stream, 400));
         }
     }
 }

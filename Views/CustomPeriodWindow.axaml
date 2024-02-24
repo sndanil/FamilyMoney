@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="613" d:DesignHeight="390"
+		Width="613" Height="390"
+		WindowStartupLocation="CenterOwner"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaChromeHints="NoChrome"
+		xmlns:views="clr-namespace:FamilyMoney.Views"
+		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
+		x:DataType="vm:CustomPeriodViewModel"
+        x:Class="FamilyMoney.Views.CustomPeriodWindow"
+        Title="Выберите период">
+	<Grid ColumnDefinitions="auto auto" RowDefinitions="auto auto">
+		<Calendar SelectedDate="{Binding From}" DisplayDate="{Binding From}" Margin="4" SelectionMode="SingleDate" />
+		<Calendar Grid.Column="1" SelectedDate="{Binding To}" DisplayDate="{Binding To}" Margin="4" SelectionMode="SingleDate" />
+		
+		<StackPanel 
+			Grid.Row="1" 
+			Grid.Column="1" 
+			Orientation="Horizontal"
+			HorizontalAlignment="Right"
+			>
+			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+			<Button Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+		</StackPanel>
+	</Grid>
+</Window>

@@ -12,7 +12,7 @@
 			<Button.Flyout>
 				<MenuFlyout>
 					<MenuItem Width="200" Header="Месяц" Command="{Binding ToMonthCommand}" />
-					<MenuItem Header="Квартал" Command="{Binding ToQuaterCommand}" />
+					<MenuItem Header="Квартал" Command="{Binding ToQuarterCommand}" />
 					<MenuItem Header="Год" Command="{Binding ToYearCommand}" />
 					<MenuItem Header="Выбрать" Command="{Binding ToCustomCommand}" />
 					<MenuItem Header="-" />
