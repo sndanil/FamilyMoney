@@ -30,12 +30,10 @@ public class PeriodViewModel: ViewModelBase
     public ICommand ToCustomCommand { get; }
     public ICommand ToAllCommand { get; }
 
-    public Interaction<CustomPeriodViewModel, CustomPeriodViewModel?> ShowDialog { get; }
+    public Interaction<CustomPeriodViewModel, CustomPeriodViewModel?> ShowDialog { get; } = new ();
 
     public PeriodViewModel()
     {
-        ShowDialog = new Interaction<CustomPeriodViewModel, CustomPeriodViewModel?>();
-
         NextCommand = ReactiveCommand.CreateFromTask(() =>
         {
             Shift(1);

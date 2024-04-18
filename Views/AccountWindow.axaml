@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+		Width="600" Height="400"
+		WindowStartupLocation="CenterOwner"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaChromeHints="NoChrome"
+		xmlns:views="clr-namespace:FamilyMoney.Views"
+		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
+		x:DataType="vm:AccountViewModel"		
+        x:Class="FamilyMoney.Views.AccountWindow"
+        Title="Счёт">
+	<Grid RowDefinitions="auto * auto auto">
+		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
+		<Image Grid.Row="1"
+			Stretch="Uniform"
+			Source="{Binding Image}"
+			VerticalAlignment="Center"
+			/>
+		<TextBlock Grid.Row="1"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Text="Выберите картинку"
+				   IsVisible="{Binding Image, 
+								Converter={x:Static ObjectConverters.IsNull}}"
+				   />
+		
+		<Button Grid.Row="2" 
+				Classes="DialogButton" 
+				Content="Изменить" 
+				HorizontalAlignment="Center"
+				x:Name="ChangeImageButton"
+				Command="{Binding ChangeImageCommand}"
+				CommandParameter="{Binding #ChangeImageButton}"
+				/>
+
+		<StackPanel
+			Grid.Row="3"
+			Grid.Column="1"
+			Orientation="Horizontal"
+			HorizontalAlignment="Right"
+			Margin="0 5 0 10"
+			>
+			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding}" />
+			<Button Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+		</StackPanel>
+	</Grid>
+</Window>
