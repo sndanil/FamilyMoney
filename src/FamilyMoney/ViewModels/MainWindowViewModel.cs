@@ -66,13 +66,13 @@ public class MainWindowViewModel : ViewModelBase
             {
                 Name = "Альфа-банк",
                 Amount = 1000,
-                Image = await LoadImage("D:\\Projects\\alfabank.png"),
+                Image = await LoadImage("D:\\Temp\\Images\\alfabank.png"),
             },
             new AccountViewModel(this)
             {
                 Name = "Сбер",
                 Amount = 1000,
-                Image = await LoadImage("D:\\Projects\\sber-new.png"),
+                Image = await LoadImage("D:\\Temp\\Images\\sber-new.png"),
             },
         });
     }

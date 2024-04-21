@@ -43,7 +43,7 @@
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"
 			>
-			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding}" />
+			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
 			<Button Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
 		</StackPanel>
 	</Grid>

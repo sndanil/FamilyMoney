@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamilyMoney", "FamilyMoney\FamilyMoney.csproj", "{7D6EE978-37F3-4220-AA4B-316894BEF055}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D6EE978-37F3-4220-AA4B-316894BEF055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D6EE978-37F3-4220-AA4B-316894BEF055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D6EE978-37F3-4220-AA4B-316894BEF055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D6EE978-37F3-4220-AA4B-316894BEF055}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {324515C5-4172-4CC4-8B4D-03FFB82CEF1D}
+	EndGlobalSection
+EndGlobal
