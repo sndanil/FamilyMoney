@@ -9,6 +9,7 @@
         x:Class="FamilyMoney.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
+		WindowState="Maximized"
         Title="Семейные деньги">
 
     <Design.DataContext>
