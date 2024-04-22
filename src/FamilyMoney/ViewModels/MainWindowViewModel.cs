@@ -1,7 +1,10 @@
 ﻿using Avalonia.Media.Imaging;
 using DynamicData;
+using FamilyMoney.DataAccess;
 using ReactiveUI;
+using Splat;
 using System;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 
@@ -53,7 +56,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedAccount, value);
     }
 
-    public async void LoadAccounts()
+    private void LoadAccounts()
     {
         _total = new AccountViewModel(this)
         {
@@ -61,27 +64,8 @@ public class MainWindowViewModel : ViewModelBase
             Amount = 2000,
         };
 
-        _total.Children.AddRange(new AccountViewModel[]{
-            new AccountViewModel(this)
-            {
-                Name = "Альфа-банк",
-                Amount = 1000,
-                Image = await LoadImage("D:\\Temp\\Images\\alfabank.png"),
-            },
-            new AccountViewModel(this)
-            {
-                Name = "Сбер",
-                Amount = 1000,
-                Image = await LoadImage("D:\\Temp\\Images\\sber-new.png"),
-            },
-        });
-    }
-
-    private async Task<Avalonia.Media.IImage> LoadImage(string path)
-    {
-        await using (var stream = System.IO.File.OpenRead(path))
-        {
-            return await Task.Run(() => Bitmap.DecodeToWidth(stream, 400));
-        }
+        var repository = Locator.Current.GetService<IRepository>();
+        var accounts = repository!.GetAccounts();
+        _total.AddFromAccount(repository, accounts);
     }
 }

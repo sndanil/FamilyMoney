@@ -14,5 +14,6 @@ public interface IRepository
 
     Stream? TryGetImage(Guid id);
 
+    IEnumerable<Account> GetAccounts();
     void UpdateAccount(Account account);
 }

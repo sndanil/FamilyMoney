@@ -2,10 +2,12 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using DynamicData;
 using FamilyMoney.DataAccess;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -19,7 +21,7 @@ namespace FamilyMoney.ViewModels;
 public class AccountViewModel : ViewModelBase
 {
     private decimal _amount = 0;
-    private Guid _id = Guid.NewGuid();
+    private Guid? _id = null;
     private Guid? _parentId = null;
     private string _name = string.Empty;
     private IImage? _image = null;
@@ -46,7 +48,7 @@ public class AccountViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _amount, value);
     }
 
-    public Guid Id
+    public Guid? Id
     {
         get => _id;
         set => this.RaiseAndSetIfChanged(ref _id, value);
@@ -96,6 +98,7 @@ public class AccountViewModel : ViewModelBase
             if (result != null)
             {
                 this.Children.Add(result);
+                result.Id = Guid.NewGuid();
                 result.ParentId = this.Id;
                 Save(null, result);
             }
@@ -106,6 +109,7 @@ public class AccountViewModel : ViewModelBase
             var account = new AccountViewModel(_mainWindowViewModel)
             {
                 Id = this.Id,
+                ParentId = this.ParentId,
                 Name = this.Name,
                 Image = this.Image,
             };
@@ -117,7 +121,7 @@ public class AccountViewModel : ViewModelBase
         });
 
         var canExecute = this.WhenAnyValue(x => x.Name, (name) => !string.IsNullOrEmpty(name));
-        OkCommand = ReactiveCommand.Create<AccountViewModel?>(() =>
+        OkCommand = ReactiveCommand.Create(() =>
         {
             return (AccountViewModel?)this;
         }, 
@@ -129,6 +133,27 @@ public class AccountViewModel : ViewModelBase
         });
 
         ChangeImageCommand = ReactiveCommand.CreateFromTask(ChangeImage());
+    }
+
+    public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
+    {
+        Children.AddRange(accounts.Where(a => a.ParentId == Id).Select(a => new AccountViewModel(_mainWindowViewModel)
+        {
+            Id = a.Id,
+            Name = a.Name,
+            ParentId = a.ParentId,
+        }));
+
+        foreach (var account in Children)
+        {
+            var imageStream = repository.TryGetImage(account.Id!.Value);
+            if (imageStream != null)
+            {
+                account.Image = Bitmap.DecodeToWidth(imageStream, 400);
+            }
+
+            account.AddFromAccount(repository, accounts);
+        }
     }
 
     private System.Func<Avalonia.Visual, Task> ChangeImage()
@@ -166,6 +191,7 @@ public class AccountViewModel : ViewModelBase
     private static void Save(AccountViewModel? one, AccountViewModel other)
     {
         ArgumentNullException.ThrowIfNull(other, nameof(other));
+        ArgumentNullException.ThrowIfNull(other.Id, $"{nameof(other)}.{nameof(other.Id)}");
 
         var repository = Locator.Current.GetService<IRepository>();
 
@@ -174,7 +200,7 @@ public class AccountViewModel : ViewModelBase
             var stream = new MemoryStream();
             ((Bitmap)other.Image!).Save(stream);
             stream.Position = 0;
-            repository!.UpdateImage(other.Id, other.Name, stream);
+            repository!.UpdateImage(other.Id.Value, other.Name, stream);
         }
 
         if (one != null)
@@ -185,7 +211,7 @@ public class AccountViewModel : ViewModelBase
 
         repository!.UpdateAccount(new Models.Account 
         { 
-            Id = other.Id,
+            Id = other.Id.Value,
             ParentId = other.ParentId,
             Name = other.Name,
         });
