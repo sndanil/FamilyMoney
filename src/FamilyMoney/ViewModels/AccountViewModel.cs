@@ -34,8 +34,6 @@ public class AccountViewModel : ViewModelBase
 
     public ICommand EditCommand { get; }
 
-    public ICommand ChangeImageCommand { get; }
-
     public ReactiveCommand<Unit, AccountViewModel?> OkCommand { get; }
 
     public ReactiveCommand<Unit, AccountViewModel?> CancelCommand { get; }
@@ -131,8 +129,6 @@ public class AccountViewModel : ViewModelBase
         {
             return (AccountViewModel?)null;
         });
-
-        ChangeImageCommand = ReactiveCommand.CreateFromTask(ChangeImage());
     }
 
     public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
@@ -154,30 +150,6 @@ public class AccountViewModel : ViewModelBase
 
             account.AddFromAccount(repository, accounts);
         }
-    }
-
-    private System.Func<Avalonia.Visual, Task> ChangeImage()
-    {
-        return async (Avalonia.Visual visual) =>
-        {
-            var topLevel = TopLevel.GetTopLevel(visual);
-            var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = "Выбор изображения",
-                AllowMultiple = false,
-                FileTypeFilter = [ 
-                    new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] }, 
-                    FilePickerFileTypes.All 
-                    ]
-            });
-
-            if (files.Any())
-            {
-                var file = files.Single();
-                await using var stream = await file.OpenReadAsync();
-                Image = Bitmap.DecodeToWidth(stream, 400);
-            }
-        };
     }
 
     private void MainViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
