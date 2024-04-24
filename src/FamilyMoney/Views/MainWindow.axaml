@@ -30,7 +30,7 @@
 
 		<views:PeriodView DataContext="{Binding Period}" Margin="0 5 0 0"/>
 
-		<views:AccountView Grid.Row="1" DataContext="{Binding Total}" Margin="0 5 0 0"/>
+		<views:AccountView Grid.Row="1" DataContext="{Binding}" />
 		
 		<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
 

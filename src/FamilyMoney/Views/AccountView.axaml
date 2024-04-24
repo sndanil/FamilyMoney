@@ -7,68 +7,77 @@
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			 x:DataType="vm:AccountViewModel"
+			 x:DataType="vm:MainWindowViewModel"
              x:Class="FamilyMoney.Views.AccountView"
 			 >
 	<UserControl.Styles>
-		<Style Selector="Button.selected">
-			<Setter Property="Background" Value="{DynamicResource SystemListLowColor}" />
+		<Style Selector="Border.Account">
+			<Setter Property="Height" Value="50" />
 		</Style>
-		<Style Selector="Button:pointerover">
-			<Setter Property="Background" Value="Red" />
+		<Style Selector="Border.Drag">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="3" />
+			<Setter Property="Width" Value="300" />
+			<Setter Property="Opacity" Value="0.6" />
 		</Style>
+		<Style Selector="Border.Group">
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+		</Style>
+		<Style Selector="Border.Element">
+			<Setter Property="Margin" Value="1 0 1 0" />
+			<Setter Property="BorderThickness" Value="2 1 1 0" />
+			<Setter Property="BorderBrush" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+		</Style>
+		<Style Selector="Border.Account:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+		</Style>
+		<Style Selector="Border.Account Image">
+			<Setter Property="Height" Value="40" />
+			<Setter Property="Width" Value="40" />
+			<Setter Property="Margin" Value="10 5 0 5" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Account TextBlock#AccountName">
+			<Setter Property="Margin" Value="20 5 0 5" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Account TextBlock#AccountName2">
+			<Setter Property="Margin" Value="20 5 0 5" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Account TextBlock#AccountAmount">
+			<Setter Property="Margin" Value="0 0 10 0" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Right" />
+		</Style>		
+		<Style Selector="Border.Account.selected">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+		</Style>
+		
 	</UserControl.Styles>
-	<Grid Margin="10 0 0 0" ColumnDefinitions="* auto">	
-		<Grid.RowDefinitions>
-			<RowDefinition Height="50" />
-			<RowDefinition Height="*" />
-		</Grid.RowDefinitions>
-
-		<Button Classes.selected="{Binding IsSelected}" 
-				Command="{Binding SelectCommand}" 
-				HorizontalAlignment="Stretch"
-				VerticalAlignment="Stretch"
-				Margin="0"
-				CornerRadius="0"
-				>
-			<Grid ColumnDefinitions="* auto auto">
+	<StackPanel Name="MainContainer" DragDrop.AllowDrop="True" Orientation="Vertical">
+		<Border Classes="Account Group" Classes.selected="{Binding Total.IsSelected}">
+			<i:Interaction.Behaviors>
+				<ia:EventTriggerBehavior EventName="Tapped">
+					<InvokeCommandAction Command="{Binding Total.SelectCommand}" CommandParameter="{Binding}"/>
+				</ia:EventTriggerBehavior>
+			</i:Interaction.Behaviors>
+			
+			<Grid ColumnDefinitions="* auto">
 				<StackPanel Orientation="Horizontal">
-					<!--<i:Interaction.Behaviors>
-					<ia:EventTriggerBehavior EventName="Tapped">
-						<InvokeCommandAction Command="{Binding SelectCommand}"/>
-					</ia:EventTriggerBehavior>
-				</i:Interaction.Behaviors>-->
-
 					<Image Stretch="Uniform"
-						   Source="{Binding Image}"
-						   IsVisible="{Binding Image, 
-								Converter={x:Static ObjectConverters.IsNotNull}}"
-						   Width="50"
-						   Margin="0 0 5 0"
-						   VerticalAlignment="Center"/>
-					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							Source="{Binding Total.Image}"
+							IsVisible="{Binding Total.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+							/>
+					<TextBlock Text="{Binding Total.Name}" Name="AccountName"/>
 				</StackPanel>
-				<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" 
-						   VerticalAlignment="Center" 
-						   HorizontalAlignment="Right" 
-						   Margin="0 0 10 0" />
-			</Grid>			
-		</Button>
-		<Button Grid.Column="1" CornerRadius="0" Margin="0 0 5 0" VerticalAlignment="Stretch">
-			<Button.Flyout>
-				<MenuFlyout>
-					<MenuItem Width="200" Header="Добавить" Command="{Binding AddCommand}" />
-					<MenuItem Header="Изменить" Command="{Binding EditCommand}" />
-					<MenuItem Header="-" />
-					<MenuItem Header="Удалить" />
-				</MenuFlyout>
-			</Button.Flyout>
-			<TextBlock VerticalAlignment="Center" FontWeight="Bold">⋮</TextBlock>
-		</Button>
+				<TextBlock Grid.Column="1" Text="{Binding Total.Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+			</Grid>
+		</Border>
 
-		<ItemsControl Grid.Row="1" Grid.ColumnSpan="2"
-					  ItemsSource="{Binding Children}"
-					  IsVisible="{Binding !!Children.Count}">
+		<ItemsControl ItemsSource="{Binding Total.Children}">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<StackPanel Orientation="Vertical" />
@@ -77,10 +86,74 @@
 
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<views:AccountView/>
+					<StackPanel Orientation="Vertical">
+						<Border Classes="Account Group" Classes.selected="{Binding IsSelected}"
+								PointerPressed="OnPointerPressed">
+							<i:Interaction.Behaviors>
+								<ia:EventTriggerBehavior EventName="Tapped">
+									<InvokeCommandAction Command="{Binding SelectCommand}" 
+														 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
+								</ia:EventTriggerBehavior>
+							</i:Interaction.Behaviors>
+
+							<Grid ColumnDefinitions="* auto">
+								<StackPanel Orientation="Horizontal">
+									<Image Stretch="Uniform"
+											Source="{Binding Image}"
+											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+											/>
+									<TextBlock Text="{Binding Name}" Name="AccountName"/>
+								</StackPanel>
+								<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+							</Grid>
+						</Border>
+						<ItemsControl ItemsSource="{Binding Children}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Vertical" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border Classes="Account Element" Classes.selected="{Binding IsSelected}"
+											PointerPressed="OnPointerPressed">
+										<i:Interaction.Behaviors>
+											<ia:EventTriggerBehavior EventName="Tapped">
+												<InvokeCommandAction Command="{Binding SelectCommand}"
+																	 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
+											</ia:EventTriggerBehavior>
+										</i:Interaction.Behaviors>
+
+										<Grid ColumnDefinitions="* auto">
+											<StackPanel Orientation="Horizontal">
+												<Image Stretch="Uniform"
+													   Source="{Binding Image}"
+													   IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+													/>
+												<TextBlock Text="{Binding Name}" Name="AccountName" />
+											</StackPanel>
+											<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
-	</Grid>
+
+		<Border Classes="Account Drag" Name="GhostItem">
+			<StackPanel Orientation="Horizontal">
+				<Image Stretch="Uniform"
+						Source="{Binding DraggingAccount.Image}"
+						IsVisible="{Binding DraggingAccount.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+												/>
+				<TextBlock Text="{Binding DraggingAccount.Name}" Name="AccountName2" />
+			</StackPanel>
+		</Border>
+
+	</StackPanel>
 
 </UserControl>

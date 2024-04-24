@@ -25,8 +25,8 @@ public class AccountViewModel : ViewModelBase
     private Guid? _parentId = null;
     private string _name = string.Empty;
     private IImage? _image = null;
+    private bool _isSelected = false;
     private ObservableCollection<AccountViewModel> _children = new();
-    private readonly MainWindowViewModel _mainWindowViewModel;
 
     public ICommand SelectCommand { get; }
 
@@ -72,26 +72,23 @@ public class AccountViewModel : ViewModelBase
 
     public bool IsSelected
     {
-        get => _mainWindowViewModel?.SelectedAccount == this;
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
     }
 
     public ObservableCollection<AccountViewModel> Children { get => _children; }
 
-    public AccountViewModel(MainWindowViewModel main)
+    public AccountViewModel()
     {
-        _mainWindowViewModel = main;
-        _mainWindowViewModel.PropertyChanged += MainViewModelPropertyChanged;
-
-        SelectCommand = ReactiveCommand.CreateFromTask(() =>
+        SelectCommand = ReactiveCommand.CreateFromTask((MainWindowViewModel main) =>
         {
-            _mainWindowViewModel.SelectedAccount = this;
-
+            main.SelectedAccount = this;
             return Task.CompletedTask;
         });
 
         AddCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var account = new AccountViewModel(_mainWindowViewModel);
+            var account = new AccountViewModel();
             var result = await ShowDialog.Handle(account);
             if (result != null)
             {
@@ -104,7 +101,7 @@ public class AccountViewModel : ViewModelBase
 
         EditCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var account = new AccountViewModel(_mainWindowViewModel)
+            var account = new AccountViewModel()
             {
                 Id = this.Id,
                 ParentId = this.ParentId,
@@ -133,7 +130,7 @@ public class AccountViewModel : ViewModelBase
 
     public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
     {
-        Children.AddRange(accounts.Where(a => a.ParentId == Id).Select(a => new AccountViewModel(_mainWindowViewModel)
+        Children.AddRange(accounts.Where(a => a.ParentId == Id).Select(a => new AccountViewModel
         {
             Id = a.Id,
             Name = a.Name,
