@@ -14,7 +14,16 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
-        SplatRegistrations.RegisterConstant<IRepository>(new Repository());
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            SplatRegistrations.RegisterConstant<IRepository>(new DesignerRepository());
+        }
+        else
+        {
+            SplatRegistrations.RegisterConstant<IRepository>(new DbLiteRepository());
+        }
+
+        SplatRegistrations.SetupIOC();
     }
 
     public override void OnFrameworkInitializationCompleted()

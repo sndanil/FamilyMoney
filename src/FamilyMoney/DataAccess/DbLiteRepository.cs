@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FamilyMoney.DataAccess;
 
-public class Repository : IRepository
+public class DbLiteRepository : IRepository
 {
     private string _connectionStr = "database.db";
 
