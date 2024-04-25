@@ -23,6 +23,9 @@ public partial class App : Application
             SplatRegistrations.RegisterConstant<IRepository>(new DbLiteRepository());
         }
 
+        SplatRegistrations.Register<AccountsViewModel>();
+        SplatRegistrations.Register<MainWindowViewModel>();
+
         SplatRegistrations.SetupIOC();
     }
 
@@ -32,7 +35,7 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = Locator.Current.GetService<MainWindowViewModel>(),
             };
         }
 

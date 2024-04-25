@@ -12,17 +12,17 @@ public class MainWindowViewModel : ViewModelBase
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
 
-    public ICommand TriggerPaneCommand { get; }
+    private AccountsViewModel _accountsViewModel;
 
-    private AccountViewModel? _total = null;
-    private AccountViewModel? _selectedAccount = null;
-    private AccountViewModel? _draggingAccount = null;
+    public ICommand TriggerPaneCommand { get; }
 
     private PeriodViewModel _period;
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(IRepository repository, AccountsViewModel accounts)
     {
         TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
+
+        _accountsViewModel = accounts;
 
         _period = new PeriodViewModel 
         { 
@@ -31,8 +31,6 @@ public class MainWindowViewModel : ViewModelBase
             PeriodType = PeriodType.Month 
         };
         _period.PropertyChanged += (e, a) => this.RaisePropertyChanged(nameof(Period));
-
-        RxApp.MainThreadScheduler.Schedule(LoadAccounts);
     }
 
     public int LeftSideWidth 
@@ -53,48 +51,10 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _period, value);
     }
 
-    public AccountViewModel? Total
+    public AccountsViewModel Accounts
     {
-        get => _total;
-        set => this.RaiseAndSetIfChanged(ref _total, value);
+        get => _accountsViewModel;
+        set => this.RaiseAndSetIfChanged(ref _accountsViewModel, value);
     }
 
-    public AccountViewModel? SelectedAccount
-    {
-        get => _selectedAccount;
-        set
-        {
-            Total!.IsSelected = false;
-            foreach (var group in Total.Children)
-            {
-                group.IsSelected = false;
-                foreach (var account in group.Children)
-                {
-                    account.IsSelected = false;
-                }
-            }
-
-            value!.IsSelected = true;
-            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
-        }
-    }
-
-    public AccountViewModel? DraggingAccount
-    {
-        get => _draggingAccount;
-        set => this.RaiseAndSetIfChanged(ref _draggingAccount, value);
-    }
-
-    private void LoadAccounts()
-    {
-        _total = new AccountViewModel
-        {
-            Name = "Всего",
-            Amount = 2000,
-        };
-
-        var repository = Locator.Current.GetService<IRepository>();
-        var accounts = repository!.GetAccounts();
-        _total.AddFromAccount(repository, accounts);
-    }
 }

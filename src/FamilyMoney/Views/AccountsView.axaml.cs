@@ -7,14 +7,14 @@ using FamilyMoney.ViewModels;
 
 namespace FamilyMoney.Views;
 
-public partial class AccountView : UserControl
+public partial class AccountsView : UserControl
 {
     private Point _ghostPosition = new(0, 0);
     private readonly Point _mouseOffset = new(-5, -5);
 
     private readonly string customFormat = "account-view-model";
 
-    public AccountView()
+    public AccountsView()
     {
         InitializeComponent();
 
@@ -38,7 +38,7 @@ public partial class AccountView : UserControl
         GhostItem.RenderTransform = new TranslateTransform(offsetX, offsetY);
 
         e.DragEffects = DragDropEffects.Move;
-        if (DataContext is not MainWindowViewModel vm)
+        if (DataContext is not AccountsViewModel vm)
             return;
         var data = e.Data.Get(customFormat);
         if (data is not AccountViewModel account) 
@@ -65,7 +65,7 @@ public partial class AccountView : UserControl
 
     private async void OnPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
     {
-        if (sender is not Border border)
+        if (sender is not PathIcon border)
             return;
 
         if (border.DataContext is not AccountViewModel account)
@@ -79,7 +79,7 @@ public partial class AccountView : UserControl
         var offsetY = mousePos.Y - ghostPos.Y + _mouseOffset.X;
         GhostItem.RenderTransform = new TranslateTransform(offsetX, offsetY);
 
-        if (DataContext is not MainWindowViewModel vm) 
+        if (DataContext is not AccountsViewModel vm) 
             return;
         vm.DraggingAccount = account;
 

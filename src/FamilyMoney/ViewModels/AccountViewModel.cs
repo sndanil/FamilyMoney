@@ -80,9 +80,9 @@ public class AccountViewModel : ViewModelBase
 
     public AccountViewModel()
     {
-        SelectCommand = ReactiveCommand.CreateFromTask((MainWindowViewModel main) =>
+        SelectCommand = ReactiveCommand.CreateFromTask((AccountsViewModel accounts) =>
         {
-            main.SelectedAccount = this;
+            accounts.SelectedAccount = this;
             return Task.CompletedTask;
         });
 
@@ -146,14 +146,6 @@ public class AccountViewModel : ViewModelBase
             }
 
             account.AddFromAccount(repository, accounts);
-        }
-    }
-
-    private void MainViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(MainWindowViewModel.SelectedAccount))
-        {
-            this.RaisePropertyChanged(nameof(IsSelected));
         }
     }
 
