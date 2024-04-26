@@ -40,12 +40,16 @@ public partial class AccountsView : UserControl
         e.DragEffects = DragDropEffects.Move;
         if (DataContext is not AccountsViewModel vm)
             return;
+        
         var data = e.Data.Get(customFormat);
         if (data is not AccountViewModel account) 
             return;
-        //if (!vm.IsDestinationValid(account, (e.Source as Control)?.Name))
+        if ((e.Source as Control)?.DataContext is not AccountViewModel destAccount)
+            return;
+
+        if (!vm.IsDestinationValid(account, destAccount))
         {
-            //e.DragEffects = DragDropEffects.None;
+            e.DragEffects = DragDropEffects.None;
         }
     }
 
@@ -58,9 +62,13 @@ public partial class AccountsView : UserControl
             return;
         }
 
-        if (DataContext is not MainWindowViewModel vm) 
+        if (DataContext is not AccountsViewModel vm) 
             return;
-        //vm.Drop(account, (e.Source as Control)?.Name);
+
+        if ((e.Source as Control)?.DataContext is not AccountViewModel destAccount)
+            return;
+
+        vm.Drop(account, destAccount);
     }
 
     private async void OnPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)

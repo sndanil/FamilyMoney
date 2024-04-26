@@ -11,6 +11,11 @@
              x:Class="FamilyMoney.Views.AccountsView"
 			 >
 	<UserControl.Styles>
+		<Style Selector="Border.Separator">
+			<Setter Property="Height" Value="3" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+		</Style>
 		<Style Selector="Border.Account">
 			<Setter Property="Height" Value="50" />
 		</Style>
@@ -55,28 +60,51 @@
 		</Style>		
 		<Style Selector="Border.Account.selected">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
-		</Style>		
+		</Style>
+		<Style Selector="PathIcon">
+			<Setter Property="Height" Value="11"/>
+		</Style>
 	</UserControl.Styles>
 	
 	<StackPanel Name="MainContainer" DragDrop.AllowDrop="True" Orientation="Vertical">
-		<Border Classes="Account Group" Classes.selected="{Binding Total.IsSelected}">
+		<StackPanel Orientation="Horizontal" Margin="0 0 0 4" Height="47">
+			<Button Command="{Binding AddGroupCommand}">
+				<PathIcon Data="{StaticResource Tree}" />
+			</Button>
+			<Button Command="{Binding AddElementCommand}">
+				<PathIcon Data="{StaticResource Rectangles}" />
+			</Button>
+			<Button Command="{Binding EditCommand}">
+				<PathIcon Data="{StaticResource Edit}" />
+			</Button>
+			<Button Command="{Binding DeleteCommand}">
+				<PathIcon Data="{StaticResource Cross}" />
+			</Button>
+		</StackPanel>
+		<Border Classes="Separator"></Border>
+		<Border Classes="Account Group" 
+				Classes.selected="{Binding IsSelected}"
+				DataContext="{Binding Total}"
+				>
 			<i:Interaction.Behaviors>
 				<ia:EventTriggerBehavior EventName="Tapped">
-					<InvokeCommandAction Command="{Binding Total.SelectCommand}" CommandParameter="{Binding}"/>
+					<InvokeCommandAction Command="{Binding SelectCommand}" 
+										 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
 				</ia:EventTriggerBehavior>
 			</i:Interaction.Behaviors>
 			
 			<Grid ColumnDefinitions="* auto">
 				<StackPanel Orientation="Horizontal">
 					<Image Stretch="Uniform"
-							Source="{Binding Total.Image}"
-							IsVisible="{Binding Total.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+							Source="{Binding Image}"
+							IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 							/>
-					<TextBlock Text="{Binding Total.Name}" Name="AccountName"/>
+					<TextBlock Text="{Binding Name}" Name="AccountName"/>
 				</StackPanel>
-				<TextBlock Grid.Column="1" Text="{Binding Total.Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+				<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
 			</Grid>
 		</Border>
+		<Border Classes="Separator"></Border>
 
 		<ItemsControl ItemsSource="{Binding Total.Children}">
 			<ItemsControl.ItemsPanel>
@@ -88,17 +116,23 @@
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
 					<StackPanel Orientation="Vertical">
-						<Border Classes="Account Group" Classes.selected="{Binding IsSelected}"
+						<Border Classes="Account" 
+								Classes.Element="{Binding !IsGroup}" 
+								Classes.Group="{Binding IsGroup}" 
+								Classes.selected="{Binding IsSelected}"
 								>
 							<i:Interaction.Behaviors>
 								<ia:EventTriggerBehavior EventName="Tapped">
 									<InvokeCommandAction Command="{Binding SelectCommand}" 
 														 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
 								</ia:EventTriggerBehavior>
+								<ia:EventTriggerBehavior EventName="DoubleTapped">
+									<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
+								</ia:EventTriggerBehavior>
 							</i:Interaction.Behaviors>
 
 							<Grid ColumnDefinitions="auto * auto">
-								<PathIcon Height="11" PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+								<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
 								<StackPanel Grid.Column="1" Orientation="Horizontal">
 									<Image Stretch="Uniform"
 											Source="{Binding Image}"
@@ -124,10 +158,13 @@
 												<InvokeCommandAction Command="{Binding SelectCommand}"
 																	 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
 											</ia:EventTriggerBehavior>
+											<ia:EventTriggerBehavior EventName="DoubleTapped">
+												<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
+											</ia:EventTriggerBehavior>
 										</i:Interaction.Behaviors>
 
 										<Grid ColumnDefinitions="auto * auto">
-											<PathIcon Height="11" PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+											<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
 											<StackPanel Grid.Column="1" Orientation="Horizontal">
 												<Image Stretch="Uniform"
 													   Source="{Binding Image}"
