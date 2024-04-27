@@ -28,6 +28,7 @@
 		</Style>
 		<Style Selector="Border.Group">
 			<Setter Property="Margin" Value="1 0 1 0" />
+			<Setter Property="CornerRadius" Value="12 12 0 0"/>
 			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
 		</Style>
 		<Style Selector="Border.Element">
@@ -35,6 +36,15 @@
 			<Setter Property="BorderThickness" Value="1 1 1 0" />
 			<Setter Property="BorderBrush" Value="{DynamicResource SystemRegionBrush}" />
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+		</Style>
+		<Style Selector="Border.AloneGroup">
+			<Setter Property="CornerRadius" Value="12 12 12 12"/>
+		</Style>
+		<Style Selector="Border.AloneElement">
+			<Setter Property="CornerRadius" Value="12 12 12 12"/>
+		</Style>
+		<Style Selector="Border.LastElement">
+			<Setter Property="CornerRadius" Value="0 0 12 12"/>
 		</Style>
 		<Style Selector="Border.Account:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
@@ -58,20 +68,29 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 		</Style>		
-		<Style Selector="Border.Account.selected">
+		<Style Selector="Border.Account.Selected">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
 		<Style Selector="PathIcon">
 			<Setter Property="Height" Value="11"/>
+		</Style>
+		<Style Selector="Button.BottomButton">
+			<Setter Property="Margin" Value="5 0" />
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button.BottomButton:disabled">
+			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 	</UserControl.Styles>
 	
 	<Grid Name="MainContainer" 
 				DragDrop.AllowDrop="True" 
 				RowDefinitions="auto auto * auto"
+		  Background="{DynamicResource SystemAltMediumLowColor}"
 				>
 		<Border Classes="Account Group LeftTop" 
-				Classes.selected="{Binding IsSelected}"
+				CornerRadius="12"
+				Classes.Selected="{Binding IsSelected}"
 				DataContext="{Binding Total}"
 				>
 			<i:Interaction.Behaviors>
@@ -107,8 +126,9 @@
 						<StackPanel Orientation="Vertical">
 							<Border Classes="Account" 
 									Classes.Element="{Binding !IsGroup}" 
+									Classes.AloneElement="{Binding !IsGroup}"
 									Classes.Group="{Binding IsGroup}" 
-									Classes.selected="{Binding IsSelected}"
+									Classes.Selected="{Binding IsSelected}"
 									>
 								<i:Interaction.Behaviors>
 									<ia:EventTriggerBehavior EventName="Tapped">
@@ -141,7 +161,10 @@
 
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
-										<Border Classes="Account Element" Classes.selected="{Binding IsSelected}">
+										<Border Classes="Account Element" 
+												Classes.LastElement="{Binding IsLastElement}"
+												Classes.Selected="{Binding IsSelected}"
+												>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
 													<InvokeCommandAction Command="{Binding SelectCommand}"
@@ -183,32 +206,35 @@
 			</StackPanel>
 		</Border>
 
-		<StackPanel Grid.Row="3" 
-					Orientation="Horizontal"
-					Margin="5"
-					Height="25"
-					>
-			<Button Command="{Binding AddGroupCommand}" 
-					Margin="5 0"
-					ToolTip.Tip="Добавить группу">
-				<PathIcon Data="{StaticResource Tree}" />
-			</Button>
-			<Button Command="{Binding AddElementCommand}" 
-					Margin="5 0"
-					ToolTip.Tip="Добавить счёт">
-				<PathIcon Data="{StaticResource Rectangles}" />
-			</Button>
-			<Button Command="{Binding EditCommand}" 
-					Margin="5 0"
-					ToolTip.Tip="Изменить">
-				<PathIcon Data="{StaticResource Edit}" />
-			</Button>
-			<Button Command="{Binding DeleteCommand}" 
-					Margin="5 0"
-					ToolTip.Tip="Удалить">
-				<PathIcon Data="{StaticResource Cross}" />
-			</Button>
-		</StackPanel>
+		<Border Grid.Row="3"
+			Background="{DynamicResource ButtonBackground}"
+			Padding="5"
+			Height="35"
+			CornerRadius="12"
+			>			
+			<StackPanel Orientation="Horizontal">
+				<Button Command="{Binding AddGroupCommand}" 
+						Classes="BottomButton"
+						ToolTip.Tip="Добавить группу">
+					<PathIcon Data="{StaticResource Tree}" />
+				</Button>
+				<Button Command="{Binding AddElementCommand}" 
+						Classes="BottomButton"
+						ToolTip.Tip="Добавить счёт">
+					<PathIcon Data="{StaticResource Rectangles}" />
+				</Button>
+				<Button Command="{Binding EditCommand}" 
+						Classes="BottomButton"
+						ToolTip.Tip="Изменить">
+					<PathIcon Data="{StaticResource Edit}" />
+				</Button>
+				<Button Command="{Binding DeleteCommand}" 
+						Classes="BottomButton"
+						ToolTip.Tip="Удалить">
+					<PathIcon Data="{StaticResource Cross}" />
+				</Button>
+			</StackPanel>
+		</Border>
 
 	</Grid>
 

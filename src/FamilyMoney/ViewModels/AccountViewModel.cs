@@ -79,6 +79,16 @@ public class AccountViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isSelected, value);
     }
 
+    public bool IsAloneGroup
+    {
+        get => Children.Count == 0;
+    }
+
+    public bool IsLastElement
+    {
+        get => Parent?.Children.IndexOf(this) == Parent?.Children.Count - 1;
+    }
+
     public ObservableCollection<AccountViewModel> Children { get => _children; }
 
     public AccountViewModel()

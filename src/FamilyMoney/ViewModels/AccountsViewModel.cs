@@ -82,7 +82,9 @@ public class AccountsViewModel : ViewModelBase
 
         DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-
+            _repository.DeleteAccount(SelectedAccount!.Id!.Value);
+            SelectedAccount!.Parent!.Children.Remove(SelectedAccount);
+            UpdateChildren(SelectedAccount.Parent);
         }, canEditExecute);
 
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);

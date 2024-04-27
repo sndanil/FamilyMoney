@@ -10,6 +10,11 @@ namespace FamilyMoney.DataAccess
 {
     internal class DesignerRepository : IRepository
     {
+        public void DeleteAccount(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Account> GetAccounts()
         {
             return new [] { new Account { Name = "Тест", Id = Guid.NewGuid() } };

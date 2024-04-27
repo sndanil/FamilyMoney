@@ -16,4 +16,5 @@ public interface IRepository
 
     IEnumerable<Account> GetAccounts();
     void UpdateAccount(Account account);
+    void DeleteAccount(Guid id);
 }

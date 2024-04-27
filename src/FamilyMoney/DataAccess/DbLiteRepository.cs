@@ -56,4 +56,12 @@ public class DbLiteRepository : IRepository
             collection.Insert(account);
         }
     }
+
+    public void DeleteAccount(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Account>(nameof(Account));
+        collection.Delete(id);
+        db.FileStorage.Delete(id.ToString());
+    }
 }
