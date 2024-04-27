@@ -66,23 +66,11 @@
 		</Style>
 	</UserControl.Styles>
 	
-	<StackPanel Name="MainContainer" DragDrop.AllowDrop="True" Orientation="Vertical">
-		<StackPanel Orientation="Horizontal" Margin="0 0 0 4" Height="47">
-			<Button Command="{Binding AddGroupCommand}">
-				<PathIcon Data="{StaticResource Tree}" />
-			</Button>
-			<Button Command="{Binding AddElementCommand}">
-				<PathIcon Data="{StaticResource Rectangles}" />
-			</Button>
-			<Button Command="{Binding EditCommand}">
-				<PathIcon Data="{StaticResource Edit}" />
-			</Button>
-			<Button Command="{Binding DeleteCommand}">
-				<PathIcon Data="{StaticResource Cross}" />
-			</Button>
-		</StackPanel>
-		<Border Classes="Separator"></Border>
-		<Border Classes="Account Group" 
+	<Grid Name="MainContainer" 
+				DragDrop.AllowDrop="True" 
+				RowDefinitions="auto auto * auto"
+				>
+		<Border Classes="Account Group LeftTop" 
 				Classes.selected="{Binding IsSelected}"
 				DataContext="{Binding Total}"
 				>
@@ -104,85 +92,87 @@
 				<TextBlock Grid.Column="1" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
 			</Grid>
 		</Border>
-		<Border Classes="Separator"></Border>
+		<Border Grid.Row="1" Classes="Separator"></Border>
 
-		<ItemsControl ItemsSource="{Binding Total.Children}">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" />
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
+		<ScrollViewer Grid.Row="2">
+			<ItemsControl ItemsSource="{Binding Total.Children}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel Orientation="Vertical" />
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
 
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<StackPanel Orientation="Vertical">
-						<Border Classes="Account" 
-								Classes.Element="{Binding !IsGroup}" 
-								Classes.Group="{Binding IsGroup}" 
-								Classes.selected="{Binding IsSelected}"
-								>
-							<i:Interaction.Behaviors>
-								<ia:EventTriggerBehavior EventName="Tapped">
-									<InvokeCommandAction Command="{Binding SelectCommand}" 
-														 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
-								</ia:EventTriggerBehavior>
-								<ia:EventTriggerBehavior EventName="DoubleTapped">
-									<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
-								</ia:EventTriggerBehavior>
-							</i:Interaction.Behaviors>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Vertical">
+							<Border Classes="Account" 
+									Classes.Element="{Binding !IsGroup}" 
+									Classes.Group="{Binding IsGroup}" 
+									Classes.selected="{Binding IsSelected}"
+									>
+								<i:Interaction.Behaviors>
+									<ia:EventTriggerBehavior EventName="Tapped">
+										<InvokeCommandAction Command="{Binding SelectCommand}" 
+															 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
+									</ia:EventTriggerBehavior>
+									<ia:EventTriggerBehavior EventName="DoubleTapped">
+										<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
+									</ia:EventTriggerBehavior>
+								</i:Interaction.Behaviors>
 
-							<Grid ColumnDefinitions="auto * auto">
-								<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
-								<StackPanel Grid.Column="1" Orientation="Horizontal">
-									<Image Stretch="Uniform"
-											Source="{Binding Image}"
-											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-											/>
-									<TextBlock Text="{Binding Name}" Name="AccountName"/>
-								</StackPanel>
-								<TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
-							</Grid>
-						</Border>
-						<ItemsControl ItemsSource="{Binding Children}">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<StackPanel Orientation="Vertical" />
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
+								<Grid ColumnDefinitions="auto * auto">
+									<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+									<StackPanel Grid.Column="1" Orientation="Horizontal">
+										<Image Stretch="Uniform"
+												Source="{Binding Image}"
+												IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+												/>
+										<TextBlock Text="{Binding Name}" Name="AccountName"/>
+									</StackPanel>
+									<TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+								</Grid>
+							</Border>
+							<ItemsControl ItemsSource="{Binding Children}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel Orientation="Vertical" />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
 
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Border Classes="Account Element" Classes.selected="{Binding IsSelected}">
-										<i:Interaction.Behaviors>
-											<ia:EventTriggerBehavior EventName="Tapped">
-												<InvokeCommandAction Command="{Binding SelectCommand}"
-																	 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
-											</ia:EventTriggerBehavior>
-											<ia:EventTriggerBehavior EventName="DoubleTapped">
-												<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
-											</ia:EventTriggerBehavior>
-										</i:Interaction.Behaviors>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border Classes="Account Element" Classes.selected="{Binding IsSelected}">
+											<i:Interaction.Behaviors>
+												<ia:EventTriggerBehavior EventName="Tapped">
+													<InvokeCommandAction Command="{Binding SelectCommand}"
+																		 CommandParameter="{Binding $parent[UserControl].DataContext}"/>
+												</ia:EventTriggerBehavior>
+												<ia:EventTriggerBehavior EventName="DoubleTapped">
+													<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"/>
+												</ia:EventTriggerBehavior>
+											</i:Interaction.Behaviors>
 
-										<Grid ColumnDefinitions="auto * auto">
-											<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
-											<StackPanel Grid.Column="1" Orientation="Horizontal">
-												<Image Stretch="Uniform"
-													   Source="{Binding Image}"
-													   IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-													/>
-												<TextBlock Text="{Binding Name}" Name="AccountName" />
-											</StackPanel>
-											<TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
-										</Grid>
-									</Border>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
-
+											<Grid ColumnDefinitions="auto * auto">
+												<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+												<StackPanel Grid.Column="1" Orientation="Horizontal">
+													<Image Stretch="Uniform"
+														   Source="{Binding Image}"
+														   IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+														/>
+													<TextBlock Text="{Binding Name}" Name="AccountName" />
+												</StackPanel>
+												<TextBlock Grid.Column="2" Text="{Binding Amount, StringFormat=\{0:0.00\}}" Name="AccountAmount"/>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+		
 		<Border Classes="Account Drag" Name="GhostItem">
 			<StackPanel Orientation="Horizontal">
 				<Image Stretch="Uniform"
@@ -193,6 +183,33 @@
 			</StackPanel>
 		</Border>
 
-	</StackPanel>
+		<StackPanel Grid.Row="3" 
+					Orientation="Horizontal"
+					Margin="5"
+					Height="25"
+					>
+			<Button Command="{Binding AddGroupCommand}" 
+					Margin="5 0"
+					ToolTip.Tip="Добавить группу">
+				<PathIcon Data="{StaticResource Tree}" />
+			</Button>
+			<Button Command="{Binding AddElementCommand}" 
+					Margin="5 0"
+					ToolTip.Tip="Добавить счёт">
+				<PathIcon Data="{StaticResource Rectangles}" />
+			</Button>
+			<Button Command="{Binding EditCommand}" 
+					Margin="5 0"
+					ToolTip.Tip="Изменить">
+				<PathIcon Data="{StaticResource Edit}" />
+			</Button>
+			<Button Command="{Binding DeleteCommand}" 
+					Margin="5 0"
+					ToolTip.Tip="Удалить">
+				<PathIcon Data="{StaticResource Cross}" />
+			</Button>
+		</StackPanel>
+
+	</Grid>
 
 </UserControl>

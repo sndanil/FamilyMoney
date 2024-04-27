@@ -6,7 +6,7 @@
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:PeriodViewModel"
              x:Class="FamilyMoney.Views.PeriodView">
-	<Grid ColumnDefinitions="auto auto auto">
+	<Grid ColumnDefinitions="auto auto auto" Height="50">
 		<Button Command="{Binding PrevCommand}">&lt;</Button>
 		<Button Grid.Column="1" MinWidth="200">
 			<Button.Flyout>
