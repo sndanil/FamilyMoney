@@ -16,6 +16,10 @@
     <AvaloniaResource Remove="Assets\Icons.axaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Assets\wallet.ico" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.10" />
