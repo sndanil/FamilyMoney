@@ -37,9 +37,9 @@
 
 		<Style Selector="Border.LikeGridHeader">
 			<Setter Property="Height" Value="30" />
-			<Setter Property="Background" Value="{DynamicResource SystemAltHighColor}" />
+			<!--<Setter Property="Background" Value="{DynamicResource SystemAltHighColor}" />-->
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-			<Setter Property="BorderThickness" Value="0 0 1 1" />
+			<Setter Property="BorderThickness" Value="0 0 1 0" />
 		</Style>
 
 		<Style Selector="Border.LikeGridHeader TextBlock">

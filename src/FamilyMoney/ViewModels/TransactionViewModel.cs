@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using System;
+using System.Reactive;
 
 namespace FamilyMoney.ViewModels;
 
@@ -26,6 +27,27 @@ public class TransactionViewModel : BaseTransactionViewModel
     private string? _comment;
     private DateTime? _date;
     private DateTime? _lastChanged;
+
+    public ReactiveCommand<Unit, TransactionViewModel?> OkCommand { get; }
+
+    public ReactiveCommand<Unit, TransactionViewModel?> CancelCommand { get; }
+
+    public static Interaction<TransactionViewModel, TransactionViewModel?> ShowDialog { get; } = new();
+
+    public TransactionViewModel()
+    {
+        var canExecute = this.WhenAnyValue(x => x.Amount, x => x.Account, (amount, account) => amount != 0 && account != null);
+        OkCommand = ReactiveCommand.Create(() =>
+        {
+            return (TransactionViewModel?)this;
+        },
+        canExecute);
+
+        CancelCommand = ReactiveCommand.Create(() =>
+        {
+            return (TransactionViewModel?)null;
+        });
+    }
 
     public string? Comment
     {

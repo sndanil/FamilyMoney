@@ -1,8 +1,6 @@
 ﻿using FamilyMoney.DataAccess;
 using ReactiveUI;
-using Splat;
 using System;
-using System.Reactive.Concurrency;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -12,17 +10,18 @@ public class MainWindowViewModel : ViewModelBase
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
 
-    private AccountsViewModel _accountsViewModel;
+    private readonly PeriodViewModel _period;
+    private readonly AccountsViewModel _accountsViewModel;
+    private readonly TransactionsViewModel _transactionsViewModel;
 
     public ICommand TriggerPaneCommand { get; }
 
-    private PeriodViewModel _period;
-
-    public MainWindowViewModel(IRepository repository, AccountsViewModel accounts)
+    public MainWindowViewModel(IRepository repository, AccountsViewModel accounts, TransactionsViewModel transactionsViewModel)
     {
         TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
 
         _accountsViewModel = accounts;
+        _transactionsViewModel = transactionsViewModel;
 
         _period = new PeriodViewModel 
         { 
@@ -48,13 +47,16 @@ public class MainWindowViewModel : ViewModelBase
     public PeriodViewModel Period
     {
         get => _period;
-        set => this.RaiseAndSetIfChanged(ref _period, value);
     }
 
     public AccountsViewModel Accounts
     {
         get => _accountsViewModel;
-        set => this.RaiseAndSetIfChanged(ref _accountsViewModel, value);
+    }
+
+    public TransactionsViewModel Transactions
+    {
+        get => _transactionsViewModel;
     }
 
 }

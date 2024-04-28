@@ -3,24 +3,31 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:views="clr-namespace:FamilyMoney.Views"
+			 xmlns:vm="using:FamilyMoney.ViewModels"
+			 x:DataType="vm:TransactionsViewModel"
              x:Class="FamilyMoney.Views.TransactionsView">
-	<StackPanel >
-		<Grid
-			  ColumnDefinitions="2* 100 200 *"
-			  RowDefinitions="auto">
-			<Border Classes="LikeGridHeader">
-				<TextBlock>Категория</TextBlock>
-			</Border>
-			<Border Grid.Column="1" Classes="LikeGridHeader">
-				<TextBlock>Дата</TextBlock>
-			</Border>
-			<Border Grid.Column="2" Classes="LikeGridHeader">
-				<TextBlock>Сумма</TextBlock>
-			</Border>
-			<Border Grid.Column="3" Classes="LikeGridHeader">
-				<TextBlock>Комментарий</TextBlock>
-			</Border>
-		</Grid>
+	<StackPanel>
+		<Border Background="{DynamicResource SystemRegionBrush}"
+				CornerRadius="5"
+				>
+			<Grid
+				  ColumnDefinitions="2* 100 200 *"
+				  RowDefinitions="auto">
+				<Border Classes="LikeGridHeader">
+					<TextBlock>Категория</TextBlock>
+				</Border>
+				<Border Grid.Column="1" Classes="LikeGridHeader">
+					<TextBlock>Дата</TextBlock>
+				</Border>
+				<Border Grid.Column="2" Classes="LikeGridHeader">
+					<TextBlock>Сумма</TextBlock>
+				</Border>
+				<Border Grid.Column="3" Classes="LikeGridHeader">
+					<TextBlock>Комментарий</TextBlock>
+				</Border>
+			</Grid>
+		</Border>
 
 		<Border Classes="Total" Height="30">
 			<Grid ColumnDefinitions="2* 100 200 *">

@@ -14,6 +14,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         this.WhenActivated(action => action(ViewModel!.Period.ShowDialog.RegisterHandler(DoShowCustomPeriodDialogAsync)));
         this.WhenActivated(action => action(AccountViewModel.ShowDialog.RegisterHandler(DoShowAccountEditDialogAsync)));
+        this.WhenActivated(action => action(TransactionViewModel.ShowDialog.RegisterHandler(DoShowTransactionEditDialogAsync)));
     }
 
     private async Task DoShowCustomPeriodDialogAsync(InteractionContext<CustomPeriodViewModel, CustomPeriodViewModel?> interaction)
@@ -31,6 +32,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<AccountViewModel?>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowTransactionEditDialogAsync(InteractionContext<TransactionViewModel, TransactionViewModel?> interaction)
+    {
+        var dialog = new TransactionWindow();
+        dialog.DataContext = interaction.Input;
+
+        var result = await dialog.ShowDialog<TransactionViewModel?>(this);
         interaction.SetOutput(result);
     }
 }

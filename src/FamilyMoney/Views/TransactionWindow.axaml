@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+		Width="600" Height="400"
+		WindowStartupLocation="CenterOwner"
+		ExtendClientAreaToDecorationsHint="True"
+		ExtendClientAreaChromeHints="NoChrome"
+		xmlns:views="clr-namespace:FamilyMoney.Views"
+		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
+		x:DataType="vm:TransactionViewModel"		
+        x:Class="FamilyMoney.Views.TransactionWindow"
+        Title="Транзакция">
+	<Grid RowDefinitions="* auto">
+		<Grid ColumnDefinitions="auto *"
+			  RowDefinitions="auto auto"
+			  Margin="10"
+			  >
+			<TextBlock Text="Дата" VerticalAlignment="Center" />
+			<DatePicker Grid.Column="1" />
+		</Grid>
+
+		<StackPanel
+			Grid.Row="1"
+			Orientation="Horizontal"
+			HorizontalAlignment="Right"
+			Margin="0 5 0 10"
+			>
+			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+			<Button Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+		</StackPanel>
+	</Grid>
+</Window>

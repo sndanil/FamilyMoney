@@ -24,6 +24,7 @@ public partial class App : Application
         }
 
         SplatRegistrations.Register<AccountsViewModel>();
+        SplatRegistrations.Register<TransactionsViewModel>();
         SplatRegistrations.Register<MainWindowViewModel>();
 
         SplatRegistrations.SetupIOC();

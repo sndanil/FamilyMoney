@@ -79,7 +79,7 @@
 			<Setter Property="Background" Value="Transparent"/>
 		</Style>
 		<Style Selector="Button.BottomButton:disabled">
-			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="IsVisible" Value="False"/>
 		</Style>
 	</UserControl.Styles>
 	
@@ -207,10 +207,8 @@
 		</Border>
 
 		<Border Grid.Row="3"
-			Background="{DynamicResource ButtonBackground}"
 			Padding="5"
 			Height="35"
-			CornerRadius="12"
 			>			
 			<StackPanel Orientation="Horizontal">
 				<Button Command="{Binding AddGroupCommand}" 

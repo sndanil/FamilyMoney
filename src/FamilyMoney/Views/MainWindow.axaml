@@ -8,7 +8,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="FamilyMoney.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/wallet.ico"
 		WindowState="Maximized"
         Title="Семейные деньги">
 
@@ -59,16 +59,27 @@
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
 
-					<views:PeriodView Grid.ColumnSpan="3"
-									DataContext="{Binding Period}" 
-									HorizontalAlignment="Center"
-									Margin="0 5 0 0"/>
+					<StackPanel Orientation="Horizontal" Grid.Column="2"
+								Margin="10 0 0 0"
+								>
+						<Button Command="{Binding Transactions.AddDebetCommand}">Доход</Button>
+						<Button Command="{Binding Transactions.AddCreditCommand}">Расход</Button>
+						<Button Command="{Binding Transactions.AddTransferCommand}">Перевод</Button>
+
+						<views:PeriodView DataContext="{Binding Period}" 
+										  Margin="10 0 0 0"
+										  />
+					</StackPanel>
+
 
 					<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
 
 					<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
 
-					<views:TransactionsView Grid.Column="2" Grid.Row="1"/>
+					<views:TransactionsView Grid.Column="2" 
+											Grid.Row="1"
+											DataContext="{Binding Transactions}"
+											/>
 				</Grid>
 			</Border>
 		</SplitView.Content>

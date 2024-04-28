@@ -1,16 +1,12 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
-using SkiaSharp;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace FamilyMoney.Views;
 

@@ -21,7 +21,7 @@ public class AccountsViewModel : ViewModelBase
     private AccountViewModel? _selectedAccount = null;
     private AccountViewModel? _draggingAccount = null;
 
-    private IRepository _repository;
+    private readonly IRepository _repository;
 
     public ICommand AddGroupCommand { get; }
 
