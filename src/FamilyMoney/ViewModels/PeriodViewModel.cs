@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using FamilyMoney.Messages;
+using ReactiveUI;
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -172,7 +173,7 @@ public class PeriodViewModel: ViewModelBase
         {
             case PeriodType.Month:
                 From = From.AddMonths(direction);
-                To = From.AddMonths(direction).AddDays(-1);
+                To = From.AddMonths(Math.Abs(direction)).AddDays(-1);
                 break;
             case PeriodType.Quarter:
                 From = From.AddMonths(direction * 3);
@@ -180,15 +181,16 @@ public class PeriodViewModel: ViewModelBase
                 break;
             case PeriodType.Year:
                 From = From.AddYears(direction);
-                To = To.AddYears(direction);
+                To = To.AddYears(Math.Abs(direction));
                 break;
             case PeriodType.Custom:
                 var diff = (To - From).Days;
                 From = From.AddDays(direction * diff);
-                To = To.AddDays(direction * diff);
+                To = To.AddDays(Math.Abs(direction) * diff);
                 break;
         }
 
         this.RaisePropertyChanged(nameof(Text));
+        MessageBus.Current.SendMessage(new PeriodChangedMessage { From = From, To = To });
     }
 }

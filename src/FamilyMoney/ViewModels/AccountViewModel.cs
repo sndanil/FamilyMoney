@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Utils;
 using ReactiveUI;
 using Splat;
 using System;
@@ -126,12 +127,7 @@ public class AccountViewModel : ViewModelBase
 
         foreach (var account in Children)
         {
-            var imageStream = repository.TryGetImage(account.Id!.Value);
-            if (imageStream != null)
-            {
-                account.Image = Bitmap.DecodeToWidth(imageStream, 400);
-            }
-
+            account.Image = ImageConverter.ToImage(repository.TryGetImage(account.Id!.Value));
             account.AddFromAccount(repository, accounts);
         }
     }

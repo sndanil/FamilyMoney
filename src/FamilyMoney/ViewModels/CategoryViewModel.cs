@@ -3,7 +3,7 @@ using ReactiveUI;
 using System;
 namespace FamilyMoney.ViewModels;
 
-public class BaseCategoryViewModel : ViewModelBase
+public abstract class BaseCategoryViewModel : ViewModelBase
 {
     private Guid _id;
     private string _name = string.Empty;

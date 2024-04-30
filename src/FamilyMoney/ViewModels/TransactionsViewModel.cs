@@ -1,8 +1,15 @@
 ﻿using FamilyMoney.Csv;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
+using FamilyMoney.Models;
+using FamilyMoney.Utils;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
+using System.Security.Principal;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -32,27 +39,36 @@ public class TransactionsViewModel : ViewModelBase
     {
         _repository = repository;
 
+        MessageBus.Current.Listen<PeriodChangedMessage>()
+            .Where(p => p.To != DateTime.MinValue)
+            .Subscribe(x => RefreshTransactions(x));
+
         AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            (new CsvImporter()).DoImport(_repository);
+            //(new CsvImporter()).DoImport(_repository);
+            //return;
 
-            //var transaction = new TransactionViewModel 
-            //{ 
-            //    FlatAccounts = GetFlatAccouunts(),
-            //    Account = _mainWindowViewModel?.Accounts.SelectedAccount,
-            //};
-            //var result = await TransactionViewModel.ShowDialog.Handle(transaction);
-            //if (result != null)
-            //{
-            //}
+            var transaction = new DebetTransactionViewModel
+            {
+                FlatAccounts = GetFlatAccouunts(),
+                Account = _mainWindowViewModel?.Accounts.SelectedAccount,
+                Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+            };
+            var result = await TransactionViewModel.ShowDialog.Handle(transaction);
+            if (result != null)
+            {
+            }
         });
 
         AddCreditCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var transaction = new TransactionViewModel
+            var transaction = new CreditTransactionViewModel
             {
                 FlatAccounts = GetFlatAccouunts(),
                 Account = _mainWindowViewModel?.Accounts.SelectedAccount,
+                Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
             };
             var result = await TransactionViewModel.ShowDialog.Handle(transaction);
             if (result != null)
@@ -62,10 +78,12 @@ public class TransactionsViewModel : ViewModelBase
 
         AddTransferCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var transaction = new TransactionViewModel
+            var transaction = new TransferTransactionViewModel
             {
                 FlatAccounts = GetFlatAccouunts(),
                 Account = _mainWindowViewModel?.Accounts.SelectedAccount,
+                Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
             };
             var result = await TransactionViewModel.ShowDialog.Handle(transaction);
             if (result != null)
@@ -89,6 +107,35 @@ public class TransactionsViewModel : ViewModelBase
         DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
         {
         });
+    }
+
+    private void RefreshTransactions(PeriodChangedMessage message)
+    {
+        var transactions = _repository.GetTransactions(message.From, message.To);
+    }
+
+    private IList<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
+    {
+        var categories = _repository.GetCategroties().OfType<T>().OrderBy(c => c.Name).Select(c => new N
+        {
+            Id = c.Id,
+            Name = c.Name,
+            Image = ImageConverter.ToImage(_repository.TryGetImage(c.Id)),
+        });
+
+        return categories.Select(c => (BaseCategoryViewModel)c).ToList();
+    }
+
+    private IList<BaseSubCategoryViewModel> GetSubCategories<T, N>() where T : SubCategory where N : BaseSubCategoryViewModel, new()
+    { 
+        var subCategories = _repository.GetSubCategroties().OfType<T>().OrderBy(c => c.Name).Select(c => new N
+        {
+            Id = c.Id,
+            Name = c.Name,
+            CategoryId = c.CategoryId,
+        });
+
+        return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
     }
 
     private IList<AccountViewModel>? GetFlatAccouunts()

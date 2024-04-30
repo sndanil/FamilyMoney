@@ -26,7 +26,11 @@ public class BaseTransactionViewModel : ViewModelBase
 public class TransactionViewModel : BaseTransactionViewModel
 {
     private IList<AccountViewModel>? _flatAccounts;
+    private IList<BaseCategoryViewModel>? _categories;
+    private IList<BaseSubCategoryViewModel>? _subCategories;
     private string? _comment;
+    private BaseCategoryViewModel? _category;
+    private string? _subCategory;
     private DateTimeOffset? _date = DateTime.Today;
     private DateTime? _lastChanged = DateTime.Now;
 
@@ -57,10 +61,34 @@ public class TransactionViewModel : BaseTransactionViewModel
         set => this.RaiseAndSetIfChanged(ref _flatAccounts, value);
     }
 
+    public IList<BaseCategoryViewModel>? Categories
+    {
+        get => _categories;
+        set => this.RaiseAndSetIfChanged(ref _categories, value);
+    }
+
+    public IList<BaseSubCategoryViewModel>? SubCategories
+    {
+        get => _subCategories;
+        set => this.RaiseAndSetIfChanged(ref _subCategories, value);
+    }
+
+    public BaseCategoryViewModel? Category
+    {
+        get => _category;
+        set => this.RaiseAndSetIfChanged(ref _category, value);
+    }
+
     public string? Comment
     {
         get => _comment;
         set => this.RaiseAndSetIfChanged(ref _comment, value);
+    }
+
+    public string? SubCategory
+    {
+        get => _subCategory;
+        set => this.RaiseAndSetIfChanged(ref _subCategory, value);
     }
 
     public DateTimeOffset? Date
@@ -78,33 +106,12 @@ public class TransactionViewModel : BaseTransactionViewModel
 
 public class DebetTransactionViewModel : TransactionViewModel
 {
-    private DebetCategoryViewModel? _category;
-
-    public DebetCategoryViewModel? Category
-    {
-        get => _category;
-        set => this.RaiseAndSetIfChanged(ref _category, value);
-    }
 }
 
 public class CreditTransactionViewModel : TransactionViewModel
 {
-    private CreditCategoryViewModel? _category;
-
-    public CreditCategoryViewModel? Category
-    {
-        get => _category;
-        set => this.RaiseAndSetIfChanged(ref _category, value);
-    }
 }
 
-public class MoveTransactionViewModel : DebetTransactionViewModel
+public class TransferTransactionViewModel : DebetTransactionViewModel
 {
-    private CreditCategoryViewModel? _creditCategory;
-
-    public CreditCategoryViewModel? CreditCategory
-    {
-        get => _creditCategory;
-        set => this.RaiseAndSetIfChanged(ref _creditCategory, value);
-    }
 }

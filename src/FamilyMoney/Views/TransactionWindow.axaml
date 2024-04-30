@@ -3,10 +3,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-		Width="600" Height="400"
+		Width="600" Height="500"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
+		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:bh="using:FamilyMoney.Behaviours"
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
@@ -24,11 +26,12 @@
 	</Window.Resources>
 	<Grid RowDefinitions="* auto">
 		<Grid ColumnDefinitions="auto *"
-			  RowDefinitions="auto auto auto auto auto"
-			  Margin="15 30 5 0"
+			  RowDefinitions="auto auto auto auto auto auto"
+			  Margin="15 30 15 15"
 			  >
 			<TextBlock Text="Счёт" Classes="Label" />
 			<ComboBox Grid.Column="1"
+					  Name="AccountComboBox"
 					  SelectedItem="{Binding Account}"
 					  ItemsSource="{Binding FlatAccounts}"
 					  HorizontalAlignment="Stretch"
@@ -73,12 +76,50 @@
 						/>
 
 			<TextBlock Grid.Row="2" Text="Категория" Classes="Label" />
-			<ComboBox Grid.Row="2" Grid.Column="1" 
+			<ComboBox Grid.Row="2" Grid.Column="1"
+					  ItemsSource="{Binding Categories}"
+					  SelectedItem="{Binding Category}"
+					  Name="CategoryComboBox"
 					  HorizontalAlignment="Stretch"
-						/>
+					  Margin="0 10"
+						>
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal">
+							<Image Stretch="Uniform"
+									Width="50"
+									Source="{Binding Image}"
+									IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+					/>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
+						</StackPanel>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
 
-			<TextBlock Grid.Row="3" Text="Сумма" Classes="Label" />
-			<NumericUpDown Grid.Row="3" Grid.Column="1" 
+			<TextBlock Grid.Row="3" Text="Подкадегория" Classes="Label" />
+			<AutoCompleteBox Grid.Row="3" Grid.Column="1"
+						Text="{Binding SubCategory}"
+						IsTextCompletionEnabled="True"
+						Name="SubCategoryCompleteBox"
+						FilterMode="Custom"
+						Margin="0 10"
+						ItemsSource="{Binding SubCategories}"
+						Watermark="Стрелка вниз или F4 откроет выпадающий список">
+				<i:Interaction.Behaviors>
+					<bh:AutoCompleteZeroMinimumPrefixLengthDropdownBehaviour/>
+				</i:Interaction.Behaviors>
+				
+				<AutoCompleteBox.ItemTemplate>
+					<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
+						<TextBlock Text="{Binding Name}"/>
+					</DataTemplate>
+				</AutoCompleteBox.ItemTemplate>
+			</AutoCompleteBox>
+			
+			<TextBlock Grid.Row="4" Text="Сумма" Classes="Label" />
+			<NumericUpDown Grid.Row="4" Grid.Column="1" 
+						   Name="SumPicker"
 						   Value="{Binding Sum}" 
 						   FormatString="0.00"
 						   Increment="0.05" 
@@ -86,8 +127,9 @@
 							HorizontalAlignment="Stretch"
 						   />
 
-			<TextBlock Grid.Row="4" Text="Комментарий" Classes="Label" />
-			<TextBox Grid.Row="4" Grid.Column="1"
+			<TextBlock Grid.Row="5" Text="Комментарий" Classes="Label" />
+			<TextBox Grid.Row="5" Grid.Column="1"
+					 Margin="0 10"
 						   Text="{Binding Comment}"						   
 						   />
 		</Grid>
@@ -98,8 +140,8 @@
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"
 			>
-			<Button Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
-			<Button Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
 		</StackPanel>
 	</Grid>
 </Window>
