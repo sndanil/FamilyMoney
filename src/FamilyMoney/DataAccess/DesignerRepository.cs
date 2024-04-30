@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FamilyMoney.DataAccess
 {
@@ -20,6 +17,26 @@ namespace FamilyMoney.DataAccess
             return new [] { new Account { Name = "Тест", Id = Guid.NewGuid() } };
         }
 
+        public IEnumerable<Category> GetCategroties()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<SubCategory> GetSubCategroties()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InsertTransaction(Transaction transaction)
+        {
+            throw new NotImplementedException();
+        }
+
         public Stream? TryGetImage(Guid id)
         {
             return null;
@@ -29,8 +46,23 @@ namespace FamilyMoney.DataAccess
         {            
         }
 
+        public void UpdateCategroty(Category category)
+        {
+            throw new NotImplementedException();
+        }
+
         public void UpdateImage(Guid id, string fileName, Stream stream)
         {
+        }
+
+        public void UpdateSubCategroty(SubCategory subCategory)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateTransaction(Transaction transaction)
+        {
+            throw new NotImplementedException();
         }
     }
 }

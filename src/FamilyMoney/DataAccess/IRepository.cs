@@ -17,4 +17,16 @@ public interface IRepository
     IEnumerable<Account> GetAccounts();
     void UpdateAccount(Account account);
     void DeleteAccount(Guid id);
+
+    IEnumerable<Category> GetCategroties();
+    void UpdateCategroty(Category category);
+
+    IEnumerable<SubCategory> GetSubCategroties();
+    void UpdateSubCategroty(SubCategory subCategory);
+
+    IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to);
+    void UpdateTransaction(Transaction transaction);
+
+    void InsertTransaction(Transaction transaction);
+
 }
