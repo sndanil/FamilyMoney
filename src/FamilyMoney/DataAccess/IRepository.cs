@@ -27,6 +27,6 @@ public interface IRepository
     IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to);
     void UpdateTransaction(Transaction transaction);
 
-    void InsertTransaction(Transaction transaction);
+    void InsertTransactions(IEnumerable<Transaction> transactions);
 
 }

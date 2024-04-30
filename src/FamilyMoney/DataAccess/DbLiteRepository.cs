@@ -2,6 +2,7 @@
 using LiteDB;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -53,10 +54,7 @@ public class DbLiteRepository : IRepository
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Account>(nameof(Account));
-        if (!collection.Update(account))
-        {
-            collection.Insert(account);
-        }
+        collection.Upsert(account);
     }
 
     public void DeleteAccount(Guid id)
@@ -71,10 +69,7 @@ public class DbLiteRepository : IRepository
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Category>(nameof(Category));
-        if (!collection.Update(category))
-        {
-            collection.Insert(category);
-        }
+        collection.Upsert(category);
     }
 
     public IEnumerable<Category> GetCategroties()
@@ -95,33 +90,30 @@ public class DbLiteRepository : IRepository
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
-        if (!collection.Update(subCategory))
-        {
-            collection.Insert(subCategory);
-        }
+        collection.Upsert(subCategory);
     }
 
     public IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to)
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
-        return collection.Find(t => t.Date >= from && t.Date < to).ToList();
+
+        return collection.Find(t => t.Date >= from && t.Date < to)
+            .OrderBy(t => t.Date)
+            .ToList();
     }
 
     public void UpdateTransaction(Transaction transaction)
     {
         using var db = new LiteDatabase(_connectionStr);
-        var collection = db.GetCollection<Transaction>(nameof(transaction));
-        if (!collection.Update(transaction))
-        {
-            collection.Insert(transaction);
-        }
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+        collection.Upsert(transaction);
     }
 
-    public void InsertTransaction(Transaction transaction)
+    public void InsertTransactions(IEnumerable<Transaction> transactions)
     {
         using var db = new LiteDatabase(_connectionStr);
-        var collection = db.GetCollection<Transaction>(nameof(transaction));
-        collection.Insert(transaction);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+        collection.InsertBulk(transactions);
     }
 }

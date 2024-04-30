@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FamilyMoney.Csv
 {
@@ -26,6 +24,8 @@ namespace FamilyMoney.Csv
             var subCategories = repository.GetSubCategroties().ToList();
             var accounts = repository.GetAccounts().Where(a => !a.IsGroup).ToList();
 
+            var transactions = new List<Transaction>();
+
             using (var reader = new StreamReader("D:\\AlzexFinancePro\\Data\\export.csv"))
             using (var csv = new CsvReader(reader, config))
             {
@@ -36,7 +36,7 @@ namespace FamilyMoney.Csv
                     var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
 
                     Category? category = TryGetCategory(repository, categories, record, isTransfer, isCredit);
-                    SubCategory? subCategory = TryGetSubCategory(repository, subCategories, record, isTransfer, isCredit);
+                    SubCategory? subCategory = TryGetSubCategory(repository, category, subCategories, record, isTransfer, isCredit);
 
                     var creditAccount = TryGetAccount(repository, accounts, record.CreditAccount);
                     var debetAccount = TryGetAccount(repository, accounts, record.DebetAccount);
@@ -86,10 +86,11 @@ namespace FamilyMoney.Csv
                         };
                     }
 
-                    repository.UpdateTransaction(transaction);
+                    transactions.Add(transaction);
                 }
             }
 
+            repository.InsertTransactions(transactions);
         }
 
         private static Account? TryGetAccount(IRepository repository, List<Account> accounts, string? accountName)
@@ -159,7 +160,7 @@ namespace FamilyMoney.Csv
             return category;
         }
 
-        private SubCategory? TryGetSubCategory(IRepository repository, List<SubCategory> subCategories, ImportRow record, bool isTransfer, bool isCredit)
+        private SubCategory? TryGetSubCategory(IRepository repository, Category? category, List<SubCategory> subCategories, ImportRow record, bool isTransfer, bool isCredit)
         {
             SubCategory? subCategory = null;
             if (!string.IsNullOrEmpty(record.SubCategory))
@@ -170,6 +171,7 @@ namespace FamilyMoney.Csv
                     {
                         Id = Guid.NewGuid(),
                         Name = record.SubCategory,
+                        CategoryId = category?.Id,
                     };
                 }
                 else if (isCredit)
@@ -178,6 +180,7 @@ namespace FamilyMoney.Csv
                     {
                         Id = Guid.NewGuid(),
                         Name = record.SubCategory,
+                        CategoryId = category?.Id,
                     };
                 }
                 else
@@ -186,6 +189,7 @@ namespace FamilyMoney.Csv
                     {
                         Id = Guid.NewGuid(),
                         Name = record.SubCategory,
+                        CategoryId = category?.Id,
                     };
                 }
 

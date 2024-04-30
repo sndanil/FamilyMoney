@@ -32,7 +32,7 @@ namespace FamilyMoney.DataAccess
             throw new NotImplementedException();
         }
 
-        public void InsertTransaction(Transaction transaction)
+        public void InsertTransactions(IEnumerable<Transaction> transactions)
         {
             throw new NotImplementedException();
         }
