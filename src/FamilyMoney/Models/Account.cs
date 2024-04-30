@@ -2,9 +2,9 @@
 
 namespace FamilyMoney.Models;
 
-public class Account
+public sealed class Account
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 
     public Guid? ParentId { get; set; }
 

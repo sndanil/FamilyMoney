@@ -1,16 +1,11 @@
 ﻿using Avalonia.Media.Imaging;
 using FamilyMoney.DataAccess;
 using ReactiveUI;
-using Splat;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -128,7 +123,7 @@ public class AccountsViewModel : ViewModelBase
         {
             Name = "Всего",
             IsGroup = true,
-            Amount = 0,
+            Sum = 0,
         };
 
         var accounts = _repository!.GetAccounts();

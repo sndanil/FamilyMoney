@@ -22,6 +22,7 @@ public class MainWindowViewModel : ViewModelBase
 
         _accountsViewModel = accounts;
         _transactionsViewModel = transactionsViewModel;
+        _transactionsViewModel.MainWindowViewModel = this;
 
         _period = new PeriodViewModel 
         { 

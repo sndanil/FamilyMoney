@@ -20,7 +20,7 @@ namespace FamilyMoney.ViewModels;
 
 public class AccountViewModel : ViewModelBase
 {
-    private decimal _amount = 0;
+    private decimal _sum = 0;
     private Guid? _id = null;
     private AccountViewModel? _parent = null;
     private string _name = string.Empty;
@@ -37,10 +37,10 @@ public class AccountViewModel : ViewModelBase
 
     public static Interaction<AccountViewModel, AccountViewModel?> ShowDialog { get; } = new ();
 
-    public decimal Amount
+    public decimal Sum
     {
-        get => _amount;
-        set => this.RaiseAndSetIfChanged(ref _amount, value);
+        get => _sum;
+        set => this.RaiseAndSetIfChanged(ref _sum, value);
     }
 
     public Guid? Id

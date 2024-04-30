@@ -7,18 +7,89 @@
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
+		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
 		x:DataType="vm:TransactionViewModel"		
         x:Class="FamilyMoney.Views.TransactionWindow"
         Title="Транзакция">
+	<Window.Styles>
+		<Style Selector="TextBlock.Label">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="0 15 15 15" />
+		</Style>
+	</Window.Styles>
+	<Window.Resources>
+		<cv:IsNotAccountGroupConverterConverter x:Key="accountConverter" />
+	</Window.Resources>
 	<Grid RowDefinitions="* auto">
 		<Grid ColumnDefinitions="auto *"
-			  RowDefinitions="auto auto"
-			  Margin="10"
+			  RowDefinitions="auto auto auto auto auto"
+			  Margin="15 30 5 0"
 			  >
-			<TextBlock Text="Дата" VerticalAlignment="Center" />
-			<DatePicker Grid.Column="1" />
+			<TextBlock Text="Счёт" Classes="Label" />
+			<ComboBox Grid.Column="1"
+					  SelectedItem="{Binding Account}"
+					  ItemsSource="{Binding FlatAccounts}"
+					  HorizontalAlignment="Stretch"
+					  >
+				<ComboBox.Styles>
+					<Style Selector="ComboBoxItem">
+						<Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
+						<Setter Property="Padding" Value="0" />
+					</Style>
+					<Style Selector="Border.IsGroup">
+						<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+					</Style>
+				</ComboBox.Styles>
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<Border Padding="11 5 11 7"
+							Classes.IsGroup="{Binding IsGroup}"
+							>
+							<Grid ColumnDefinitions="* auto" Height="20"								  
+							  >
+								<StackPanel Orientation="Horizontal">
+									<Image Stretch="Uniform"
+										   Width="50"
+											Source="{Binding Image}"
+											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+							/>
+									<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
+								</StackPanel>
+								<TextBlock Grid.Column="1"
+										   Text="{Binding Sum, StringFormat=\{0:0.00\}}"
+										   VerticalAlignment="Center"
+									   />
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+
+			<TextBlock Grid.Row="1" Text="Дата" Classes="Label" />
+			<DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding Date}" 
+					  HorizontalAlignment="Stretch"
+						/>
+
+			<TextBlock Grid.Row="2" Text="Категория" Classes="Label" />
+			<ComboBox Grid.Row="2" Grid.Column="1" 
+					  HorizontalAlignment="Stretch"
+						/>
+
+			<TextBlock Grid.Row="3" Text="Сумма" Classes="Label" />
+			<NumericUpDown Grid.Row="3" Grid.Column="1" 
+						   Value="{Binding Sum}" 
+						   FormatString="0.00"
+						   Increment="0.05" 
+						   Height="20"
+							HorizontalAlignment="Stretch"
+						   />
+
+			<TextBlock Grid.Row="4" Text="Комментарий" Classes="Label" />
+			<TextBox Grid.Row="4" Grid.Column="1"
+						   Text="{Binding Comment}"						   
+						   />
 		</Grid>
 
 		<StackPanel

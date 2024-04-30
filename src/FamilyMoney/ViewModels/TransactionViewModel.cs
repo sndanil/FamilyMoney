@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 
 namespace FamilyMoney.ViewModels;
@@ -7,7 +8,7 @@ namespace FamilyMoney.ViewModels;
 public class BaseTransactionViewModel : ViewModelBase
 {
     private AccountViewModel? _account;
-    private decimal _amount = 0;
+    private decimal _sum = 0;
 
     public AccountViewModel? Account
     {
@@ -15,18 +16,19 @@ public class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _account, value);
     }
 
-    public decimal Amount
+    public decimal Sum
     {
-        get => _amount;
-        set => this.RaiseAndSetIfChanged(ref _amount, value);
+        get => _sum;
+        set => this.RaiseAndSetIfChanged(ref _sum, value);
     }
 }
 
 public class TransactionViewModel : BaseTransactionViewModel
 {
+    private IList<AccountViewModel>? _flatAccounts;
     private string? _comment;
-    private DateTime? _date;
-    private DateTime? _lastChanged;
+    private DateTimeOffset? _date = DateTime.Today;
+    private DateTime? _lastChanged = DateTime.Now;
 
     public ReactiveCommand<Unit, TransactionViewModel?> OkCommand { get; }
 
@@ -36,7 +38,7 @@ public class TransactionViewModel : BaseTransactionViewModel
 
     public TransactionViewModel()
     {
-        var canExecute = this.WhenAnyValue(x => x.Amount, x => x.Account, (amount, account) => amount != 0 && account != null);
+        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
         OkCommand = ReactiveCommand.Create(() =>
         {
             return (TransactionViewModel?)this;
@@ -49,13 +51,19 @@ public class TransactionViewModel : BaseTransactionViewModel
         });
     }
 
+    public IList<AccountViewModel>? FlatAccounts
+    {
+        get => _flatAccounts;
+        set => this.RaiseAndSetIfChanged(ref _flatAccounts, value);
+    }
+
     public string? Comment
     {
         get => _comment;
         set => this.RaiseAndSetIfChanged(ref _comment, value);
     }
 
-    public DateTime? Date
+    public DateTimeOffset? Date
     {
         get => _date;
         set => this.RaiseAndSetIfChanged(ref _date, value);

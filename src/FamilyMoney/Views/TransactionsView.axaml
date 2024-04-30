@@ -32,21 +32,21 @@
 		<Border Classes="Total" Height="30">
 			<Grid ColumnDefinitions="2* 100 200 *">
 				<TextBlock Classes="Title">Доходы</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Amount Debet">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" Classes="Sum Debet">1000,00</TextBlock>
 			</Grid>
 		</Border>
 
 		<Border Classes="Total" Height="30">
 			<Grid ColumnDefinitions="2* 100 200 *">
 				<TextBlock Classes="Title">Расходы</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Amount Credit">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" Classes="Sum Credit">1000,00</TextBlock>
 			</Grid>
 		</Border>
 
 		<Border Classes="Total" Height="30">
 			<Grid ColumnDefinitions="2* 100 200 *">
 				<TextBlock Classes="Title">Итог</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Amount Debet">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" Classes="Sum Debet">1000,00</TextBlock>
 			</Grid>
 		</Border>
 	</StackPanel>
