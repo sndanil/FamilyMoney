@@ -12,17 +12,32 @@ namespace FamilyMoney.DataAccess
             throw new NotImplementedException();
         }
 
+        public Account GetAccount(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Account> GetAccounts()
         {
             return new [] { new Account { Name = "Тест", Id = Guid.NewGuid() } };
         }
 
-        public IEnumerable<Category> GetCategroties()
+        public IEnumerable<Category> GetCategories()
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<SubCategory> GetSubCategroties()
+        public Category GetCategory(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<SubCategory> GetSubCategories()
+        {
+            throw new NotImplementedException();
+        }
+
+        public SubCategory GetSubCategory(Guid id)
         {
             throw new NotImplementedException();
         }

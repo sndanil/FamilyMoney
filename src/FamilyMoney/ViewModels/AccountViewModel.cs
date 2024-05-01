@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using ReactiveUI;
 using Splat;
@@ -36,7 +37,7 @@ public class AccountViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, AccountViewModel?> CancelCommand { get; }
 
-    public static Interaction<AccountViewModel, AccountViewModel?> ShowDialog { get; } = new ();
+    public static Interaction<AccountViewModel, AccountViewModel?> ShowDialog { get; } = new();
 
     public decimal Sum
     {
@@ -104,7 +105,7 @@ public class AccountViewModel : ViewModelBase
         OkCommand = ReactiveCommand.Create(() =>
         {
             return (AccountViewModel?)this;
-        }, 
+        },
         canExecute);
 
         CancelCommand = ReactiveCommand.Create(() =>
@@ -115,12 +116,13 @@ public class AccountViewModel : ViewModelBase
 
     public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
     {
-        var viewModels = accounts.Where(a => a.ParentId == Id).OrderBy(a => a.Order).Select(a => new AccountViewModel
+        var viewModels = accounts.Where(a => a.ParentId == Id).OrderBy(a => a.Order).Select(a =>
         {
-            Id = a.Id,
-            Name = a.Name,
-            IsGroup = a.IsGroup,
-            Parent = this,
+            var account = new AccountViewModel();
+            account.FillFrom(a, repository);
+            account.Parent = this;
+
+            return account;
         });
 
         Children.AddRange(viewModels);
@@ -132,5 +134,12 @@ public class AccountViewModel : ViewModelBase
         }
     }
 
+    public void FillFrom(Account account, IRepository repository)
+    {
+        Id = account.Id;
+        Name = account.Name;
+        IsGroup = account.IsGroup;
+        Image = ImageConverter.ToImage(repository.TryGetImage(account.Id));
+    }
 }
 

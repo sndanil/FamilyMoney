@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace FamilyMoney.Views
 {
-    public partial class TransactionWindow : ReactiveWindow<TransactionViewModel>
+    public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
     {
         private readonly Dictionary<char, char> _keyboard = new() 
         {

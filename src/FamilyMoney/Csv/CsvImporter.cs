@@ -20,8 +20,8 @@ namespace FamilyMoney.Csv
                 HasHeaderRecord = false,
             };
 
-            var categories = repository.GetCategroties().ToList();
-            var subCategories = repository.GetSubCategroties().ToList();
+            var categories = repository.GetCategories().ToList();
+            var subCategories = repository.GetSubCategories().ToList();
             var accounts = repository.GetAccounts().Where(a => !a.IsGroup).ToList();
 
             var transactions = new List<Transaction>();

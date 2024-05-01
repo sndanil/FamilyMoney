@@ -12,7 +12,7 @@
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
-		x:DataType="vm:TransactionViewModel"		
+		x:DataType="vm:BaseTransactionViewModel"		
         x:Class="FamilyMoney.Views.TransactionWindow"
         Title="Транзакция">
 	<Window.Styles>

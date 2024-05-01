@@ -7,13 +7,25 @@
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsViewModel"
              x:Class="FamilyMoney.Views.TransactionsView">
+	<UserControl.Styles>
+		<Style Selector="TextBlock.Sum">
+			<Setter Property="HorizontalAlignment" Value="Right" />
+			<Setter Property="Margin" Value="0 0 4 0" />
+		</Style>
+		<Style Selector="TextBlock.Debet">
+			<Setter Property="Foreground" Value="Green" />
+		</Style>
+	</UserControl.Styles>
 	<StackPanel>
 		<Border Background="{DynamicResource SystemRegionBrush}"
 				CornerRadius="5"
 				>
-			<Grid
-				  ColumnDefinitions="2* 100 200 *"
-				  RowDefinitions="auto">
+			<Grid RowDefinitions="auto">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="100" />
+					<ColumnDefinition Width="200" />
+				</Grid.ColumnDefinitions>
 				<Border Classes="LikeGridHeader">
 					<TextBlock>Категория</TextBlock>
 				</Border>
@@ -23,23 +35,96 @@
 				<Border Grid.Column="2" Classes="LikeGridHeader">
 					<TextBlock>Сумма</TextBlock>
 				</Border>
-				<Border Grid.Column="3" Classes="LikeGridHeader">
-					<TextBlock>Комментарий</TextBlock>
-				</Border>
 			</Grid>
 		</Border>
 
 		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="2* 100 200 *">
+			<Grid ColumnDefinitions="* 100 200">
 				<TextBlock Classes="Title">Доходы</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Debet">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" 
+						   Classes="Sum Debet" 
+						   Text="{Binding DebetTransactions.Sum}"
+						   />
 			</Grid>
 		</Border>
+
+		<ItemsControl ItemsSource="{Binding DebetTransactions.Categories}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<StackPanel>
+						<Grid RowDefinitions="auto">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="100" />
+								<ColumnDefinition Width="200" />
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="{Binding Category.Name}" />
+							<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
+						</Grid>
+						
+						<ItemsControl ItemsSource="{Binding SubCategories}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Vertical" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<StackPanel>
+										<Grid RowDefinitions="auto">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition SharedSizeGroup="Date" />
+												<ColumnDefinition SharedSizeGroup="Sum" />
+											</Grid.ColumnDefinitions>
+											<TextBlock Margin="50 0 0 0" Text="{Binding SubCategory.Name}" />
+											<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
+										</Grid>
+
+										<ItemsControl ItemsSource="{Binding Transactions}">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Vertical" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Grid RowDefinitions="auto">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*" />
+															<ColumnDefinition Width="100" />
+															<ColumnDefinition Width="200" />
+														</Grid.ColumnDefinitions>
+														<TextBlock Margin="100 0 0 0" Text="{Binding Comment}" />
+														<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+														<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>					
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 
 		<Border Classes="Total" Height="30">
 			<Grid ColumnDefinitions="2* 100 200 *">
 				<TextBlock Classes="Title">Расходы</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Credit">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" Classes="Sum Credit"
+						   Text="{Binding CreditTransactions.Sum}"
+						   />
 			</Grid>
 		</Border>
 

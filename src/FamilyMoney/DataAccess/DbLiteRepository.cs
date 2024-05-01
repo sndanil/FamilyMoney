@@ -43,6 +43,13 @@ public class DbLiteRepository : IRepository
         return null;
     }
 
+    public Account GetAccount(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Account>(nameof(Account));
+        return collection.FindOne(c => c.Id == id);
+    }
+
     public IEnumerable<Account> GetAccounts()
     {
         using var db = new LiteDatabase(_connectionStr);
@@ -72,14 +79,28 @@ public class DbLiteRepository : IRepository
         collection.Upsert(category);
     }
 
-    public IEnumerable<Category> GetCategroties()
+    public Category GetCategory(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Category>(nameof(Category));
+        return collection.FindOne(c => c.Id == id);
+    }
+
+    public IEnumerable<Category> GetCategories()
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Category>(nameof(Category));
         return collection.FindAll().ToList();
     }
 
-    public IEnumerable<SubCategory> GetSubCategroties()
+    public SubCategory GetSubCategory(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
+        return collection.FindOne(c => c.Id == id);
+    }
+
+    public IEnumerable<SubCategory> GetSubCategories()
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
@@ -98,7 +119,7 @@ public class DbLiteRepository : IRepository
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
-        return collection.Find(t => t.Date >= from && t.Date < to)
+        return collection.Find(t => t.Date >= from && t.Date <= to)
             .OrderBy(t => t.Date)
             .ToList();
     }

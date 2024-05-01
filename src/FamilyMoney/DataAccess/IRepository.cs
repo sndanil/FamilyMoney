@@ -14,14 +14,17 @@ public interface IRepository
 
     Stream? TryGetImage(Guid id);
 
+    Account GetAccount(Guid id);
     IEnumerable<Account> GetAccounts();
     void UpdateAccount(Account account);
     void DeleteAccount(Guid id);
 
-    IEnumerable<Category> GetCategroties();
+    Category GetCategory(Guid id);
+    IEnumerable<Category> GetCategories();
     void UpdateCategroty(Category category);
 
-    IEnumerable<SubCategory> GetSubCategroties();
+    SubCategory GetSubCategory(Guid id);
+    IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategroty(SubCategory subCategory);
 
     IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to);

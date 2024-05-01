@@ -1,4 +1,7 @@
 ﻿using Avalonia.Media;
+using FamilyMoney.DataAccess;
+using FamilyMoney.Models;
+using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
 namespace FamilyMoney.ViewModels;
@@ -25,6 +28,19 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
     {
         get => _name;
         set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
+
+    public void FillFrom(Guid id, IRepository repository)
+    {
+        var subCategory = repository.GetSubCategory(id);
+        FillFrom(subCategory, repository);
+    }
+
+    public void FillFrom(SubCategory subCategory, IRepository repository)
+    {
+        Id = subCategory.Id;
+        Name = subCategory.Name;
+        CategoryId = subCategory.CategoryId;
     }
 }
 

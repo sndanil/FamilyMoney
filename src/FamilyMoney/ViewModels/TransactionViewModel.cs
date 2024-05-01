@@ -1,14 +1,39 @@
-﻿using ReactiveUI;
+﻿using FamilyMoney.DataAccess;
+using FamilyMoney.Models;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace FamilyMoney.ViewModels;
 
-public class BaseTransactionViewModel : ViewModelBase
+public abstract class BaseTransactionViewModel : ViewModelBase
 {
+    private Guid _id;
     private AccountViewModel? _account;
     private decimal _sum = 0;
+    private IList<AccountViewModel>? _flatAccounts;
+    private IList<BaseCategoryViewModel>? _categories;
+    private IList<BaseSubCategoryViewModel>? _subCategories;
+    private string? _comment;
+    private BaseCategoryViewModel? _category;
+    private string? _subCategory;
+    private DateTimeOffset? _date = DateTime.Today;
+    private DateTime? _lastChange = DateTime.Now;
+
+    public ReactiveCommand<Unit, BaseTransactionViewModel?> OkCommand { get; }
+
+    public ReactiveCommand<Unit, BaseTransactionViewModel?> CancelCommand { get; }
+
+    public static Interaction<BaseTransactionViewModel, BaseTransactionViewModel?> ShowDialog { get; } = new();
+
+    public Guid Id
+    {
+        get => _id;
+        set => this.RaiseAndSetIfChanged(ref _id, value);
+    }
 
     public AccountViewModel? Account
     {
@@ -21,37 +46,19 @@ public class BaseTransactionViewModel : ViewModelBase
         get => _sum;
         set => this.RaiseAndSetIfChanged(ref _sum, value);
     }
-}
 
-public class TransactionViewModel : BaseTransactionViewModel
-{
-    private IList<AccountViewModel>? _flatAccounts;
-    private IList<BaseCategoryViewModel>? _categories;
-    private IList<BaseSubCategoryViewModel>? _subCategories;
-    private string? _comment;
-    private BaseCategoryViewModel? _category;
-    private string? _subCategory;
-    private DateTimeOffset? _date = DateTime.Today;
-    private DateTime? _lastChanged = DateTime.Now;
-
-    public ReactiveCommand<Unit, TransactionViewModel?> OkCommand { get; }
-
-    public ReactiveCommand<Unit, TransactionViewModel?> CancelCommand { get; }
-
-    public static Interaction<TransactionViewModel, TransactionViewModel?> ShowDialog { get; } = new();
-
-    public TransactionViewModel()
+    public BaseTransactionViewModel()
     {
         var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
         OkCommand = ReactiveCommand.Create(() =>
         {
-            return (TransactionViewModel?)this;
+            return (BaseTransactionViewModel?)this;
         },
         canExecute);
 
         CancelCommand = ReactiveCommand.Create(() =>
         {
-            return (TransactionViewModel?)null;
+            return (BaseTransactionViewModel?)null;
         });
     }
 
@@ -97,18 +104,29 @@ public class TransactionViewModel : BaseTransactionViewModel
         set => this.RaiseAndSetIfChanged(ref _date, value);
     }
 
-    public DateTime? LastChanged
+    public DateTime? LastChange
     {
-        get => _lastChanged;
-        set => this.RaiseAndSetIfChanged(ref _lastChanged, value);
+        get => _lastChange;
+        set => this.RaiseAndSetIfChanged(ref _lastChange, value);
+    }
+
+    public virtual void FillFrom(Transaction transaction, IRepository repository)
+    {
+        Id = transaction.Id;
+        Sum = transaction.Sum;
+        Date = transaction.Date;
+        LastChange = transaction.LastChange;
+        Comment = transaction.Comment;
+        //Account = new AccountViewModel();
+        //Account.FillFrom(repository.GetAccount(transaction.AccountId!.Value), repository);
     }
 }
 
-public class DebetTransactionViewModel : TransactionViewModel
+public class DebetTransactionViewModel : BaseTransactionViewModel
 {
 }
 
-public class CreditTransactionViewModel : TransactionViewModel
+public class CreditTransactionViewModel : BaseTransactionViewModel
 {
 }
 
