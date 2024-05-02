@@ -23,6 +23,7 @@ namespace FamilyMoney.Csv
             var categories = repository.GetCategories().ToList();
             var subCategories = repository.GetSubCategories().ToList();
             var accounts = repository.GetAccounts().Where(a => !a.IsGroup).ToList();
+            //var accountGroups = repository.GetAccounts().Where(a => a.IsGroup).ToList();
 
             var transactions = new List<Transaction>();
 
@@ -30,7 +31,7 @@ namespace FamilyMoney.Csv
             using (var csv = new CsvReader(reader, config))
             {
                 var records = csv.GetRecords<ImportRow>().ToList();
-                foreach (var record in records)
+                foreach (var record in records.Where(r => r.Sum != 0))
                 {
                     var isTransfer = record.Sum < 0 && !string.IsNullOrEmpty(record.DebetAccount);
                     var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
@@ -91,6 +92,17 @@ namespace FamilyMoney.Csv
             }
 
             repository.InsertTransactions(transactions);
+
+            foreach(var account in accounts)
+            {
+                var debetSum = transactions.OfType<DebetTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                var debetTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.ToAccountId == account.Id).Sum(a => a.Sum);
+                var creditSum = transactions.OfType<CreditTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                var creditTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                account.Sum = debetSum + debetTransferSum - creditSum - creditTransferSum;
+
+                repository.UpdateAccount(account);
+            }
         }
 
         private static Account? TryGetAccount(IRepository repository, List<Account> accounts, string? accountName)
