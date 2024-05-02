@@ -1,4 +1,5 @@
 ﻿using DynamicData;
+using FamilyMoney.Csv;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -18,7 +19,7 @@ public class TransactionsViewModel : ViewModelBase
     private readonly IRepository _repository;
     private MainWindowViewModel? _mainWindowViewModel;
 
-    private TransactionsGroup _debetTransactions = new ();
+    private TransactionsGroup _debetTransactions = new();
     private TransactionsGroup _creditTransactions = new();
     private TransactionsGroup _transferTransactions = new();
 
@@ -48,10 +49,10 @@ public class TransactionsViewModel : ViewModelBase
 
     public ICommand DeleteCommand { get; }
 
-    public MainWindowViewModel? MainWindowViewModel 
-    { 
-        get => _mainWindowViewModel; 
-        set => this.RaiseAndSetIfChanged(ref _mainWindowViewModel, value); 
+    public MainWindowViewModel? MainWindowViewModel
+    {
+        get => _mainWindowViewModel;
+        set => this.RaiseAndSetIfChanged(ref _mainWindowViewModel, value);
     }
 
     public TransactionsViewModel(IRepository repository)
@@ -64,8 +65,8 @@ public class TransactionsViewModel : ViewModelBase
 
         AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            //(new CsvImporter()).DoImport(_repository);
-            //return;
+            (new CsvImporter()).DoImport(_repository);
+            return;
 
             var transaction = new DebetTransactionViewModel
             {
@@ -135,35 +136,54 @@ public class TransactionsViewModel : ViewModelBase
         var debetTransactions = new List<CategoryTransactionsGroupViewModel>();
         var creditTransactions = new List<CategoryTransactionsGroupViewModel>();
         var transferTransactions = new List<CategoryTransactionsGroupViewModel>();
-        
+
         foreach (var transaction in transactions)
         {
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel, DebetTransactionViewModel>(debetTransactions, transaction);
+                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel, TransactionGroupViewModel>(debetTransactions, transaction);
             }
             else if (transaction is CreditTransaction)
             {
-                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel, CreditTransactionViewModel>(creditTransactions, transaction);
+                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel, TransactionGroupViewModel>(creditTransactions, transaction);
             }
             else
             {
-                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel, TransferTransactionViewModel>(transferTransactions, transaction);
+                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel, TransactionGroupViewModel>(transferTransactions, transaction);
             }
         }
 
         DebetTransactions = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum) };
+        CalcPercents(DebetTransactions.Sum, debetTransactions);
         DebetTransactions.Categories.AddRange(debetTransactions);
 
         CreditTransactions = new TransactionsGroup { Sum = creditTransactions.Sum(t => t.Sum) };
+        CalcPercents(CreditTransactions.Sum, creditTransactions);
         CreditTransactions.Categories.AddRange(creditTransactions);
 
         TransferTransactions = new TransactionsGroup { Sum = transferTransactions.Sum(t => t.Sum) };
+        CalcPercents(TransferTransactions.Sum, transferTransactions);
         TransferTransactions.Categories.AddRange(transferTransactions);
     }
 
+    private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)
+    {
+        foreach (var category in categories)
+        {
+            category.Percent = Math.Round(category.Sum / sum, 2, MidpointRounding.AwayFromZero);
+            foreach (var subCategory in category.SubCategories)
+            {
+                subCategory.Percent = Math.Round(subCategory.Sum / sum, 2, MidpointRounding.AwayFromZero);
+                foreach (var transaction in subCategory.Transactions)
+                {
+                    transaction.Percent = Math.Round(transaction.Sum / sum, 2, MidpointRounding.AwayFromZero);
+                }
+            }
+        }
+    }
+
     private void FillTransactions<C, S, T>(List<CategoryTransactionsGroupViewModel> transactions, Transaction transaction) 
-        where C: BaseCategoryViewModel, new() where S: BaseSubCategoryViewModel, new() where T: BaseTransactionViewModel, new()
+        where C: BaseCategoryViewModel, new() where S: BaseSubCategoryViewModel, new() where T: TransactionGroupViewModel, new()
     {
         var category = transactions.FirstOrDefault(t => t.Category?.Id == transaction.CategoryId);
         if (category == null)
@@ -193,8 +213,13 @@ public class TransactionsViewModel : ViewModelBase
         }
         subCategory.Sum += transaction.Sum;
 
-        var viewTransaction = new T();
-        viewTransaction.FillFrom(transaction, _repository);
+        var viewTransaction = new T()
+        {
+            Id = transaction.Id,
+            Date = transaction.Date,
+            Comment = transaction.Comment,
+            Sum = transaction.Sum,
+        };
 
         subCategory.Transactions.Add(viewTransaction);
     }

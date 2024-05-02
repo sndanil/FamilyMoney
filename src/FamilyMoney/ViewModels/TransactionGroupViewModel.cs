@@ -1,5 +1,7 @@
 ﻿using ReactiveUI;
+using System;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
@@ -24,6 +26,7 @@ public sealed class TransactionsGroup: ViewModelBase
 public class BaseTransactionsGroupViewModel : ViewModelBase
 {
     private decimal _sum = 0;
+    private decimal _percent = 0;
     private bool _isExpanded = false;
 
     public decimal Sum
@@ -32,10 +35,51 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _sum, value);
     }
 
+    public decimal Percent
+    {
+        get => _percent;
+        set => this.RaiseAndSetIfChanged(ref _percent, value);
+    }
+
     public bool IsExpanded
     {
         get => _isExpanded;
         set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+    }
+
+    public ICommand ToggleExpand { get; }
+
+    public BaseTransactionsGroupViewModel()
+    {
+        ToggleExpand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            IsExpanded = !IsExpanded;
+        });
+    }
+}
+
+public class TransactionGroupViewModel : BaseTransactionsGroupViewModel
+{
+    private Guid _id;
+    private string? _comment;
+    private DateTime _date;
+
+    public Guid Id
+    {
+        get => _id;
+        set => this.RaiseAndSetIfChanged(ref _id, value);
+    }
+
+    public string? Comment
+    {
+        get => _comment;
+        set => this.RaiseAndSetIfChanged(ref _comment, value);
+    }
+
+    public DateTime Date
+    {
+        get => _date;
+        set => this.RaiseAndSetIfChanged(ref _date, value);
     }
 }
 
@@ -60,7 +104,7 @@ public class CategoryTransactionsGroupViewModel : BaseTransactionsGroupViewModel
 public class SubCategoryTransactionsGroupViewModel : BaseTransactionsGroupViewModel
 {
     private BaseSubCategoryViewModel? _subCategory;
-    private ObservableCollection<BaseTransactionViewModel> _transactions = new ();
+    private ObservableCollection<TransactionGroupViewModel> _transactions = new ();
 
     public BaseSubCategoryViewModel? SubCategory
     {
@@ -68,7 +112,7 @@ public class SubCategoryTransactionsGroupViewModel : BaseTransactionsGroupViewMo
         set => this.RaiseAndSetIfChanged(ref _subCategory, value);
     }
 
-    public ObservableCollection<BaseTransactionViewModel> Transactions
+    public ObservableCollection<TransactionGroupViewModel> Transactions
     {
         get => _transactions;
         set => this.RaiseAndSetIfChanged(ref _transactions, value);

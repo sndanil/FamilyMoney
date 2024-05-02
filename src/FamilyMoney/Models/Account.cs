@@ -13,5 +13,7 @@ public sealed class Account
     public int Order { get; set; }
 
     public bool IsGroup { get; set; }
+
+    public decimal Sum { get; set; }
 }
 

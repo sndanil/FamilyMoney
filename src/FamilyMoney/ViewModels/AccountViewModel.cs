@@ -138,6 +138,7 @@ public class AccountViewModel : ViewModelBase
     {
         Id = account.Id;
         Name = account.Name;
+        Sum = account.Sum;
         IsGroup = account.IsGroup;
         Image = ImageConverter.ToImage(repository.TryGetImage(account.Id));
     }

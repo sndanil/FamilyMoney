@@ -3,29 +3,105 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsViewModel"
              x:Class="FamilyMoney.Views.TransactionsView">
 	<UserControl.Styles>
-		<Style Selector="TextBlock.Sum">
+		<Style Selector="Button.Expander">
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Height" Value="22" />
+			<Setter Property="Width" Value="22" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="PathIcon">
+			<Setter Property="Height" Value="10" />
+			<Setter Property="Width" Value="10" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.LikeGridHeader">
+			<Setter Property="Height" Value="28" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="0 0 1 0" />
+		</Style>
+		<Style Selector="Border.LikeGridHeader TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource SystemBaseMediumColor}" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Header">
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="CornerRadius" Value="5" />
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.Header Grid">
+			<Setter Property="Margin" Value="10 0" />
+		</Style>
+		<Style Selector="Border.Total">
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="CornerRadius" Value="5" />
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.Total Grid">
+			<Setter Property="Margin" Value="10 0" />
+		</Style>
+		<Style Selector="Border.Category">
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Margin" Value="10 1" />
+			<Setter Property="CornerRadius" Value="1" />
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.Category:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+		</Style>
+		<Style Selector="Border.Category Grid">
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Total TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Total TextBlock.Title">
+			<Setter Property="Margin" Value="5 0 0 0" />
+		</Style>
+		<Style Selector="Border.Total TextBlock.Sum">
 			<Setter Property="HorizontalAlignment" Value="Right" />
+			<Setter Property="Margin" Value="0 0 4 0" />
+		</Style>
+		<Style Selector="Border.Total TextBlock.Debet">
+			<Setter Property="Foreground" Value="Green" />
+		</Style>
+		<Style Selector="Border.Total TextBlock.Credit">
+			<Setter Property="Foreground" Value="Red" />
+		</Style>
+		<Style Selector="TextBlock.Sum">
+			<Setter Property="FontFamily" Value="Verdana" />
+			<Setter Property="HorizontalAlignment" Value="Right" />
+			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="TextBlock.Debet">
 			<Setter Property="Foreground" Value="Green" />
 		</Style>
+		<Style Selector="TextBlock.Name">
+			<Setter Property="Margin" Value="10 0 0 0" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
 	</UserControl.Styles>
 	<StackPanel>
-		<Border Background="{DynamicResource SystemRegionBrush}"
-				CornerRadius="5"
-				>
-			<Grid RowDefinitions="auto">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="100" />
-					<ColumnDefinition Width="200" />
-				</Grid.ColumnDefinitions>
+		<Border Classes="Header">
+			<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
 				<Border Classes="LikeGridHeader">
 					<TextBlock>Категория</TextBlock>
 				</Border>
@@ -35,15 +111,18 @@
 				<Border Grid.Column="2" Classes="LikeGridHeader">
 					<TextBlock>Сумма</TextBlock>
 				</Border>
+				<Border Grid.Column="3" Classes="LikeGridHeader" BorderThickness="0">
+					<TextBlock>%</TextBlock>
+				</Border>
 			</Grid>
 		</Border>
 
 		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="* 100 200">
+			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Доходы</TextBlock>
 				<TextBlock Grid.Column="2" 
 						   Classes="Sum Debet" 
-						   Text="{Binding DebetTransactions.Sum}"
+						   Text="{Binding DebetTransactions.Sum, StringFormat=C}"
 						   />
 			</Grid>
 		</Border>
@@ -58,17 +137,25 @@
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
 					<StackPanel>
-						<Grid RowDefinitions="auto">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*" />
-								<ColumnDefinition Width="100" />
-								<ColumnDefinition Width="200" />
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="{Binding Category.Name}" />
-							<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
-						</Grid>
+						<Border Classes="Category">
+							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+								<Button Classes="Expander" Command="{Binding ToggleExpand}">
+									<Grid>
+										<PathIcon Data="{StaticResource ChevronDown}" 
+												  IsVisible="{Binding IsExpanded}" />
+										<PathIcon Data="{StaticResource ChevronRight}" 
+												  IsVisible="{Binding !IsExpanded}" />
+									</Grid>
+								</Button>
+								<TextBlock Classes="Name" Grid.Column="1" Text="{Binding Category.Name}" />
+								<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+								<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+							</Grid>
+						</Border>
 						
-						<ItemsControl ItemsSource="{Binding SubCategories}">
+						<ItemsControl Margin="50 0 0 0" 
+									  IsVisible="{Binding IsExpanded}"
+									  ItemsSource="{Binding SubCategories}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Vertical" />
@@ -78,17 +165,25 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<StackPanel>
-										<Grid RowDefinitions="auto">
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="*" />
-												<ColumnDefinition SharedSizeGroup="Date" />
-												<ColumnDefinition SharedSizeGroup="Sum" />
-											</Grid.ColumnDefinitions>
-											<TextBlock Margin="50 0 0 0" Text="{Binding SubCategory.Name}" />
-											<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
-										</Grid>
+										<Border Classes="Category">
+											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+												<Button Classes="Expander" Command="{Binding ToggleExpand}">
+													<Grid>
+														<PathIcon Data="{StaticResource ChevronDown}" 
+																  IsVisible="{Binding IsExpanded}" />
+														<PathIcon Data="{StaticResource ChevronRight}" 
+																  IsVisible="{Binding !IsExpanded}" />
+													</Grid>
+												</Button>
+												<TextBlock Classes="Name" Grid.Column="1" Text="{Binding SubCategory.Name}" />
+												<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+												<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+											</Grid>
+										</Border>
 
-										<ItemsControl ItemsSource="{Binding Transactions}">
+										<ItemsControl Margin="50 0 0 0" 
+													  IsVisible="{Binding IsExpanded}"
+													  ItemsSource="{Binding Transactions}">
 											<ItemsControl.ItemsPanel>
 												<ItemsPanelTemplate>
 													<StackPanel Orientation="Vertical" />
@@ -97,16 +192,14 @@
 
 											<ItemsControl.ItemTemplate>
 												<DataTemplate>
-													<Grid RowDefinitions="auto">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="*" />
-															<ColumnDefinition Width="100" />
-															<ColumnDefinition Width="200" />
-														</Grid.ColumnDefinitions>
-														<TextBlock Margin="100 0 0 0" Text="{Binding Comment}" />
-														<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-														<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum}" />
-													</Grid>
+													<Border Classes="Category">
+														<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
+															<TextBlock Classes="Name" Text="{Binding Comment}" />
+															<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+															<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+															<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+														</Grid>
+													</Border>
 												</DataTemplate>
 											</ItemsControl.ItemTemplate>
 										</ItemsControl>
@@ -120,18 +213,105 @@
 		</ItemsControl>
 
 		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="2* 100 200 *">
+			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Расходы</TextBlock>
 				<TextBlock Grid.Column="2" Classes="Sum Credit"
-						   Text="{Binding CreditTransactions.Sum}"
+						   Text="{Binding CreditTransactions.Sum, StringFormat=C}"
 						   />
 			</Grid>
 		</Border>
 
+		<ItemsControl ItemsSource="{Binding CreditTransactions.Categories}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<StackPanel>
+						<Border Classes="Category">
+							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+								<Button Classes="Expander" Command="{Binding ToggleExpand}">
+									<Grid>
+										<PathIcon Data="{StaticResource ChevronDown}" 
+												  IsVisible="{Binding IsExpanded}" />
+										<PathIcon Data="{StaticResource ChevronRight}" 
+												  IsVisible="{Binding !IsExpanded}" />
+									</Grid>
+								</Button>
+								<TextBlock Classes="Name" Grid.Column="1" Text="{Binding Category.Name}" />
+								<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+								<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+							</Grid>
+						</Border>
+						
+						<ItemsControl Margin="50 0 0 0" 
+									  IsVisible="{Binding IsExpanded}"
+									  ItemsSource="{Binding SubCategories}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Vertical" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<StackPanel>
+										<Border Classes="Category">
+											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+												<Button Classes="Expander" Command="{Binding ToggleExpand}">
+													<Grid>
+														<PathIcon Data="{StaticResource ChevronDown}" 
+																  IsVisible="{Binding IsExpanded}" />
+														<PathIcon Data="{StaticResource ChevronRight}" 
+																  IsVisible="{Binding !IsExpanded}" />
+													</Grid>
+												</Button>
+												<TextBlock Classes="Name" Grid.Column="1" Text="{Binding SubCategory.Name}" />
+												<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+												<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+											</Grid>
+										</Border>
+
+										<ItemsControl Margin="50 0 0 0" 
+													  IsVisible="{Binding IsExpanded}"
+													  ItemsSource="{Binding Transactions}">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Vertical" />
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Border Classes="Category">
+														<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
+															<TextBlock Classes="Name" Text="{Binding Comment}" />
+															<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+															<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
+															<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
+														</Grid>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>					
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+
 		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="2* 100 200 *">
+			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Debet">1000,00</TextBlock>
+				<TextBlock Grid.Column="2" Classes="Sum Debet" 
+						   Text="{Binding TransferTransactions.Sum, StringFormat=C}"
+						/>
 			</Grid>
 		</Border>
 	</StackPanel>
