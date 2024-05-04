@@ -23,5 +23,13 @@ namespace FamilyMoney.Csv
         public string? SubCategory { get; set; }
         [Index(6)]
         public string? Comment { get; set; }
+        [Index(7)]
+        public decimal? CreditSum { get; set; }
+        [Index(8)]
+        public decimal? DebetSum { get; set; }
+        [Index(9)]
+        public string? Accounts { get; set; }
+        [Index(10)]
+        public string? Id { get; set; }
     }
 }
