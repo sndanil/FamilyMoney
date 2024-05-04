@@ -7,8 +7,15 @@ namespace FamilyMoney.ViewModels;
 
 public sealed class TransactionsGroup: ViewModelBase
 {
+    private bool _isDebet = false;
     private decimal _sum = 0;
     private ObservableCollection<CategoryTransactionsGroupViewModel> _categories = new();
+
+    public bool IsDebet
+    {
+        get => _isDebet;
+        set => this.RaiseAndSetIfChanged(ref _isDebet, value);
+    }
 
     public decimal Sum
     {
@@ -25,9 +32,16 @@ public sealed class TransactionsGroup: ViewModelBase
 
 public class BaseTransactionsGroupViewModel : ViewModelBase
 {
+    private bool _isDebet = false;
     private decimal _sum = 0;
     private decimal _percent = 0;
     private bool _isExpanded = false;
+
+    public bool IsDebet
+    {
+        get => _isDebet;
+        set => this.RaiseAndSetIfChanged(ref _isDebet, value);
+    }
 
     public decimal Sum
     {

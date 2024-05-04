@@ -99,7 +99,7 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 	</UserControl.Styles>
-	<StackPanel>
+	<Grid RowDefinitions="auto * auto">
 		<Border Classes="Header">
 			<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
 				<Border Classes="LikeGridHeader">
@@ -117,203 +117,54 @@
 			</Grid>
 		</Border>
 
-		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="* 100 200 100">
-				<TextBlock Classes="Title">Доходы</TextBlock>
-				<TextBlock Grid.Column="2" 
-						   Classes="Sum Debet" 
-						   Text="{Binding DebetTransactions.Sum, StringFormat=C}"
+		<ScrollViewer Grid.Row="1">
+			<StackPanel>
+				<Border Classes="Total" Height="30">
+					<Grid ColumnDefinitions="* 100 200 100">
+						<TextBlock Classes="Title">Доходы</TextBlock>
+						<TextBlock Grid.Column="2"
+								   Classes="Sum Debet"
+								   Text="{Binding DebetTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
-			</Grid>
-		</Border>
+					</Grid>
+				</Border>
 
-		<ItemsControl ItemsSource="{Binding DebetTransactions.Categories}">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" />
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
+				<views:TransactionsTreeControl DataContext="{Binding DebetTransactions}" />
 
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<StackPanel>
-						<Border Classes="Category">
-							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
-								<Button Classes="Expander" Command="{Binding ToggleExpand}">
-									<Grid>
-										<PathIcon Data="{StaticResource ChevronDown}" 
-												  IsVisible="{Binding IsExpanded}" />
-										<PathIcon Data="{StaticResource ChevronRight}" 
-												  IsVisible="{Binding !IsExpanded}" />
-									</Grid>
-								</Button>
-								<TextBlock Classes="Name" Grid.Column="1" Text="{Binding Category.Name}" />
-								<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-								<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-							</Grid>
-						</Border>
-						
-						<ItemsControl Margin="50 0 0 0" 
-									  IsVisible="{Binding IsExpanded}"
-									  ItemsSource="{Binding SubCategories}">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<StackPanel Orientation="Vertical" />
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
-
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<StackPanel>
-										<Border Classes="Category">
-											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
-												<Button Classes="Expander" Command="{Binding ToggleExpand}">
-													<Grid>
-														<PathIcon Data="{StaticResource ChevronDown}" 
-																  IsVisible="{Binding IsExpanded}" />
-														<PathIcon Data="{StaticResource ChevronRight}" 
-																  IsVisible="{Binding !IsExpanded}" />
-													</Grid>
-												</Button>
-												<TextBlock Classes="Name" Grid.Column="1" Text="{Binding SubCategory.Name}" />
-												<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-												<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-											</Grid>
-										</Border>
-
-										<ItemsControl Margin="50 0 0 0" 
-													  IsVisible="{Binding IsExpanded}"
-													  ItemsSource="{Binding Transactions}">
-											<ItemsControl.ItemsPanel>
-												<ItemsPanelTemplate>
-													<StackPanel Orientation="Vertical" />
-												</ItemsPanelTemplate>
-											</ItemsControl.ItemsPanel>
-
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<Border Classes="Category">
-														<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
-															<TextBlock Classes="Name" Text="{Binding Comment}" />
-															<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-															<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-															<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-														</Grid>
-													</Border>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</StackPanel>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>					
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
-
-		<Border Classes="Total" Height="30">
-			<Grid ColumnDefinitions="* 100 200 100">
-				<TextBlock Classes="Title">Расходы</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Credit"
-						   Text="{Binding CreditTransactions.Sum, StringFormat=C}"
+				<Border Classes="Total" Height="30">
+					<Grid ColumnDefinitions="* 100 200 100">
+						<TextBlock Classes="Title">Расходы</TextBlock>
+						<TextBlock Grid.Column="2" Classes="Sum Credit"
+								   Text="{Binding CreditTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
-			</Grid>
-		</Border>
+					</Grid>
+				</Border>
 
-		<ItemsControl ItemsSource="{Binding CreditTransactions.Categories}">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" />
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
+				<views:TransactionsTreeControl DataContext="{Binding CreditTransactions}" />
 
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<StackPanel>
-						<Border Classes="Category">
-							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
-								<Button Classes="Expander" Command="{Binding ToggleExpand}">
-									<Grid>
-										<PathIcon Data="{StaticResource ChevronDown}" 
-												  IsVisible="{Binding IsExpanded}" />
-										<PathIcon Data="{StaticResource ChevronRight}" 
-												  IsVisible="{Binding !IsExpanded}" />
-									</Grid>
-								</Button>
-								<TextBlock Classes="Name" Grid.Column="1" Text="{Binding Category.Name}" />
-								<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-								<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-							</Grid>
-						</Border>
-						
-						<ItemsControl Margin="50 0 0 0" 
-									  IsVisible="{Binding IsExpanded}"
-									  ItemsSource="{Binding SubCategories}">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<StackPanel Orientation="Vertical" />
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
+				<Border Classes="Total" Height="30">
+					<Grid ColumnDefinitions="* 100 200 100">
+						<TextBlock Classes="Title">Переводы</TextBlock>
+						<TextBlock Grid.Column="2" Classes="Sum"
+								   Text="{Binding TransferTransactions.Sum, StringFormat='#,##0.00'}"
+						   />
+					</Grid>
+				</Border>
 
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<StackPanel>
-										<Border Classes="Category">
-											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
-												<Button Classes="Expander" Command="{Binding ToggleExpand}">
-													<Grid>
-														<PathIcon Data="{StaticResource ChevronDown}" 
-																  IsVisible="{Binding IsExpanded}" />
-														<PathIcon Data="{StaticResource ChevronRight}" 
-																  IsVisible="{Binding !IsExpanded}" />
-													</Grid>
-												</Button>
-												<TextBlock Classes="Name" Grid.Column="1" Text="{Binding SubCategory.Name}" />
-												<TextBlock Grid.Column="3" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-												<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-											</Grid>
-										</Border>
+				<views:TransactionsTreeControl DataContext="{Binding TransferTransactions}" />
 
-										<ItemsControl Margin="50 0 0 0" 
-													  IsVisible="{Binding IsExpanded}"
-													  ItemsSource="{Binding Transactions}">
-											<ItemsControl.ItemsPanel>
-												<ItemsPanelTemplate>
-													<StackPanel Orientation="Vertical" />
-												</ItemsPanelTemplate>
-											</ItemsControl.ItemsPanel>
+			</StackPanel>
+		</ScrollViewer>
 
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<Border Classes="Category">
-														<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
-															<TextBlock Classes="Name" Text="{Binding Comment}" />
-															<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-															<TextBlock Grid.Column="2" Classes="Sum Debet" Text="{Binding Sum, StringFormat=C}" />
-															<TextBlock Grid.Column="4" Classes="Sum Debet" Text="{Binding Percent, StringFormat=P}" />
-														</Grid>
-													</Border>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</StackPanel>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>					
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
-
-		<Border Classes="Total" Height="30">
+		<Border Classes="Total" Height="30" Grid.Row="2">
 			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Debet" 
-						   Text="{Binding TransferTransactions.Sum, StringFormat=C}"
+				<TextBlock Grid.Column="2" Classes="Sum Debet"
+						   Text="{Binding TransferTransactions.Sum, StringFormat='#,##0.00'}"
 						/>
 			</Grid>
 		</Border>
-	</StackPanel>
+
+	</Grid>
 
 </UserControl>

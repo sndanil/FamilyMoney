@@ -129,8 +129,12 @@ public class AccountViewModel : ViewModelBase
 
         foreach (var account in Children)
         {
-            account.Image = ImageConverter.ToImage(repository.TryGetImage(account.Id!.Value));
             account.AddFromAccount(repository, accounts);
+        }
+
+        if (IsGroup)
+        {
+            Sum = Children.Sum(c => c.Sum);
         }
     }
 

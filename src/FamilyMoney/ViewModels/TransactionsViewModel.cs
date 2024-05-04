@@ -141,7 +141,7 @@ public class TransactionsViewModel : ViewModelBase
         {
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel, TransactionGroupViewModel>(debetTransactions, transaction);
+                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel, TransactionGroupViewModel>(debetTransactions, transaction, true);
             }
             else if (transaction is CreditTransaction)
             {
@@ -153,11 +153,11 @@ public class TransactionsViewModel : ViewModelBase
             }
         }
 
-        DebetTransactions = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum) };
+        DebetTransactions = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum), IsDebet = true };
         CalcPercents(DebetTransactions.Sum, debetTransactions);
         DebetTransactions.Categories.AddRange(debetTransactions);
 
-        CreditTransactions = new TransactionsGroup { Sum = creditTransactions.Sum(t => t.Sum) };
+        CreditTransactions = new TransactionsGroup { Sum = creditTransactions.Sum(t => t.Sum), IsDebet = false };
         CalcPercents(CreditTransactions.Sum, creditTransactions);
         CreditTransactions.Categories.AddRange(creditTransactions);
 
@@ -182,13 +182,13 @@ public class TransactionsViewModel : ViewModelBase
         }
     }
 
-    private void FillTransactions<C, S, T>(List<CategoryTransactionsGroupViewModel> transactions, Transaction transaction) 
+    private void FillTransactions<C, S, T>(List<CategoryTransactionsGroupViewModel> transactions, Transaction transaction, bool isDebet = false) 
         where C: BaseCategoryViewModel, new() where S: BaseSubCategoryViewModel, new() where T: TransactionGroupViewModel, new()
     {
         var category = transactions.FirstOrDefault(t => t.Category?.Id == transaction.CategoryId);
         if (category == null)
         {
-            category = new CategoryTransactionsGroupViewModel();
+            category = new CategoryTransactionsGroupViewModel { IsDebet = isDebet };
             if (transaction.CategoryId != null)
             {
                 category.Category = new C();
@@ -202,7 +202,7 @@ public class TransactionsViewModel : ViewModelBase
         var subCategory = category.SubCategories.FirstOrDefault(c => c.SubCategory?.Id == transaction.SubCategoryId);
         if (subCategory == null)
         {
-            subCategory = new SubCategoryTransactionsGroupViewModel();
+            subCategory = new SubCategoryTransactionsGroupViewModel { IsDebet = isDebet };
             if (transaction.SubCategoryId != null)
             {
                 subCategory.SubCategory = new S();
@@ -219,6 +219,7 @@ public class TransactionsViewModel : ViewModelBase
             Date = transaction.Date,
             Comment = transaction.Comment,
             Sum = transaction.Sum,
+            IsDebet = isDebet,
         };
 
         subCategory.Transactions.Add(viewTransaction);

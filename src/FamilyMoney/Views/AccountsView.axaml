@@ -66,7 +66,7 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Border.Account TextBlock#AccountSum">
-			<Setter Property="Margin" Value="0 0 10 0" />
+			<Setter Property="Margin" Value="0 0 15 0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 		</Style>		
@@ -110,7 +110,7 @@
 							/>
 					<TextBlock Text="{Binding Name}" Name="AccountName"/>
 				</StackPanel>
-				<TextBlock Grid.Column="1" Text="{Binding Sum, StringFormat=\{0:0.00\}}" Name="AccountSum"/>
+				<TextBlock Grid.Column="1" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
 			</Grid>
 		</Border>
 		<Border Grid.Row="1" Classes="Separator"></Border>
@@ -151,7 +151,7 @@
 												/>
 										<TextBlock Text="{Binding Name}" Name="AccountName"/>
 									</StackPanel>
-									<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat=\{0:0.00\}}" Name="AccountSum"/>
+									<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
 								</Grid>
 							</Border>
 							<ItemsControl ItemsSource="{Binding Children}">
@@ -186,7 +186,7 @@
 														/>
 													<TextBlock Text="{Binding Name}" Name="AccountName" />
 												</StackPanel>
-												<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat=\{0:0.00\}}" Name="AccountSum"/>
+												<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
 											</Grid>
 										</Border>
 									</DataTemplate>
