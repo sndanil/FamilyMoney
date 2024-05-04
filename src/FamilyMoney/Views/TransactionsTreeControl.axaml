@@ -24,7 +24,7 @@
 		</Style>
 		<Style Selector="Border.Category">
 			<Setter Property="Height" Value="30" />
-			<Setter Property="Margin" Value="10 1" />
+			<Setter Property="Margin" Value="10 -1 10 0" />
 			<Setter Property="CornerRadius" Value="1" />
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />

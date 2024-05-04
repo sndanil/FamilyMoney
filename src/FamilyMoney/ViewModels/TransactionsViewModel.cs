@@ -19,6 +19,7 @@ public class TransactionsViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
     private MainWindowViewModel? _mainWindowViewModel;
+    private decimal _total = 0m;
 
     private TransactionsGroup _debetTransactions = new();
     private TransactionsGroup _creditTransactions = new();
@@ -56,6 +57,12 @@ public class TransactionsViewModel : ViewModelBase
     {
         get => _mainWindowViewModel;
         set => this.RaiseAndSetIfChanged(ref _mainWindowViewModel, value);
+    }
+
+    public decimal Total
+    {
+        get => _total;
+        set => this.RaiseAndSetIfChanged(ref _total, value);
     }
 
     public TransactionsViewModel(IRepository repository)
@@ -242,6 +249,8 @@ public class TransactionsViewModel : ViewModelBase
         TransferTransactions = new TransactionsGroup { Sum = transferTransactions.Sum(t => t.Sum) };
         CalcPercents(TransferTransactions.Sum, transferTransactions);
         TransferTransactions.Categories.AddRange(transferTransactions);
+
+        Total = DebetTransactions.Sum - CreditTransactions.Sum;
     }
 
     private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)

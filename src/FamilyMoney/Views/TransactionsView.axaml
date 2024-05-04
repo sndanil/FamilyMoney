@@ -3,12 +3,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsViewModel"
              x:Class="FamilyMoney.Views.TransactionsView">
+	<UserControl.Resources>
+		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
+	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
@@ -45,7 +49,7 @@
 			<Setter Property="Margin" Value="10 0" />
 		</Style>
 		<Style Selector="Border.Total">
-			<Setter Property="Margin" Value="2" />
+			<Setter Property="Margin" Value="2 2 2 0" />
 			<Setter Property="Height" Value="30" />
 			<Setter Property="CornerRadius" Value="5" />
 			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
@@ -93,6 +97,9 @@
 		</Style>
 		<Style Selector="TextBlock.Debet">
 			<Setter Property="Foreground" Value="Green" />
+		</Style>
+		<Style Selector="TextBlock.Credit">
+			<Setter Property="Foreground" Value="Red" />
 		</Style>
 		<Style Selector="TextBlock.Name">
 			<Setter Property="Margin" Value="10 0 0 0" />
@@ -156,11 +163,12 @@
 			</StackPanel>
 		</ScrollViewer>
 
-		<Border Classes="Total" Height="30" Grid.Row="2">
+		<Border Classes="Total" Height="30" Grid.Row="2" Margin="2">
 			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
 				<TextBlock Grid.Column="2" Classes="Sum Debet"
-						   Text="{Binding TransferTransactions.Sum, StringFormat='#,##0.00'}"
+						   Classes.Credit="{Binding Total, Converter={StaticResource isNegativeConverter}}"
+						   Text="{Binding Total, StringFormat='#,##0.00'}"
 						/>
 			</Grid>
 		</Border>
