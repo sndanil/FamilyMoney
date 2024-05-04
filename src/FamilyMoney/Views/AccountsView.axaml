@@ -27,7 +27,7 @@
 			<Setter Property="Opacity" Value="0.6" />
 		</Style>
 		<Style Selector="Border.Group">
-			<Setter Property="Margin" Value="1 0 1 0" />
+			<Setter Property="Margin" Value="1 2 1 0" />
 			<Setter Property="CornerRadius" Value="12 12 0 0"/>
 			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
 		</Style>
@@ -42,9 +42,11 @@
 		</Style>
 		<Style Selector="Border.AloneElement">
 			<Setter Property="CornerRadius" Value="12 12 12 12"/>
+			<Setter Property="Margin" Value="0 2" />
 		</Style>
 		<Style Selector="Border.LastElement">
 			<Setter Property="CornerRadius" Value="0 0 12 12"/>
+			<Setter Property="Margin" Value="0 0 0 2" />
 		</Style>
 		<Style Selector="Border.Account:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
