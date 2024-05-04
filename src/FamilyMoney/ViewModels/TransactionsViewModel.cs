@@ -3,6 +3,7 @@ using FamilyMoney.Csv;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
+using FamilyMoney.State;
 using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
@@ -22,6 +23,8 @@ public class TransactionsViewModel : ViewModelBase
     private TransactionsGroup _debetTransactions = new();
     private TransactionsGroup _creditTransactions = new();
     private TransactionsGroup _transferTransactions = new();
+
+    private BaseTransactionsGroupViewModel? _selectedTransactionGroup = null;
 
     public TransactionsGroup DebetTransactions
     {
@@ -59,14 +62,33 @@ public class TransactionsViewModel : ViewModelBase
     {
         _repository = repository;
 
-        MessageBus.Current.Listen<PeriodChangedMessage>()
-            .Where(p => p.To != DateTime.MinValue)
-            .Subscribe(x => RefreshTransactions(x));
+        MessageBus.Current.Listen<MainStateChangedMessage>()
+            .Where(m => m.State != null)
+            .Subscribe(m => RefreshTransactions(m.State));
+
+        MessageBus.Current.Listen<TransactionGroupSelectMessage>()
+            .Where(m => m.Element != null)
+            .Subscribe(m =>
+            {
+                ClearSelection();
+                _selectedTransactionGroup = m.Element;
+                _selectedTransactionGroup.IsSelected = true;
+            });
+
+        MessageBus.Current.Listen<TransactionGroupEditMessage>()
+            .Where(m => m.Element != null)
+            .Subscribe(m =>
+            {
+                if (EditCommand!.CanExecute(null))
+                {
+                    EditCommand.Execute(null);
+                }
+            });
 
         AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            (new CsvImporter()).DoImport(_repository);
-            return;
+            //(new CsvImporter()).DoImport(_repository);
+            //return;
 
             var transaction = new DebetTransactionViewModel
             {
@@ -113,15 +135,55 @@ public class TransactionsViewModel : ViewModelBase
 
         EditCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            //var transaction = new BaseTransactionViewModel
-            //{
-            //    FlatAccounts = GetFlatAccouunts(),
-            //    Account = _mainWindowViewModel?.Accounts.SelectedAccount,
-            //};
-            //var result = await BaseTransactionViewModel.ShowDialog.Handle(transaction);
-            //if (result != null)
-            //{
-            //}
+            BaseTransactionViewModel transactionViewModel = null;
+            if (_selectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
+            {
+                var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+                if (transaction != null)
+                {
+                    if (transaction is DebetTransaction)
+                    {
+                        transactionViewModel = new DebetTransactionViewModel
+                        {
+                            Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                            SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+                        };
+                    }
+                    else if (transaction is CreditTransaction)
+                    {
+                        transactionViewModel = new CreditTransactionViewModel
+                        {
+                            Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                            SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+                        };
+                    }
+                    else
+                    {
+                        transactionViewModel = new TransferTransactionViewModel
+                        {
+                            Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                            SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+                        };
+                    }
+
+                    transactionViewModel.FillFrom(transaction, _repository);
+                    var flatAccounts = GetFlatAccouunts();
+                    transactionViewModel.FlatAccounts = flatAccounts;
+                    transactionViewModel.Account = flatAccounts?.FirstOrDefault(a => a.Id == transaction.AccountId);
+                    transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
+                    transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
+                }
+            }
+
+            if (transactionViewModel == null)
+            {
+                return;
+            }
+            
+            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+            if (result != null)
+            {
+            }
         });
 
         DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -129,9 +191,25 @@ public class TransactionsViewModel : ViewModelBase
         });
     }
 
-    private void RefreshTransactions(PeriodChangedMessage message)
+    private void ClearSelection()
     {
-        var transactions = _repository.GetTransactions(message.From, message.To);
+        if (_selectedTransactionGroup != null)
+        {
+            _selectedTransactionGroup.IsSelected = false;
+            _selectedTransactionGroup = null;
+        }
+    }
+
+    private void RefreshTransactions(MainState state)
+    {
+        ClearSelection();
+
+        var transactions = _repository.GetTransactions(new TransactionsFilter 
+        {
+            AccountId = state.SelectedAccountId,
+            PeriodFrom = state.PeriodFrom, 
+            PeriodTo = state.PeriodTo 
+        });
 
         var debetTransactions = new List<CategoryTransactionsGroupViewModel>();
         var creditTransactions = new List<CategoryTransactionsGroupViewModel>();

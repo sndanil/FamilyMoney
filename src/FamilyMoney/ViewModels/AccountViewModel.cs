@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using ReactiveUI;
@@ -95,9 +96,9 @@ public class AccountViewModel : ViewModelBase
 
     public AccountViewModel()
     {
-        SelectCommand = ReactiveCommand.CreateFromTask((AccountsViewModel accounts) =>
+        SelectCommand = ReactiveCommand.CreateFromTask(() =>
         {
-            accounts.SelectedAccount = this;
+            MessageBus.Current.SendMessage(new AccountSelectMessage { AccountId = Id });
             return Task.CompletedTask;
         });
 

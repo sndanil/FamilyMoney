@@ -34,4 +34,6 @@ public sealed class CreditTransaction : Transaction
 public sealed class TransferTransaction : Transaction
 {
     public Guid? ToAccountId { get; set; }
+
+    public decimal ToSum { get; set; }
 }

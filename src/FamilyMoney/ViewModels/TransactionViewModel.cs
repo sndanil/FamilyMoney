@@ -47,21 +47,6 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _sum, value);
     }
 
-    public BaseTransactionViewModel()
-    {
-        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
-        OkCommand = ReactiveCommand.Create(() =>
-        {
-            return (BaseTransactionViewModel?)this;
-        },
-        canExecute);
-
-        CancelCommand = ReactiveCommand.Create(() =>
-        {
-            return (BaseTransactionViewModel?)null;
-        });
-    }
-
     public IList<AccountViewModel>? FlatAccounts
     {
         get => _flatAccounts;
@@ -108,6 +93,21 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     {
         get => _lastChange;
         set => this.RaiseAndSetIfChanged(ref _lastChange, value);
+    }
+
+    public BaseTransactionViewModel()
+    {
+        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
+        OkCommand = ReactiveCommand.Create(() =>
+        {
+            return (BaseTransactionViewModel?)this;
+        },
+        canExecute);
+
+        CancelCommand = ReactiveCommand.Create(() =>
+        {
+            return (BaseTransactionViewModel?)null;
+        });
     }
 
     public virtual void FillFrom(Transaction transaction, IRepository repository)

@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using FamilyMoney.Messages;
+using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -36,6 +37,7 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
     private decimal _sum = 0;
     private decimal _percent = 0;
     private bool _isExpanded = false;
+    private bool _isSelected = false;
 
     public bool IsDebet
     {
@@ -61,13 +63,26 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
     }
 
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
+
     public ICommand ToggleExpand { get; }
+
+    public ICommand SelectCommand { get; }
 
     public BaseTransactionsGroupViewModel()
     {
         ToggleExpand = ReactiveCommand.CreateFromTask(async () =>
         {
             IsExpanded = !IsExpanded;
+        });
+
+        SelectCommand = ReactiveCommand.Create(() =>
+        {
+            MessageBus.Current.SendMessage(new TransactionGroupSelectMessage { Element = this });
         });
     }
 }
@@ -94,6 +109,16 @@ public class TransactionGroupViewModel : BaseTransactionsGroupViewModel
     {
         get => _date;
         set => this.RaiseAndSetIfChanged(ref _date, value);
+    }
+
+    public ICommand EditCommand { get; }
+
+    public TransactionGroupViewModel()
+    {
+        EditCommand = ReactiveCommand.Create(() =>
+        {
+            MessageBus.Current.SendMessage(new TransactionGroupEditMessage { Element = this });
+        });
     }
 }
 

@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
@@ -30,6 +32,9 @@
 		</Style>
 		<Style Selector="Border.Category:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+		</Style>
+		<Style Selector="Border.Category.Selected">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
 		<Style Selector="Border.Category Grid">
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -59,7 +64,16 @@
 		<ItemsControl.ItemTemplate>
 			<DataTemplate>
 				<StackPanel>
-					<Border Classes="Category">
+					<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+						<i:Interaction.Behaviors>
+							<ia:EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SelectCommand}" />
+							</ia:EventTriggerBehavior>
+							<ia:EventTriggerBehavior EventName="DoubleTapped">
+								<InvokeCommandAction Command="{Binding ToggleExpand}" />
+							</ia:EventTriggerBehavior>
+						</i:Interaction.Behaviors>
+						
 						<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
 							<Button Classes="Expander" Command="{Binding ToggleExpand}">
 								<Grid>
@@ -91,7 +105,16 @@
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<StackPanel>
-									<Border Classes="Category">
+									<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+										<i:Interaction.Behaviors>
+											<ia:EventTriggerBehavior EventName="Tapped">
+												<InvokeCommandAction Command="{Binding SelectCommand}" />
+											</ia:EventTriggerBehavior>
+											<ia:EventTriggerBehavior EventName="DoubleTapped">
+												<InvokeCommandAction Command="{Binding ToggleExpand}" />
+											</ia:EventTriggerBehavior>
+										</i:Interaction.Behaviors>
+
 										<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
 											<Button Classes="Expander" Command="{Binding ToggleExpand}">
 												<Grid>
@@ -122,7 +145,16 @@
 
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
-												<Border Classes="Category">
+												<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+													<i:Interaction.Behaviors>
+														<ia:EventTriggerBehavior EventName="Tapped">
+															<InvokeCommandAction Command="{Binding SelectCommand}" />
+														</ia:EventTriggerBehavior>
+														<ia:EventTriggerBehavior EventName="DoubleTapped">
+															<InvokeCommandAction Command="{Binding EditCommand}" />
+														</ia:EventTriggerBehavior>
+													</i:Interaction.Behaviors>
+
 													<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
 														<TextBlock Classes="Name" Text="{Binding Comment}" />
 														<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />

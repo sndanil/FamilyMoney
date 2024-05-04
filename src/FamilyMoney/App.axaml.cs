@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.DataAccess;
+using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.Views;
 using Splat;
@@ -20,12 +21,16 @@ public partial class App : Application
         }
         else
         {
+#pragma warning disable SPLATDI006 // Interface has been registered before
             SplatRegistrations.RegisterConstant<IRepository>(new DbLiteRepository());
+#pragma warning restore SPLATDI006 // Interface has been registered before
         }
 
+        SplatRegistrations.Register<PeriodViewModel>();
         SplatRegistrations.Register<AccountsViewModel>();
         SplatRegistrations.Register<TransactionsViewModel>();
         SplatRegistrations.Register<MainWindowViewModel>();
+        SplatRegistrations.Register<IStateManager, StateManager>();
 
         SplatRegistrations.SetupIOC();
     }

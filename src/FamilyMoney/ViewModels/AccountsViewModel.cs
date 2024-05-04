@@ -1,5 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
+using FamilyMoney.State;
 using ReactiveUI;
 using System;
 using System.IO;
@@ -17,6 +19,7 @@ public class AccountsViewModel : ViewModelBase
     private AccountViewModel? _draggingAccount = null;
 
     private readonly IRepository _repository;
+    private readonly IStateManager _stateManager;
 
     public ICommand AddGroupCommand { get; }
 
@@ -26,9 +29,37 @@ public class AccountsViewModel : ViewModelBase
 
     public ICommand DeleteCommand { get; }
 
-    public AccountsViewModel(IRepository repository)
+    public AccountViewModel Total
+    {
+        get => _total;
+        set => this.RaiseAndSetIfChanged(ref _total, value);
+    }
+
+    public AccountViewModel? DraggingAccount
+    {
+        get => _draggingAccount;
+        set => this.RaiseAndSetIfChanged(ref _draggingAccount, value);
+    }
+
+    public AccountViewModel? SelectedAccount    
+    {
+        get
+        {
+            var state = _stateManager.GetMainState();
+            if (state.SelectedAccountId != null)
+            {
+                var found = _total.Children.Union(_total.Children.SelectMany(a => a.Children)).FirstOrDefault(a => a.Id == state.SelectedAccountId);
+                return found;
+            }
+
+            return _total;
+        }
+    }
+
+    public AccountsViewModel(IRepository repository, IStateManager stateManager)
     {
         _repository = repository;
+        _stateManager = stateManager;
 
         AddGroupCommand = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -82,39 +113,33 @@ public class AccountsViewModel : ViewModelBase
             UpdateChildren(SelectedAccount.Parent);
         }, canEditExecute);
 
+        MessageBus.Current.Listen<MainStateChangedMessage>()
+            .Where(m => m.State != null)
+            .Subscribe(m => RefreshSelectedAccount(m.State.SelectedAccountId));
+
+        MessageBus.Current.Listen<AccountSelectMessage>()
+            .Where(m => m != null)
+            .Subscribe(m =>
+            {
+                var state = _stateManager.GetMainState();
+                state.SelectedAccountId = m.AccountId;
+                _stateManager.SetMainState(state);
+            });
+
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);
     }
 
-    public AccountViewModel Total
+    private void RefreshSelectedAccount(Guid? accountId)
     {
-        get => _total;
-        set => this.RaiseAndSetIfChanged(ref _total, value);
-    }
-
-    public AccountViewModel? SelectedAccount
-    {
-        get => _selectedAccount;
-        set
+        Total!.IsSelected = !accountId.HasValue;
+        foreach (var group in Total.Children)
         {
-            Total!.IsSelected = false;
-            foreach (var group in Total.Children)
+            group.IsSelected = group.Id == accountId;
+            foreach (var account in group.Children)
             {
-                group.IsSelected = false;
-                foreach (var account in group.Children)
-                {
-                    account.IsSelected = false;
-                }
+                account.IsSelected = account.Id == accountId;
             }
-
-            value!.IsSelected = true;
-            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
         }
-    }
-
-    public AccountViewModel? DraggingAccount
-    {
-        get => _draggingAccount;
-        set => this.RaiseAndSetIfChanged(ref _draggingAccount, value);
     }
 
     private void LoadAccounts()

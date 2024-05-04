@@ -42,7 +42,12 @@ namespace FamilyMoney.DataAccess
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to)
+        public Transaction GetTransaction(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
         {
             throw new NotImplementedException();
         }

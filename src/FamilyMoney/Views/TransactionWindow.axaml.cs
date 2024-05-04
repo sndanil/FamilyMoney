@@ -79,7 +79,7 @@ namespace FamilyMoney.Views
             {
                 SubCategoryCompleteBox.Focus();
             }
-            else if (ViewModel?.Sum == 0m)
+            else
             {
                 SumPicker.Focus();
             }

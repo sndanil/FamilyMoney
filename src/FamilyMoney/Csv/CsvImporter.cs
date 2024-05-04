@@ -56,7 +56,8 @@ namespace FamilyMoney.Csv
                                 ToAccountId = debetAccount?.Id,
                                 CategoryId = category?.Id,
                                 SubCategoryId = subCategory?.Id,
-                                Sum = Math.Abs(record.DebetSum!.Value),
+                                Sum = Math.Abs(record.CreditSum!.Value),
+                                ToSum = Math.Abs(record.DebetSum!.Value),
                                 Comment = record.Comment,
                                 LastChange = DateTime.Now,
                             };
@@ -99,7 +100,7 @@ namespace FamilyMoney.Csv
                 foreach (var account in accounts)
                 {
                     var debetSum = transactions.OfType<DebetTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
-                    var debetTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.ToAccountId == account.Id).Sum(a => a.Sum);
+                    var debetTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.ToAccountId == account.Id).Sum(a => a.ToSum);
                     var creditSum = transactions.OfType<CreditTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
                     var creditTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
                     account.Sum = debetSum + debetTransferSum - creditSum - creditTransferSum;

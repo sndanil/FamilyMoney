@@ -1,4 +1,5 @@
 ﻿using FamilyMoney.Messages;
+using FamilyMoney.State;
 using ReactiveUI;
 using System;
 using System.Reactive.Linq;
@@ -18,6 +19,7 @@ public enum PeriodType
 
 public class PeriodViewModel: ViewModelBase
 {
+    private readonly IStateManager _stateManager;
     private PeriodType _periodType;
     private DateTime _from; 
     private DateTime _to;
@@ -33,8 +35,14 @@ public class PeriodViewModel: ViewModelBase
 
     public Interaction<CustomPeriodViewModel, CustomPeriodViewModel?> ShowDialog { get; } = new ();
 
-    public PeriodViewModel()
+    public PeriodViewModel(IStateManager stateManager)
     {
+        _stateManager = stateManager;
+
+        _from = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        _to = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(1).AddDays(-1);
+        _periodType = PeriodType.Month;
+
         NextCommand = ReactiveCommand.CreateFromTask(() =>
         {
             Shift(1);
@@ -52,7 +60,7 @@ public class PeriodViewModel: ViewModelBase
             From = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             To = From.AddMonths(1).AddDays(-1);
             PeriodType = PeriodType.Month;
-            this.RaisePropertyChanged(nameof(Text));
+            Update();
 
             return Task.CompletedTask;
         });
@@ -82,7 +90,7 @@ public class PeriodViewModel: ViewModelBase
                     break;
             }
             PeriodType = PeriodType.Quarter;
-            this.RaisePropertyChanged(nameof(Text));
+            Update();
 
             return Task.CompletedTask;
         });
@@ -92,7 +100,7 @@ public class PeriodViewModel: ViewModelBase
             From = new DateTime(PeriodType != PeriodType.All ? To.Year : DateTime.Today.Year, 1, 1);
             To = new DateTime(PeriodType != PeriodType.All ? To.Year : DateTime.Today.Year, 12, 31);
             PeriodType = PeriodType.Year;
-            this.RaisePropertyChanged(nameof(Text));
+            Update();
 
             return Task.CompletedTask;
         });
@@ -112,7 +120,7 @@ public class PeriodViewModel: ViewModelBase
                 From = result.From;
                 To = result.To;
             }
-            this.RaisePropertyChanged(nameof(Text));
+            Update();
 
             PeriodType = PeriodType.Custom;
         });
@@ -122,7 +130,7 @@ public class PeriodViewModel: ViewModelBase
             From = DateTime.MinValue;
             To = DateTime.MaxValue;
             PeriodType = PeriodType.All;
-            this.RaisePropertyChanged(nameof(Text));
+            Update();
 
             return Task.CompletedTask;
         });
@@ -190,7 +198,15 @@ public class PeriodViewModel: ViewModelBase
                 break;
         }
 
+        Update();
+    }
+
+    private void Update()
+    {
         this.RaisePropertyChanged(nameof(Text));
-        MessageBus.Current.SendMessage(new PeriodChangedMessage { From = From, To = To });
+        var state = _stateManager.GetMainState();
+        state.PeriodFrom = _from;
+        state.PeriodTo = _to;
+        _stateManager.SetMainState(state);
     }
 }

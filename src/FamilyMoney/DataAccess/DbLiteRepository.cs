@@ -2,7 +2,6 @@
 using LiteDB;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -114,14 +113,36 @@ public class DbLiteRepository : IRepository
         collection.Upsert(subCategory);
     }
 
-    public IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to)
+    public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
-        return collection.Find(t => t.Date >= from && t.Date <= to)
-            .OrderBy(t => t.Date)
+        var query = collection.Query().Where(t => t.Date >= filter.PeriodFrom && t.Date <= filter.PeriodTo);
+        
+        if (filter.AccountId.HasValue)
+        {
+            var accountsCollection = db.GetCollection<Account>(nameof(Account));
+            var accounts = accountsCollection.Find(a => a.Id == filter.AccountId || a.ParentId == filter.AccountId);
+            var queries = new List<BsonExpression>();
+            foreach (var account in accounts)
+            {
+                queries.Add(Query.EQ(nameof(Transaction.AccountId), account.Id));
+                queries.Add(Query.EQ(nameof(TransferTransaction.ToAccountId), account.Id));
+            }
+
+            query = query.Where(Query.Or(queries.ToArray()));
+        }
+            
+        return query.OrderBy(t => t.Date)
             .ToList();
+    }
+
+    public Transaction GetTransaction(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+        return collection.FindById(id);
     }
 
     public void UpdateTransaction(Transaction transaction)

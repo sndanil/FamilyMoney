@@ -27,7 +27,8 @@ public interface IRepository
     IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategroty(SubCategory subCategory);
 
-    IEnumerable<Transaction> GetTransactions(DateTime from, DateTime to);
+    IEnumerable<Transaction> GetTransactions(TransactionsFilter filter);
+    Transaction GetTransaction(Guid id);
     void UpdateTransaction(Transaction transaction);
 
     void InsertTransactions(IEnumerable<Transaction> transactions);

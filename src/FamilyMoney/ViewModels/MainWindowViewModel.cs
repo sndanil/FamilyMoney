@@ -1,12 +1,16 @@
 ﻿using FamilyMoney.DataAccess;
+using FamilyMoney.State;
 using ReactiveUI;
 using System;
+using System.Reactive.Concurrency;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private readonly IStateManager _stateManager;
+
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
 
@@ -16,27 +20,10 @@ public class MainWindowViewModel : ViewModelBase
 
     public ICommand TriggerPaneCommand { get; }
 
-    public MainWindowViewModel(IRepository repository, AccountsViewModel accounts, TransactionsViewModel transactionsViewModel)
+    public int LeftSideWidth
     {
-        TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
-
-        _accountsViewModel = accounts;
-        _transactionsViewModel = transactionsViewModel;
-        _transactionsViewModel.MainWindowViewModel = this;
-
-        _period = new PeriodViewModel 
-        { 
-            From = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
-            To = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(1).AddDays(-1),
-            PeriodType = PeriodType.Month 
-        };
-        _period.PropertyChanged += (e, a) => this.RaisePropertyChanged(nameof(Period));
-    }
-
-    public int LeftSideWidth 
-    { 
-        get => _leftSideWidth; 
-        set => this.RaiseAndSetIfChanged(ref _leftSideWidth, value); 
+        get => _leftSideWidth;
+        set => this.RaiseAndSetIfChanged(ref _leftSideWidth, value);
     }
 
     public bool IsPaneOpen
@@ -60,4 +47,30 @@ public class MainWindowViewModel : ViewModelBase
         get => _transactionsViewModel;
     }
 
+    public MainWindowViewModel(IRepository repository, 
+        IStateManager stateManager,
+        PeriodViewModel period, 
+        AccountsViewModel accounts, 
+        TransactionsViewModel transactionsViewModel)
+    {
+        TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
+
+        _stateManager = stateManager;
+
+        _accountsViewModel = accounts;
+        _transactionsViewModel = transactionsViewModel;
+        _transactionsViewModel.MainWindowViewModel = this;
+
+        _period = period;
+
+        RxApp.MainThreadScheduler.Schedule(MainInit);
+    }
+
+    private void MainInit()
+    {
+        var state = _stateManager.GetMainState();
+        state.PeriodFrom = _period.From;
+        state.PeriodTo = _period.To;
+        _stateManager.SetMainState(state);
+    }
 }
