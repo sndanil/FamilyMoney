@@ -88,24 +88,29 @@ public class AccountsViewModel : ViewModelBase
             }
         });
 
-        var canEditExecute = this.WhenAnyValue(x => x.SelectedAccount, x => x.Total,
-            (selectedAccount, total) => selectedAccount != null && selectedAccount != total);
-        EditCommand = ReactiveCommand.CreateFromTask(async () =>
+        EditCommand = ReactiveCommand.CreateFromTask(async (AccountViewModel editAccount) =>
         {
+            if (editAccount == Total || editAccount == null)
+            {
+                return;
+            }
+
             var account = new AccountViewModel()
             {
-                Id = SelectedAccount!.Id,
-                Parent = SelectedAccount.Parent,
-                Name = SelectedAccount.Name,
-                Image = SelectedAccount.Image,
+                Id = editAccount!.Id,
+                Parent = editAccount.Parent,
+                Name = editAccount.Name,
+                Image = editAccount.Image,
             };
             var result = await AccountViewModel.ShowDialog.Handle(account);
             if (result != null)
             {
-                Save(SelectedAccount, result);
+                Save(editAccount, result);
             }
-        }, canEditExecute);
+        });
 
+        var canEditExecute = this.WhenAnyValue(x => x.SelectedAccount, x => x.Total,
+            (selectedAccount, total) => selectedAccount != null && selectedAccount != total);
         DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             _repository.DeleteAccount(SelectedAccount!.Id!.Value);
@@ -124,6 +129,8 @@ public class AccountsViewModel : ViewModelBase
                 var state = _stateManager.GetMainState();
                 state.SelectedAccountId = m.AccountId;
                 _stateManager.SetMainState(state);
+
+                RaisePropertyChanged(nameof(SelectedAccount));
             });
 
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);
