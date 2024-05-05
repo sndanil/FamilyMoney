@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -61,61 +62,19 @@ public class AccountsViewModel : ViewModelBase
         _repository = repository;
         _stateManager = stateManager;
 
-        AddGroupCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var account = new AccountViewModel { IsGroup = true };
-            var result = await AccountViewModel.ShowDialog.Handle(account);
-            if (result != null)
-            {
-                Total.Children.Add(result);
-                result.Parent = Total;
-                result.Id = Guid.NewGuid();
-                Save(null, result);
-            }
-        });
-
-        AddElementCommand = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var account = new AccountViewModel();
-            var result = await AccountViewModel.ShowDialog.Handle(account);
-            if (result != null)
-            {
-                var parent = SelectedAccount?.IsGroup == true ? SelectedAccount : (SelectedAccount?.Parent ?? Total);
-                parent.Children.Add(result);
-                result.Id = Guid.NewGuid();
-                result.Parent = parent;
-                Save(null, result);
-            }
-        });
-
-        EditCommand = ReactiveCommand.CreateFromTask(async (AccountViewModel editAccount) =>
-        {
-            if (editAccount == Total || editAccount == null)
-            {
-                return;
-            }
-
-            var account = new AccountViewModel()
-            {
-                Id = editAccount!.Id,
-                Parent = editAccount.Parent,
-                Name = editAccount.Name,
-                Image = editAccount.Image,
-            };
-            var result = await AccountViewModel.ShowDialog.Handle(account);
-            if (result != null)
-            {
-                Save(editAccount, result);
-            }
-        });
+        AddGroupCommand = ReactiveCommand.CreateFromTask(AddGroupAccount);
+        AddElementCommand = ReactiveCommand.CreateFromTask(AddElementAccount);
+        EditCommand = ReactiveCommand.CreateFromTask<AccountViewModel>(EditAccount);
 
         var canEditExecute = this.WhenAnyValue(x => x.SelectedAccount, x => x.Total,
             (selectedAccount, total) => selectedAccount != null && selectedAccount != total);
-        DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
+        DeleteCommand = ReactiveCommand.CreateFromTask(() =>
         {
             _repository.DeleteAccount(SelectedAccount!.Id!.Value);
             SelectedAccount!.Parent!.Children.Remove(SelectedAccount);
             UpdateChildren(SelectedAccount.Parent);
+
+            return Task.CompletedTask;
         }, canEditExecute);
 
         MessageBus.Current.Listen<MainStateChangedMessage>()
@@ -130,74 +89,63 @@ public class AccountsViewModel : ViewModelBase
                 state.SelectedAccountId = m.AccountId;
                 _stateManager.SetMainState(state);
 
-                RaisePropertyChanged(nameof(SelectedAccount));
+                this.RaisePropertyChanged(nameof(SelectedAccount));
             });
 
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);
     }
 
-    private void RefreshSelectedAccount(Guid? accountId)
+    private async Task AddGroupAccount()
     {
-        Total!.IsSelected = !accountId.HasValue;
-        foreach (var group in Total.Children)
+        var account = new AccountViewModel { IsGroup = true };
+        var result = await AccountViewModel.ShowDialog.Handle(account);
+        if (result != null)
         {
-            group.IsSelected = group.Id == accountId;
-            foreach (var account in group.Children)
-            {
-                account.IsSelected = account.Id == accountId;
-            }
+            Total.Children.Add(result);
+            result.Parent = Total;
+            result.Id = Guid.NewGuid();
+            Save(null, result);
         }
     }
 
-    private void LoadAccounts()
+    private async Task AddElementAccount()
     {
-        _total = new AccountViewModel
+        var account = new AccountViewModel();
+        var result = await AccountViewModel.ShowDialog.Handle(account);
+        if (result != null)
         {
-            Name = "Всего",
-            IsGroup = true,
-            Sum = 0,
+            var parent = SelectedAccount?.IsGroup == true ? SelectedAccount : (SelectedAccount?.Parent ?? Total);
+            parent.Children.Add(result);
+            result.Id = Guid.NewGuid();
+            result.Parent = parent;
+            Save(null, result);
+        }
+    }
+
+    private async Task EditAccount(AccountViewModel editAccount)
+    {
+        if (editAccount == Total || editAccount == null)
+        {
+            return;
+        }
+
+        var account = new AccountViewModel()
+        {
+            Id = editAccount!.Id,
+            Parent = editAccount.Parent,
+            Name = editAccount.Name,
+            Image = editAccount.Image,
         };
-
-        var accounts = _repository!.GetAccounts();
-        _total.AddFromAccount(_repository, accounts);
-    }
-
-    private void Save(AccountViewModel? one, AccountViewModel other)
-    {
-        ArgumentNullException.ThrowIfNull(other, nameof(other));
-        ArgumentNullException.ThrowIfNull(other.Id, $"{nameof(other)}.{nameof(other.Id)}");
-
-        if (one?.Image != other.Image)
+        var result = await AccountViewModel.ShowDialog.Handle(account);
+        if (result != null)
         {
-            var stream = new MemoryStream();
-            ((Bitmap)other.Image!).Save(stream);
-            stream.Position = 0;
-            _repository!.UpdateImage(other.Id.Value, other.Name, stream);
+            Save(editAccount, result);
         }
-
-        if (one != null)
-        {
-            one.Name = other.Name;
-            one.Image = other.Image;
-        }
-
-        _repository!.UpdateAccount(new Models.Account
-        {
-            Id = other.Id.Value,
-            ParentId = other.Parent?.Id,
-            Name = other.Name,
-            IsGroup = other.IsGroup,
-            Order = (other.Parent ?? Total).Children
-                        .Select((account, index) => (account, index))
-                        .Where(i => i.account.Id == other.Id)
-                        .Select(i => i.index)
-                        .First(),
-        });
     }
 
     public bool IsDestinationValid(AccountViewModel account, AccountViewModel destAccount)
     {
-        if (account.IsGroup && !destAccount.IsGroup && destAccount.Parent != Total) 
+        if (account.IsGroup && !destAccount.IsGroup && destAccount.Parent != Total)
         {
             return false;
         }
@@ -207,7 +155,7 @@ public class AccountsViewModel : ViewModelBase
 
     public void Drop(AccountViewModel account, AccountViewModel destAccount)
     {
-        if (account == destAccount) 
+        if (account == destAccount)
         {
             return;
         }
@@ -278,6 +226,65 @@ public class AccountsViewModel : ViewModelBase
             UpdateChildren(oldParent);
             UpdateChildren(destAccount.Parent!);
         }
+    }
+
+    private void RefreshSelectedAccount(Guid? accountId)
+    {
+        Total!.IsSelected = !accountId.HasValue;
+        foreach (var group in Total.Children)
+        {
+            group.IsSelected = group.Id == accountId;
+            foreach (var account in group.Children)
+            {
+                account.IsSelected = account.Id == accountId;
+            }
+        }
+    }
+
+    private void LoadAccounts()
+    {
+        _total = new AccountViewModel
+        {
+            Name = "Всего",
+            IsGroup = true,
+        };
+
+        var accounts = _repository!.GetAccounts();
+        _total.AddFromAccount(_repository, accounts);
+    }
+
+    private void Save(AccountViewModel? one, AccountViewModel other)
+    {
+        ArgumentNullException.ThrowIfNull(other, nameof(other));
+        ArgumentNullException.ThrowIfNull(other.Id, $"{nameof(other)}.{nameof(other.Id)}");
+
+        if (one?.Image != other.Image)
+        {
+            var stream = new MemoryStream();
+            ((Bitmap)other.Image!).Save(stream);
+            stream.Position = 0;
+            _repository!.UpdateImage(other.Id.Value, other.Name, stream);
+        }
+
+        if (one != null)
+        {
+            one.Name = other.Name;
+            one.Image = other.Image;
+        }
+
+        _repository!.UpdateAccount(new Models.Account
+        {
+            Id = other.Id.Value,
+            ParentId = other.Parent?.Id,
+            Name = other.Name,
+            IsGroup = other.IsGroup,
+            Sum = other.IsGroup ? 0 : other.Sum,
+            Order = (other.Parent ?? Total).Children
+                        .Select((account, index) => (account, index))
+                        .Where(i => i.account.Id == other.Id)
+                        .Select(i => i.index)
+                        .First(),
+        });
     }
 
     private void UpdateChildren(AccountViewModel account)

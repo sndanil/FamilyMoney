@@ -24,6 +24,7 @@ public interface IRepository
     void UpdateCategroty(Category category);
 
     SubCategory GetSubCategory(Guid id);
+    SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory);
     IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategroty(SubCategory subCategory);
 

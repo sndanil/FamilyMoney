@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace FamilyMoney.DataAccess;
 
-public class DbLiteRepository : IRepository
+public class LiteDbRepository : IRepository
 {
     private string _connectionStr = "database.db";
 
-    public DbLiteRepository()
+    public LiteDbRepository()
     {
         using var db = new LiteDatabase(_connectionStr);
         var transactions = db.GetCollection<Transaction>(nameof(Transaction));
@@ -97,6 +97,22 @@ public class DbLiteRepository : IRepository
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         return collection.FindOne(c => c.Id == id);
+    }
+
+    public SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
+        var result = collection.Query()
+                        .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name)
+                        .FirstOrDefault();
+        if (result == null)
+        {
+            result = factory();
+            collection.Insert(result);
+        }
+
+        return result;
     }
 
     public IEnumerable<SubCategory> GetSubCategories()

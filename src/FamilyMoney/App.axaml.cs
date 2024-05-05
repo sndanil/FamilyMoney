@@ -22,7 +22,7 @@ public partial class App : Application
         else
         {
 #pragma warning disable SPLATDI006 // Interface has been registered before
-            SplatRegistrations.RegisterConstant<IRepository>(new DbLiteRepository());
+            SplatRegistrations.RegisterConstant<IRepository>(new LiteDbRepository());
 #pragma warning restore SPLATDI006 // Interface has been registered before
         }
 

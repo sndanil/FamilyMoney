@@ -13,7 +13,10 @@ public abstract class BaseTransactionViewModel : ViewModelBase
 {
     private Guid _id;
     private AccountViewModel? _account;
+    private AccountViewModel? _toAccount;
+    private bool _isTransfer = false;
     private decimal _sum = 0;
+    private decimal _toSum = 0;
     private IList<AccountViewModel>? _flatAccounts;
     private IList<BaseCategoryViewModel>? _categories;
     private IList<BaseSubCategoryViewModel>? _subCategories;
@@ -41,10 +44,28 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _account, value);
     }
 
+    public AccountViewModel? ToAccount
+    {
+        get => _toAccount;
+        set => this.RaiseAndSetIfChanged(ref _toAccount, value);
+    }
+
+    public bool IsTransfer
+    {
+        get => _isTransfer;
+        set => this.RaiseAndSetIfChanged(ref _isTransfer, value);
+    }
+
     public decimal Sum
     {
         get => _sum;
         set => this.RaiseAndSetIfChanged(ref _sum, value);
+    }
+
+    public decimal ToSum
+    {
+        get => _toSum;
+        set => this.RaiseAndSetIfChanged(ref _toSum, value);
     }
 
     public IList<AccountViewModel>? FlatAccounts
@@ -117,8 +138,6 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         Date = transaction.Date;
         LastChange = transaction.LastChange;
         Comment = transaction.Comment;
-        //Account = new AccountViewModel();
-        //Account.FillFrom(repository.GetAccount(transaction.AccountId!.Value), repository);
     }
 }
 
