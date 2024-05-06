@@ -1,5 +1,4 @@
 ﻿using DynamicData;
-using FamilyMoney.Csv;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -8,7 +7,6 @@ using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -97,38 +95,10 @@ public class TransactionsViewModel : ViewModelBase
 
         AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var state = _stateManager.GetMainState();
-            var flatAccounts = GetFlatAccouunts();
-            var account = state.SelectedAccountId.HasValue ? 
-                                flatAccounts?.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId)) 
-                                : flatAccounts?.FirstOrDefault(a => !a.IsGroup);
-
-            var transactionViewModel = new DebetTransactionViewModel
-            {
-                FlatAccounts = flatAccounts,
-                Account = account,
-                Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
-            };
-
-            if (_selectedTransactionGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
-            {
-                transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
-            }
-
-            if (_selectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
-            {
-                transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
-                transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory?.Name;
-            }
-
-            if (_selectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
-            {
-                var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
-
-                transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
-                transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId)?.Name;
-            }
+            var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
+                GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>()
+                );
 
             var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
             if (result != null)
@@ -139,14 +109,12 @@ public class TransactionsViewModel : ViewModelBase
 
         AddCreditCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var transaction = new CreditTransactionViewModel
-            {
-                FlatAccounts = GetFlatAccouunts(),
-                Account = _mainWindowViewModel?.Accounts.SelectedAccount,
-                Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
-            };
-            var result = await BaseTransactionViewModel.ShowDialog.Handle(transaction);
+            var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
+                GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>()
+                );
+
+            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
             if (result != null)
             {
                 SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
@@ -155,14 +123,12 @@ public class TransactionsViewModel : ViewModelBase
 
         AddTransferCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            var transaction = new TransferTransactionViewModel
-            {
-                FlatAccounts = GetFlatAccouunts(),
-                Account = _mainWindowViewModel?.Accounts.SelectedAccount,
-                Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
-            };
-            var result = await BaseTransactionViewModel.ShowDialog.Handle(transaction);
+            var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
+                GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>()
+                );
+
+            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
             if (result != null)
             {
                 SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
@@ -174,6 +140,45 @@ public class TransactionsViewModel : ViewModelBase
         DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
         {
         });
+    }
+
+    private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, IList<BaseSubCategoryViewModel> subCategories) 
+        where T : BaseTransactionViewModel, new()
+    {
+        var state = _stateManager.GetMainState();
+        var flatAccounts = GetFlatAccouunts();
+        var account = state.SelectedAccountId.HasValue ?
+                            flatAccounts?.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId))
+                            : flatAccounts?.FirstOrDefault(a => !a.IsGroup);
+
+        var transactionViewModel = new T()
+        {
+            FlatAccounts = flatAccounts,
+            Account = account,
+            Categories = categories,
+            SubCategories = subCategories,
+        };
+
+        if (_selectedTransactionGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
+        {
+            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
+        }
+
+        if (_selectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
+        {
+            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
+            transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory?.Name;
+        }
+
+        if (_selectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
+        {
+            var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+
+            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
+            transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId)?.Name;
+        }
+
+        return transactionViewModel;
     }
 
     private async Task EditTransaction()

@@ -4,12 +4,14 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 
 
 namespace FamilyMoney.Views
 {
     public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
     {
+        private bool _sumFocused = false;
         private readonly Dictionary<char, char> _keyboard = new() 
         {
             { 'q', 'é' },
@@ -61,8 +63,19 @@ namespace FamilyMoney.Views
 
             this.Activated += TransactionWindowActivated;
 
+            SubCategoryCompleteBox.DropDownClosed += SubCategoryCompleteBoxDropDownClosed; ;
             SubCategoryCompleteBox.ItemSelector = ItemSelector;
             SubCategoryCompleteBox.ItemFilter = ItemFilter;
+        }
+
+        private void SubCategoryCompleteBoxDropDownClosed(object? sender, EventArgs e)
+        {
+            if (SubCategoryCompleteBox.SelectedItem != null && !_sumFocused)
+            {
+                _sumFocused = true;
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => SumPicker.Focus());
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () => _sumFocused = false);
+            }
         }
 
         private void TransactionWindowActivated(object? sender, EventArgs e)

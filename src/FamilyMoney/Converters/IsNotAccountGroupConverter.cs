@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace FamilyMoney.Converters;
 
-public class IsNotAccountGroupConverterConverter : IValueConverter
+public class IsNotAccountGroupConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
