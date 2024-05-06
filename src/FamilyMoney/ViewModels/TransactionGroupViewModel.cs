@@ -2,6 +2,7 @@
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -75,9 +76,10 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
 
     public BaseTransactionsGroupViewModel()
     {
-        ToggleExpand = ReactiveCommand.CreateFromTask(async () =>
+        ToggleExpand = ReactiveCommand.Create(() =>
         {
             IsExpanded = !IsExpanded;
+            MessageBus.Current.SendMessage(new TransactionGroupExpandMessage { Element = this });
         });
 
         SelectCommand = ReactiveCommand.Create(() =>

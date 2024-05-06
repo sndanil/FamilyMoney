@@ -12,6 +12,11 @@ internal class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
+    public void DeleteTransaction(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+
     public Account GetAccount(Guid id)
     {
         throw new NotImplementedException();
@@ -47,7 +52,7 @@ internal class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
-    public Transaction GetTransaction(Guid id)
+    public Transaction? GetTransaction(Guid id)
     {
         throw new NotImplementedException();
     }
@@ -80,7 +85,7 @@ internal class DesignerRepository : IRepository
     {
     }
 
-    public void UpdateSubCategroty(SubCategory subCategory)
+    public void UpdateSubCategory(SubCategory subCategory)
     {
         throw new NotImplementedException();
     }

@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
+using FamilyMoney.Models;
 using FamilyMoney.State;
 using ReactiveUI;
 using System;
@@ -49,7 +50,7 @@ public class AccountsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _showHidden, value);
     }
 
-    public AccountViewModel? SelectedAccount    
+    public AccountViewModel? SelectedAccount
     {
         get
         {
@@ -94,7 +95,63 @@ public class AccountsViewModel : ViewModelBase
                 this.RaisePropertyChanged(nameof(SelectedAccount));
             });
 
+        MessageBus.Current.Listen<TransactionChangedMessage>()
+            .Where(m => m != null)
+            .Subscribe(m =>
+            {
+                if (m.Before != null)
+                {
+                    ProcessAccounts(m.Before, -1);
+                }
+                if (m.After != null)
+                {
+                    ProcessAccounts(m.After, 1);
+                }
+            });
+
         RxApp.MainThreadScheduler.Schedule(LoadAccounts);
+    }
+
+    private void ProcessAccounts(Transaction transaction, int direction)
+    {
+        var accounts = Total.Children.Union(Total.Children.SelectMany(a => a.Children)).ToList();
+        var account = accounts.FirstOrDefault(a => a.Id == transaction.AccountId);
+        if (account != null)
+        {
+            if (transaction is DebetTransaction)
+            {
+                UpdateAccounts(account, transaction.Sum * direction);
+            }
+            else if (transaction is CreditTransaction)
+            {
+                UpdateAccounts(account, -transaction.Sum * direction);
+            }
+            else if (transaction is TransferTransaction transfer)
+            {
+                UpdateAccounts(account, -transaction.Sum * direction);
+                var toAccount = accounts.FirstOrDefault(a => a.Id == transfer.ToAccountId);
+                if (toAccount != null)
+                {
+                    UpdateAccounts(toAccount, transfer.ToSum * direction);
+                }
+            }
+        }
+    }
+
+    private void UpdateAccounts(AccountViewModel account, decimal sum)
+    {
+        account.Sum += sum;
+        if (!account.IsGroup)
+        {
+            Save(null, account);
+        }
+
+        if (account.IsNotSummable || account.Parent == null)
+        {
+            return;
+        }
+
+        UpdateAccounts(account.Parent, sum);
     }
 
     private async Task AddGroupAccount()

@@ -63,6 +63,11 @@ public class MainWindowViewModel : ViewModelBase
     {
         _repository = repository;
         _importer = importer;
+        _stateManager = stateManager;
+
+        _accountsViewModel = accounts;
+        _transactionsViewModel = transactionsViewModel;
+        _period = period;
 
         TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
 
@@ -83,14 +88,6 @@ public class MainWindowViewModel : ViewModelBase
             }
         });
 
-        _stateManager = stateManager;
-
-        _accountsViewModel = accounts;
-        _transactionsViewModel = transactionsViewModel;
-        _transactionsViewModel.MainWindowViewModel = this;
-
-        _period = period;
-
         RxApp.MainThreadScheduler.Schedule(MainInit);
     }
 
@@ -99,6 +96,7 @@ public class MainWindowViewModel : ViewModelBase
         var state = _stateManager.GetMainState();
         state.PeriodFrom = _period.From;
         state.PeriodTo = _period.To;
+        state.Accounts = _accountsViewModel.Total.Children.ToArray();
         _stateManager.SetMainState(state);
     }
 }

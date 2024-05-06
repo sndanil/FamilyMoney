@@ -122,7 +122,7 @@ public class LiteDbRepository : IRepository
         return collection.FindAll().ToList();
     }
 
-    public void UpdateSubCategroty(SubCategory subCategory)
+    public void UpdateSubCategory(SubCategory subCategory)
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
@@ -154,11 +154,18 @@ public class LiteDbRepository : IRepository
             .ToList();
     }
 
-    public Transaction GetTransaction(Guid id)
+    public Transaction? GetTransaction(Guid id)
     {
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         return collection.FindById(id);
+    }
+
+    public void DeleteTransaction(Guid id)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+        collection.Delete(id);
     }
 
     public void UpdateTransaction(Transaction transaction)

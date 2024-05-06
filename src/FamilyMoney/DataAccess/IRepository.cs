@@ -26,10 +26,11 @@ public interface IRepository
     SubCategory GetSubCategory(Guid id);
     SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory);
     IEnumerable<SubCategory> GetSubCategories();
-    void UpdateSubCategroty(SubCategory subCategory);
+    void UpdateSubCategory(SubCategory subCategory);
 
     IEnumerable<Transaction> GetTransactions(TransactionsFilter filter);
-    Transaction GetTransaction(Guid id);
+    Transaction? GetTransaction(Guid id);
+    void DeleteTransaction(Guid id);
     void UpdateTransaction(Transaction transaction);
 
     void InsertTransactions(IEnumerable<Transaction> transactions);

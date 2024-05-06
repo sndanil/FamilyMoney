@@ -18,8 +18,9 @@ public class TransactionsViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
-    private MainWindowViewModel? _mainWindowViewModel;
     private decimal _total = 0m;
+
+    private HashSet<Guid> _openedNodes = new HashSet<Guid>();
 
     private TransactionsGroup _debetTransactions = new();
     private TransactionsGroup _creditTransactions = new();
@@ -53,16 +54,16 @@ public class TransactionsViewModel : ViewModelBase
 
     public ICommand DeleteCommand { get; }
 
-    public MainWindowViewModel? MainWindowViewModel
-    {
-        get => _mainWindowViewModel;
-        set => this.RaiseAndSetIfChanged(ref _mainWindowViewModel, value);
-    }
-
     public decimal Total
     {
         get => _total;
         set => this.RaiseAndSetIfChanged(ref _total, value);
+    }
+
+    public BaseTransactionsGroupViewModel? SelectedTransactionGroup
+    {
+        get => _selectedTransactionGroup;
+        set => this.RaiseAndSetIfChanged(ref _selectedTransactionGroup, value);
     }
 
     public TransactionsViewModel(IRepository repository, IStateManager stateManager)
@@ -79,8 +80,25 @@ public class TransactionsViewModel : ViewModelBase
             .Subscribe(m =>
             {
                 ClearSelection();
-                _selectedTransactionGroup = m.Element;
-                _selectedTransactionGroup.IsSelected = true;
+                SelectedTransactionGroup = m.Element;
+                SelectedTransactionGroup.IsSelected = true;
+            });
+
+        MessageBus.Current.Listen<TransactionGroupExpandMessage>()
+            .Where(m => m.Element != null)
+            .Subscribe(m =>
+            {
+                var id = ((m.Element as CategoryTransactionsGroupViewModel)?.Category?.Id
+                        ?? (m.Element as SubCategoryTransactionsGroupViewModel)?.SubCategory?.Id)
+                        ?? Guid.Empty;
+                if (m.Element.IsExpanded)
+                {
+                    _openedNodes.Add(id);
+                }
+                else
+                {
+                    _openedNodes.Remove(id);
+                }
             });
 
         MessageBus.Current.Listen<TransactionGroupEditMessage>()
@@ -137,8 +155,24 @@ public class TransactionsViewModel : ViewModelBase
 
         EditCommand = ReactiveCommand.CreateFromTask(EditTransaction);
 
-        DeleteCommand = ReactiveCommand.CreateFromTask(async () =>
+        var canExecute = this.WhenAnyValue(x => x.SelectedTransactionGroup, x => x.Total, (t, x) => t is TransactionGroupViewModel);
+        DeleteCommand = ReactiveCommand.Create(() =>
         {
+            if (SelectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
+            {
+                var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+                _repository.DeleteTransaction(transactionGroupViewModel.Id);
+                SendTransactionChanged(transaction, null);
+            }
+        }, canExecute);
+    }
+
+    private void SendTransactionChanged(Transaction? before, Transaction? after)
+    {
+        MessageBus.Current.SendMessage(new TransactionChangedMessage
+        {
+            Before = before,
+            After = after,
         });
     }
 
@@ -148,8 +182,8 @@ public class TransactionsViewModel : ViewModelBase
         var state = _stateManager.GetMainState();
         var flatAccounts = GetFlatAccouunts();
         var account = state.SelectedAccountId.HasValue ?
-                            flatAccounts?.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId))
-                            : flatAccounts?.FirstOrDefault(a => !a.IsGroup);
+                            flatAccounts.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId))
+                            : flatAccounts.FirstOrDefault(a => !a.IsGroup);
 
         var transactionViewModel = new T()
         {
@@ -159,18 +193,18 @@ public class TransactionsViewModel : ViewModelBase
             SubCategories = subCategories,
         };
 
-        if (_selectedTransactionGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
+        if (SelectedTransactionGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
         {
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
         }
 
-        if (_selectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
+        if (SelectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
         {
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
             transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory?.Name;
         }
 
-        if (_selectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
+        if (SelectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
         {
             var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
 
@@ -183,7 +217,7 @@ public class TransactionsViewModel : ViewModelBase
 
     private async Task EditTransaction()
     {
-        if (_selectedTransactionGroup is not TransactionGroupViewModel transactionGroupViewModel)
+        if (SelectedTransactionGroup is not TransactionGroupViewModel transactionGroupViewModel)
         {
             return;
         }
@@ -242,8 +276,6 @@ public class TransactionsViewModel : ViewModelBase
         if (result != null)
         {
             SaveTransaction(transaction, result);
-
-            RefreshTransactions(_stateManager.GetMainState());
         }
     }
 
@@ -293,20 +325,24 @@ public class TransactionsViewModel : ViewModelBase
             transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategory!, factory).Id;
         }
 
+        var before = _repository.GetTransaction(transaction.Id);
         _repository.UpdateTransaction(transaction);
+        SendTransactionChanged(before, transaction);
+        RefreshTransactions(_stateManager.GetMainState());
     }
 
     private void ClearSelection()
     {
-        if (_selectedTransactionGroup != null)
+        if (SelectedTransactionGroup != null)
         {
-            _selectedTransactionGroup.IsSelected = false;
-            _selectedTransactionGroup = null;
+            SelectedTransactionGroup.IsSelected = false;
+            SelectedTransactionGroup = null;
         }
     }
 
     private void RefreshTransactions(MainState state)
     {
+        var selected = SelectedTransactionGroup;
         ClearSelection();
 
         var transactions = _repository.GetTransactions(new TransactionsFilter
@@ -324,15 +360,15 @@ public class TransactionsViewModel : ViewModelBase
         {
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel, TransactionGroupViewModel>(debetTransactions, transaction, true);
+                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, transaction, selected, true);
             }
             else if (transaction is CreditTransaction)
             {
-                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel, TransactionGroupViewModel>(creditTransactions, transaction);
+                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, transaction, selected);
             }
             else
             {
-                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel, TransactionGroupViewModel>(transferTransactions, transaction);
+                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, transaction, selected);
             }
         }
 
@@ -367,8 +403,11 @@ public class TransactionsViewModel : ViewModelBase
         }
     }
 
-    private void FillTransactions<C, S, T>(List<CategoryTransactionsGroupViewModel> transactions, Transaction transaction, bool isDebet = false)
-        where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() where T : TransactionGroupViewModel, new()
+    private void FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
+            Transaction transaction, 
+            BaseTransactionsGroupViewModel selected, 
+            bool isDebet = false)
+        where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
         var category = transactions.FirstOrDefault(t => t.Category?.Id == transaction.CategoryId);
         if (category == null)
@@ -377,7 +416,10 @@ public class TransactionsViewModel : ViewModelBase
             if (transaction.CategoryId != null)
             {
                 category.Category = new C();
+                category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
                 category.Category.FillFrom(transaction.CategoryId.Value, _repository);
+                category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category!.Id == transaction.CategoryId;
+                SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
             }
 
             transactions.Add(category);
@@ -391,14 +433,18 @@ public class TransactionsViewModel : ViewModelBase
             if (transaction.SubCategoryId != null)
             {
                 subCategory.SubCategory = new S();
+                subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
                 subCategory.SubCategory.FillFrom(transaction.SubCategoryId.Value, _repository);
+                subCategory.IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory 
+                                        && selectedSubCategory!.SubCategory!.Id == transaction.SubCategoryId;
+                SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
             }
 
             category.SubCategories.Add(subCategory);
         }
         subCategory.Sum += transaction.Sum;
 
-        var viewTransaction = new T()
+        var viewTransaction = new TransactionGroupViewModel
         {
             Id = transaction.Id,
             Date = transaction.Date,
@@ -406,6 +452,8 @@ public class TransactionsViewModel : ViewModelBase
             Sum = transaction.Sum,
             IsDebet = isDebet,
         };
+        viewTransaction.IsSelected = selected is TransactionGroupViewModel selectedTransaction && selectedTransaction.Id == transaction.Id;
+        SelectedTransactionGroup = viewTransaction.IsSelected ? viewTransaction : SelectedTransactionGroup;
 
         subCategory.Transactions.Add(viewTransaction);
     }
@@ -434,18 +482,16 @@ public class TransactionsViewModel : ViewModelBase
         return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
     }
 
-    private IList<AccountViewModel>? GetFlatAccouunts()
+    private IList<AccountViewModel> GetFlatAccouunts()
     {
+        var state = _stateManager.GetMainState();
         var result = new List<AccountViewModel>();
-        if (MainWindowViewModel != null)
+        foreach (var account in state.Accounts)
         {
-            foreach (var account in MainWindowViewModel.Accounts.Total.Children)
+            result.Add(account);
+            foreach (var childAccount in account.Children)
             {
-                result.Add(account);
-                foreach (var childAccount in account.Children)
-                {
-                    result.Add(childAccount);
-                }
+                result.Add(childAccount);
             }
         }
 

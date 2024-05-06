@@ -216,7 +216,7 @@ internal class CsvImporter: IImporter
             var foundSubCategory = subCategories.FirstOrDefault(c => c.Name == record.SubCategory && c.GetType() == subCategory.GetType());
             if (foundSubCategory == null)
             {
-                repository.UpdateSubCategroty(subCategory);
+                repository.UpdateSubCategory(subCategory);
                 subCategories.Add(subCategory);
             }
             else
