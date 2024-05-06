@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Import;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.Views;
@@ -30,6 +31,7 @@ public partial class App : Application
         SplatRegistrations.Register<AccountsViewModel>();
         SplatRegistrations.Register<TransactionsViewModel>();
         SplatRegistrations.Register<MainWindowViewModel>();
+        SplatRegistrations.Register<IImporter, CsvImporter>();
         SplatRegistrations.Register<IStateManager, StateManager>();
 
         SplatRegistrations.SetupIOC();

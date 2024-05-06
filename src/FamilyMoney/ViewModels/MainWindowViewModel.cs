@@ -1,11 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using FamilyMoney.Csv;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Import;
 using FamilyMoney.State;
 using ReactiveUI;
-using System;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Windows.Input;
@@ -16,6 +15,7 @@ public class MainWindowViewModel : ViewModelBase
 {
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
+    private readonly IImporter _importer;
 
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
@@ -56,11 +56,13 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(IRepository repository, 
         IStateManager stateManager,
+        IImporter importer,
         PeriodViewModel period, 
         AccountsViewModel accounts, 
         TransactionsViewModel transactionsViewModel)
     {
         _repository = repository;
+        _importer = importer;
 
         TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
 
@@ -77,7 +79,7 @@ public class MainWindowViewModel : ViewModelBase
             if (files.Any())
             {
                 await using var stream = await files.Single().OpenReadAsync();
-                new CsvImporter().DoImport(_repository, stream);
+                _importer.DoImport(_repository, stream);
             }
         });
 
