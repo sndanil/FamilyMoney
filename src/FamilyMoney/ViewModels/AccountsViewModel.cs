@@ -16,8 +16,9 @@ namespace FamilyMoney.ViewModels;
 public class AccountsViewModel : ViewModelBase
 {
     private AccountViewModel _total = new AccountViewModel();
-    private AccountViewModel? _selectedAccount = null;
     private AccountViewModel? _draggingAccount = null;
+
+    private bool _showHidden = false;
 
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
@@ -28,7 +29,7 @@ public class AccountsViewModel : ViewModelBase
 
     public ICommand EditCommand { get; }
 
-    public ICommand DeleteCommand { get; }
+    public ICommand ShowHiddenCommand { get; }
 
     public AccountViewModel Total
     {
@@ -40,6 +41,12 @@ public class AccountsViewModel : ViewModelBase
     {
         get => _draggingAccount;
         set => this.RaiseAndSetIfChanged(ref _draggingAccount, value);
+    }
+
+    public bool ShowHidden
+    {
+        get => _showHidden;
+        set => this.RaiseAndSetIfChanged(ref _showHidden, value);
     }
 
     public AccountViewModel? SelectedAccount    
@@ -66,16 +73,11 @@ public class AccountsViewModel : ViewModelBase
         AddElementCommand = ReactiveCommand.CreateFromTask(AddElementAccount);
         EditCommand = ReactiveCommand.CreateFromTask<AccountViewModel>(EditAccount);
 
-        var canEditExecute = this.WhenAnyValue(x => x.SelectedAccount, x => x.Total,
-            (selectedAccount, total) => selectedAccount != null && selectedAccount != total);
-        DeleteCommand = ReactiveCommand.CreateFromTask(() =>
+        ShowHiddenCommand = ReactiveCommand.CreateFromTask(() =>
         {
-            _repository.DeleteAccount(SelectedAccount!.Id!.Value);
-            SelectedAccount!.Parent!.Children.Remove(SelectedAccount);
-            UpdateChildren(SelectedAccount.Parent);
-
+            ShowHidden = !ShowHidden;
             return Task.CompletedTask;
-        }, canEditExecute);
+        });
 
         MessageBus.Current.Listen<MainStateChangedMessage>()
             .Where(m => m.State != null)
@@ -134,7 +136,10 @@ public class AccountsViewModel : ViewModelBase
             Id = editAccount!.Id,
             Parent = editAccount.Parent,
             Name = editAccount.Name,
+            Sum = editAccount.Sum,
             Image = editAccount.Image,
+            IsHidden = editAccount.IsHidden,
+            IsNotSummable = editAccount.IsNotSummable,
         };
         var result = await AccountViewModel.ShowDialog.Handle(account);
         if (result != null)
@@ -270,6 +275,8 @@ public class AccountsViewModel : ViewModelBase
         {
             one.Name = other.Name;
             one.Image = other.Image;
+            one.IsHidden = other.IsHidden;
+            one.IsNotSummable = other.IsNotSummable;
         }
 
         _repository!.UpdateAccount(new Models.Account
@@ -278,6 +285,8 @@ public class AccountsViewModel : ViewModelBase
             ParentId = other.Parent?.Id,
             Name = other.Name,
             IsGroup = other.IsGroup,
+            IsHidden = other.IsHidden,
+            IsNotSummable = other.IsNotSummable,
             Sum = other.IsGroup ? 0 : other.Sum,
             Order = (other.Parent ?? Total).Children
                         .Select((account, index) => (account, index))

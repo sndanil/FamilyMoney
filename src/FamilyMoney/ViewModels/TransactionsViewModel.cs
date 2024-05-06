@@ -97,9 +97,6 @@ public class TransactionsViewModel : ViewModelBase
 
         AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            //(new CsvImporter()).DoImport(_repository);
-            //return;
-
             var state = _stateManager.GetMainState();
             var flatAccounts = GetFlatAccouunts();
             var account = state.SelectedAccountId.HasValue ? 

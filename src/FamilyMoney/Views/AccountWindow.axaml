@@ -12,16 +12,25 @@
 		x:DataType="vm:AccountViewModel"		
         x:Class="FamilyMoney.Views.AccountWindow"
         Title="Счёт">
-	<Grid RowDefinitions="auto * auto auto">
+	<Window.Styles>
+		<Style Selector="CheckBox">
+			<Setter Property="Margin" Value="20 0" />
+		</Style>
+	</Window.Styles>
+	<Grid RowDefinitions="auto auto * auto auto">
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
-		<Image Grid.Row="1"
+		<StackPanel Grid.Row="1" Orientation="Horizontal">
+			<CheckBox IsChecked="{Binding IsHidden}">Скрытый</CheckBox>
+			<CheckBox IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
+		</StackPanel>
+		<Image Grid.Row="2"
 			Name="ImageControl"
 			DragDrop.AllowDrop="True"
 			Stretch="Uniform"
 			Source="{Binding Image}"
 			VerticalAlignment="Center"
 			/>
-		<TextBlock Grid.Row="1"
+		<TextBlock Grid.Row="2"
 				   VerticalAlignment="Center"
 				   HorizontalAlignment="Center"
 				   Text="Выберите картинку"
@@ -29,7 +38,7 @@
 								Converter={x:Static ObjectConverters.IsNull}}"
 				   />
 		
-		<Button Grid.Row="2" 
+		<Button Grid.Row="3" 
 				Classes="DialogButton" 
 				Content="Изменить" 
 				HorizontalAlignment="Center"
@@ -38,8 +47,7 @@
 				/>
 
 		<StackPanel
-			Grid.Row="3"
-			Grid.Column="1"
+			Grid.Row="4"
 			Orientation="Horizontal"
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"

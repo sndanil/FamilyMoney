@@ -15,5 +15,9 @@ public sealed class Account
     public bool IsGroup { get; set; }
 
     public decimal Sum { get; set; }
+
+    public bool IsHidden { get; set; }
+
+    public bool IsNotSummable { get; set; }
 }
 

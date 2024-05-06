@@ -4,12 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:DataType="vm:AccountsViewModel"
              x:Class="FamilyMoney.Views.AccountsView"
 			 >
+	<UserControl.Resources>
+		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
+	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.Separator">
 			<Setter Property="Height" Value="3" />
@@ -42,11 +46,11 @@
 		</Style>
 		<Style Selector="Border.AloneElement">
 			<Setter Property="CornerRadius" Value="12 12 12 12"/>
-			<Setter Property="Margin" Value="0 2" />
+			<Setter Property="Margin" Value="1 0 1 2" />
 		</Style>
 		<Style Selector="Border.LastElement">
 			<Setter Property="CornerRadius" Value="0 0 12 12"/>
-			<Setter Property="Margin" Value="0 0 0 2" />
+			<Setter Property="Margin" Value="1 0 1 2" />
 		</Style>
 		<Style Selector="Border.Account:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
@@ -79,6 +83,9 @@
 		<Style Selector="Button.BottomButton">
 			<Setter Property="Margin" Value="5 0" />
 			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+		<Style Selector="Button.Checked">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
 		<Style Selector="Button.BottomButton:disabled">
 			<Setter Property="IsVisible" Value="False"/>
@@ -131,6 +138,12 @@
 									Classes.Group="{Binding IsGroup}" 
 									Classes.Selected="{Binding IsSelected}"
 									>
+								<Border.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.Or}">
+										<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
+										<Binding Path="!IsHidden" />
+									</MultiBinding>
+								</Border.IsVisible>
 								<i:Interaction.Behaviors>
 									<ia:EventTriggerBehavior EventName="Tapped">
 										<InvokeCommandAction Command="{Binding SelectCommand}" />
@@ -150,7 +163,16 @@
 												/>
 										<TextBlock Text="{Binding Name}" Name="AccountName"/>
 									</StackPanel>
-									<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
+									<TextBlock Grid.Column="2" 
+											   Text="{Binding Sum, StringFormat='#,##0.00'}" 
+											   Name="AccountSum">
+										<TextBlock.IsVisible>
+											<MultiBinding Converter="{x:Static BoolConverters.Or}">
+												<Binding Path="Sum" Converter="{StaticResource isNotZeroConverter}"/>
+												<Binding Path="!IsGroup" />
+											</MultiBinding>
+										</TextBlock.IsVisible>
+									</TextBlock>
 								</Grid>
 							</Border>
 							<ItemsControl ItemsSource="{Binding Children}">
@@ -166,6 +188,12 @@
 												Classes.LastElement="{Binding IsLastElement}"
 												Classes.Selected="{Binding IsSelected}"
 												>
+											<Border.IsVisible>
+												<MultiBinding Converter="{x:Static BoolConverters.Or}">
+													<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
+													<Binding Path="!IsHidden" />
+												</MultiBinding>
+											</Border.IsVisible>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
 													<InvokeCommandAction Command="{Binding SelectCommand}" />
@@ -227,10 +255,11 @@
 						ToolTip.Tip="Изменить">
 					<PathIcon Data="{StaticResource Edit}" />
 				</Button>
-				<Button Command="{Binding DeleteCommand}" 
+				<Button Command="{Binding ShowHiddenCommand}" 						
 						Classes="BottomButton"
-						ToolTip.Tip="Удалить">
-					<PathIcon Data="{StaticResource Cross}" />
+						Classes.Checked="{Binding ShowHidden}"
+						ToolTip.Tip="Показать скрытые">
+					<PathIcon Data="{StaticResource Hidden}" />
 				</Button>
 			</StackPanel>
 		</Border>

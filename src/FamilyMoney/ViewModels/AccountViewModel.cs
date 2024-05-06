@@ -30,6 +30,8 @@ public class AccountViewModel : ViewModelBase
     private IImage? _image = null;
     private bool _isSelected = false;
     private bool _isGroup = false;
+    private bool _isHidden = false;
+    private bool _isNotSummable = false;
     private ObservableCollection<AccountViewModel> _children = new();
 
     public ICommand SelectCommand { get; }
@@ -74,6 +76,18 @@ public class AccountViewModel : ViewModelBase
     {
         get => _isGroup;
         set => this.RaiseAndSetIfChanged(ref _isGroup, value);
+    }
+
+    public bool IsHidden
+    {
+        get => _isHidden;
+        set => this.RaiseAndSetIfChanged(ref _isHidden, value);
+    }
+
+    public bool IsNotSummable
+    {
+        get => _isNotSummable;
+        set => this.RaiseAndSetIfChanged(ref _isNotSummable, value);
     }
 
     public bool IsSelected
@@ -135,7 +149,7 @@ public class AccountViewModel : ViewModelBase
 
         if (IsGroup)
         {
-            Sum = Children.Sum(c => c.Sum);
+            Sum = Children.Where(a => !a.IsNotSummable).Sum(c => c.Sum);
         }
     }
 
@@ -145,6 +159,8 @@ public class AccountViewModel : ViewModelBase
         Name = account.Name;
         Sum = account.Sum;
         IsGroup = account.IsGroup;
+        IsHidden = account.IsHidden;
+        IsNotSummable = account.IsNotSummable;
         Image = ImageConverter.ToImage(repository.TryGetImage(account.Id));
     }
 }
