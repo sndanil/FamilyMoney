@@ -22,7 +22,8 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     private IList<BaseSubCategoryViewModel>? _subCategories;
     private string? _comment;
     private BaseCategoryViewModel? _category;
-    private string? _subCategory;
+    private BaseSubCategoryViewModel? _subCategory;
+    private string? _subCategoryText;
     private DateTimeOffset? _date = DateTime.Today;
     private DateTime? _lastChange = DateTime.Now;
 
@@ -98,7 +99,13 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _comment, value);
     }
 
-    public string? SubCategory
+    public string? SubCategoryText
+    {
+        get => _subCategoryText;
+        set => this.RaiseAndSetIfChanged(ref _subCategoryText, value);
+    }
+
+    public BaseSubCategoryViewModel? SubCategory
     {
         get => _subCategory;
         set => this.RaiseAndSetIfChanged(ref _subCategory, value);

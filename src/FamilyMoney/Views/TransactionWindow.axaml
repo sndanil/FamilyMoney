@@ -105,7 +105,8 @@
 
 			<TextBlock Grid.Row="3" Text="Подкадегория" Classes="Label" />
 			<AutoCompleteBox Grid.Row="3" Grid.Column="1"
-						Text="{Binding SubCategory}"
+						SelectedItem="{Binding SubCategory}"
+						Text="{Binding SubCategoryText, Mode=OneWayToSource}"
 						IsTextCompletionEnabled="True"
 						Name="SubCategoryCompleteBox"
 						FilterMode="Custom"

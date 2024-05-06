@@ -201,7 +201,7 @@ public class TransactionsViewModel : ViewModelBase
         if (SelectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
         {
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
-            transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory?.Name;
+            transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory;
         }
 
         if (SelectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
@@ -209,8 +209,10 @@ public class TransactionsViewModel : ViewModelBase
             var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
 
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
-            transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId)?.Name;
+            transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId);
         }
+
+        transactionViewModel.SubCategoryText = transactionViewModel.SubCategory?.Name;
 
         return transactionViewModel;
     }
@@ -265,7 +267,8 @@ public class TransactionsViewModel : ViewModelBase
         transactionViewModel.FlatAccounts = flatAccounts;
         transactionViewModel.Account = flatAccounts?.FirstOrDefault(a => a.Id == transaction.AccountId);
         transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
-        transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
+        transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId);
+        transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
 
         if (transactionViewModel == null)
         {
@@ -288,12 +291,12 @@ public class TransactionsViewModel : ViewModelBase
         transaction.Date = transactionViewModel.Date!.Value.Date;
         transaction.LastChange = DateTime.Now;
 
-        if (!string.IsNullOrEmpty(transactionViewModel.SubCategory))
+        if (!string.IsNullOrEmpty(transactionViewModel.SubCategoryText))
         {
             Func<SubCategory> factory = () => new DebetSubCategory
             {
                 Id = Guid.NewGuid(),
-                Name = transactionViewModel.SubCategory!,
+                Name = transactionViewModel.SubCategoryText!,
                 CategoryId = transaction.CategoryId
             };
 
@@ -305,7 +308,7 @@ public class TransactionsViewModel : ViewModelBase
                 factory = () => new CreditSubCategory
                 {
                     Id = Guid.NewGuid(),
-                    Name = transactionViewModel.SubCategory!,
+                    Name = transactionViewModel.SubCategoryText!,
                     CategoryId = transaction.CategoryId
                 };
             }
@@ -314,7 +317,7 @@ public class TransactionsViewModel : ViewModelBase
                 factory = () => new TransferSubCategory
                 {
                     Id = Guid.NewGuid(),
-                    Name = transactionViewModel.SubCategory!,
+                    Name = transactionViewModel.SubCategoryText!,
                     CategoryId = transaction.CategoryId
                 };
 
@@ -322,7 +325,7 @@ public class TransactionsViewModel : ViewModelBase
                 transferTransaction.ToSum = transactionViewModel.ToSum;
             }
 
-            transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategory!, factory).Id;
+            transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategoryText!, factory).Id;
         }
 
         var before = _repository.GetTransaction(transaction.Id);
