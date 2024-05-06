@@ -12,7 +12,7 @@ namespace FamilyMoney.Csv
 {
     internal class CsvImporter
     {
-        public void DoImport(IRepository repository)
+        public void DoImport(IRepository repository, Stream stream)
         {
             try
             {
@@ -26,74 +26,73 @@ namespace FamilyMoney.Csv
                 var categories = repository.GetCategories().ToList();
                 var subCategories = repository.GetSubCategories().ToList();
                 var accounts = repository.GetAccounts().Where(a => !a.IsGroup).ToList();
-                //var accountGroups = repository.GetAccounts().Where(a => a.IsGroup).ToList();
 
                 var transactions = new List<Transaction>();
 
-                using (var reader = new StreamReader("D:\\AlzexFinancePro\\Data\\export.csv"))
-                using (var csv = new CsvReader(reader, config))
+                using var reader = new StreamReader(stream);
+                using var csv = new CsvReader(reader, config);
+
+                var records = csv.GetRecords<ImportRow>().ToList();
+                foreach (var record in records)
                 {
-                    var records = csv.GetRecords<ImportRow>().ToList();
-                    foreach (var record in records)
+                    var isTransfer = record.Accounts?.Contains(':') == true;
+                    var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
+
+                    Category? category = TryGetCategory(repository, categories, record, isTransfer, isCredit);
+                    SubCategory? subCategory = TryGetSubCategory(repository, category, subCategories, record, isTransfer, isCredit);
+
+                    var creditAccount = TryGetAccount(repository, accounts, record.CreditAccount);
+                    var debetAccount = TryGetAccount(repository, accounts, record.DebetAccount);
+
+                    Transaction? transaction = null;
+                    if (isTransfer)
                     {
-                        var isTransfer = record.Accounts?.Contains(':') == true;
-                        var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
-
-                        Category? category = TryGetCategory(repository, categories, record, isTransfer, isCredit);
-                        SubCategory? subCategory = TryGetSubCategory(repository, category, subCategories, record, isTransfer, isCredit);
-
-                        var creditAccount = TryGetAccount(repository, accounts, record.CreditAccount);
-                        var debetAccount = TryGetAccount(repository, accounts, record.DebetAccount);
-
-                        Transaction? transaction = null;
-                        if (isTransfer)
+                        transaction = new TransferTransaction
                         {
-                            transaction = new TransferTransaction
-                            {
-                                Id = Guid.NewGuid(),
-                                Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
-                                AccountId = creditAccount?.Id,
-                                ToAccountId = debetAccount?.Id,
-                                CategoryId = category?.Id,
-                                SubCategoryId = subCategory?.Id,
-                                Sum = Math.Abs(record.CreditSum!.Value),
-                                ToSum = Math.Abs(record.DebetSum!.Value),
-                                Comment = record.Comment,
-                                LastChange = DateTime.Now,
-                            };
-                        }
-                        else if (isCredit)
-                        {
-                            transaction = new CreditTransaction
-                            {
-                                Id = Guid.NewGuid(),
-                                Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
-                                AccountId = creditAccount?.Id,
-                                CategoryId = category?.Id,
-                                SubCategoryId = subCategory?.Id,
-                                Sum = Math.Abs(record.Sum),
-                                Comment = record.Comment,
-                                LastChange = DateTime.Now,
-                            };
-                        }
-                        else
-                        {
-                            transaction = new DebetTransaction
-                            {
-                                Id = Guid.NewGuid(),
-                                Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
-                                AccountId = debetAccount?.Id,
-                                CategoryId = category?.Id,
-                                SubCategoryId = subCategory?.Id,
-                                Sum = Math.Abs(record.Sum),
-                                Comment = record.Comment,
-                                LastChange = DateTime.Now,
-                            };
-                        }
-
-                        transactions.Add(transaction);
+                            Id = Guid.NewGuid(),
+                            Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
+                            AccountId = creditAccount?.Id,
+                            ToAccountId = debetAccount?.Id,
+                            CategoryId = category?.Id,
+                            SubCategoryId = subCategory?.Id,
+                            Sum = Math.Abs(record.CreditSum!.Value),
+                            ToSum = Math.Abs(record.DebetSum!.Value),
+                            Comment = record.Comment,
+                            LastChange = DateTime.Now,
+                        };
                     }
+                    else if (isCredit)
+                    {
+                        transaction = new CreditTransaction
+                        {
+                            Id = Guid.NewGuid(),
+                            Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
+                            AccountId = creditAccount?.Id,
+                            CategoryId = category?.Id,
+                            SubCategoryId = subCategory?.Id,
+                            Sum = Math.Abs(record.Sum),
+                            Comment = record.Comment,
+                            LastChange = DateTime.Now,
+                        };
+                    }
+                    else
+                    {
+                        transaction = new DebetTransaction
+                        {
+                            Id = Guid.NewGuid(),
+                            Date = DateTime.ParseExact(record.Date!, "dd.MM.yyyy", CultureInfo.InvariantCulture),
+                            AccountId = debetAccount?.Id,
+                            CategoryId = category?.Id,
+                            SubCategoryId = subCategory?.Id,
+                            Sum = Math.Abs(record.Sum),
+                            Comment = record.Comment,
+                            LastChange = DateTime.Now,
+                        };
+                    }
+
+                    transactions.Add(transaction);
                 }
+
 
                 repository.InsertTransactions(transactions);
 

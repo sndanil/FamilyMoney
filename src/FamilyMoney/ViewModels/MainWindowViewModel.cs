@@ -1,7 +1,12 @@
-﻿using FamilyMoney.DataAccess;
+﻿using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using FamilyMoney.Csv;
+using FamilyMoney.DataAccess;
 using FamilyMoney.State;
 using ReactiveUI;
 using System;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Windows.Input;
 
@@ -10,6 +15,7 @@ namespace FamilyMoney.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
     private readonly IStateManager _stateManager;
+    private readonly IRepository _repository;
 
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
@@ -19,6 +25,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly TransactionsViewModel _transactionsViewModel;
 
     public ICommand TriggerPaneCommand { get; }
+    public ICommand ImportCommand { get; }
 
     public int LeftSideWidth
     {
@@ -53,7 +60,26 @@ public class MainWindowViewModel : ViewModelBase
         AccountsViewModel accounts, 
         TransactionsViewModel transactionsViewModel)
     {
+        _repository = repository;
+
         TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
+
+        ImportCommand = ReactiveCommand.Create(async (Avalonia.Visual visual) =>
+        {
+            var topLevel = TopLevel.GetTopLevel(visual);
+            var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Выбор файла для импорта",
+                AllowMultiple = false,
+                FileTypeFilter = [new("Файл CSV") { Patterns = ["*.csv"], MimeTypes = ["*/*"] }, FilePickerFileTypes.All]
+            });
+
+            if (files.Any())
+            {
+                await using var stream = await files.Single().OpenReadAsync();
+                new CsvImporter().DoImport(_repository, stream);
+            }
+        });
 
         _stateManager = stateManager;
 
