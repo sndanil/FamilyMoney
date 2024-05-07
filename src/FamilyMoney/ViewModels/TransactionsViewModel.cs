@@ -408,7 +408,7 @@ public class TransactionsViewModel : ViewModelBase
 
     private void FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
             Transaction transaction, 
-            BaseTransactionsGroupViewModel selected, 
+            BaseTransactionsGroupViewModel? selected, 
             bool isDebet = false)
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
@@ -421,7 +421,7 @@ public class TransactionsViewModel : ViewModelBase
                 category.Category = new C();
                 category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
                 category.Category.FillFrom(transaction.CategoryId.Value, _repository);
-                category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category!.Id == transaction.CategoryId;
+                category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId;
                 SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
             }
 
@@ -439,7 +439,7 @@ public class TransactionsViewModel : ViewModelBase
                 subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
                 subCategory.SubCategory.FillFrom(transaction.SubCategoryId.Value, _repository);
                 subCategory.IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory 
-                                        && selectedSubCategory!.SubCategory!.Id == transaction.SubCategoryId;
+                                        && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId;
                 SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
             }
 
