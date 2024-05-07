@@ -50,7 +50,7 @@
 		</Style>
 		<Style Selector="Border.Total">
 			<Setter Property="Margin" Value="2 2 2 0" />
-			<Setter Property="Height" Value="30" />
+			<Setter Property="Height" Value="40" />
 			<Setter Property="CornerRadius" Value="5" />
 			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
@@ -105,6 +105,11 @@
 			<Setter Property="Margin" Value="10 0 0 0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
+		<Style Selector="Button.AddButton">
+			<Setter Property="Margin" Value="20 0 0 0" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
 	</UserControl.Styles>
 	<Grid RowDefinitions="auto * auto">
 		<Border Classes="Header">
@@ -123,12 +128,15 @@
 				</Border>
 			</Grid>
 		</Border>
-
+		
 		<ScrollViewer Grid.Row="1">
 			<StackPanel>
-				<Border Classes="Total" Height="30">
+				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 200 100">
-						<TextBlock Classes="Title">Доходы</TextBlock>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Classes="Title">Доходы</TextBlock>
+							<Button Classes="AddButton" Command="{Binding AddDebetCommand}">Добавить</Button>
+						</StackPanel>
 						<TextBlock Grid.Column="2"
 								   Classes="Sum Debet"
 								   Text="{Binding DebetTransactions.Sum, StringFormat='#,##0.00'}"
@@ -138,9 +146,12 @@
 
 				<views:TransactionsTreeControl DataContext="{Binding DebetTransactions}" />
 
-				<Border Classes="Total" Height="30">
+				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 200 100">
-						<TextBlock Classes="Title">Расходы</TextBlock>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Classes="Title">Расходы</TextBlock>
+							<Button Classes="AddButton" Command="{Binding AddCreditCommand}">Добавить</Button>
+						</StackPanel>						
 						<TextBlock Grid.Column="2" Classes="Sum Credit"
 								   Text="{Binding CreditTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
@@ -149,9 +160,12 @@
 
 				<views:TransactionsTreeControl DataContext="{Binding CreditTransactions}" />
 
-				<Border Classes="Total" Height="30">
+				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 200 100">
-						<TextBlock Classes="Title">Переводы</TextBlock>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Classes="Title">Переводы</TextBlock>
+							<Button Classes="AddButton" Command="{Binding AddTransferCommand}">Добавить</Button>
+						</StackPanel>
 						<TextBlock Grid.Column="2" Classes="Sum"
 								   Text="{Binding TransferTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
@@ -163,7 +177,7 @@
 			</StackPanel>
 		</ScrollViewer>
 
-		<Border Classes="Total" Height="30" Grid.Row="2" Margin="2">
+		<Border Classes="Total" Grid.Row="2" Margin="2">
 			<Grid ColumnDefinitions="* 100 200 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
 				<TextBlock Grid.Column="2" Classes="Sum Debet"
