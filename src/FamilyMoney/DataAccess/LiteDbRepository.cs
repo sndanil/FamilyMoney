@@ -104,7 +104,7 @@ public class LiteDbRepository : IRepository
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         var result = collection.Query()
-                        .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name)
+                        .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name.ToLower())
                         .FirstOrDefault();
         if (result == null)
         {
