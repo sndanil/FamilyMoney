@@ -80,6 +80,25 @@ public class AccountsViewModel : ViewModelBase
             return Task.CompletedTask;
         });
 
+        SubscribeMessages();
+    }
+
+    public void LoadAccounts()
+    {
+        var total = new AccountViewModel
+        {
+            Name = "Всего",
+            IsGroup = true,
+        };
+
+        var accounts = _repository!.GetAccounts();
+        total.AddFromAccount(_repository, accounts);
+
+        Total = total;
+    }
+
+    private void SubscribeMessages()
+    {
         MessageBus.Current.Listen<MainStateChangedMessage>()
             .Where(m => m.State != null)
             .Subscribe(m => RefreshSelectedAccount(m.State.SelectedAccountId));
@@ -108,8 +127,6 @@ public class AccountsViewModel : ViewModelBase
                     ProcessAccounts(m.After, 1);
                 }
             });
-
-        RxApp.MainThreadScheduler.Schedule(LoadAccounts);
     }
 
     private void ProcessAccounts(Transaction transaction, int direction)
@@ -301,18 +318,6 @@ public class AccountsViewModel : ViewModelBase
                 account.IsSelected = account.Id == accountId;
             }
         }
-    }
-
-    private void LoadAccounts()
-    {
-        _total = new AccountViewModel
-        {
-            Name = "Всего",
-            IsGroup = true,
-        };
-
-        var accounts = _repository!.GetAccounts();
-        _total.AddFromAccount(_repository, accounts);
     }
 
     private void Save(AccountViewModel? one, AccountViewModel other)

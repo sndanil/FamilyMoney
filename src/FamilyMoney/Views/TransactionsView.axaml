@@ -113,7 +113,7 @@
 	</UserControl.Styles>
 	<Grid RowDefinitions="auto * auto">
 		<Border Classes="Header">
-			<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
+			<Grid RowDefinitions="auto" ColumnDefinitions="* 100 150 100">
 				<Border Classes="LikeGridHeader">
 					<TextBlock>Категория</TextBlock>
 				</Border>

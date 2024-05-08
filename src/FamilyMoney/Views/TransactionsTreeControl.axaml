@@ -3,11 +3,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
+	<UserControl.Resources>
+		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
@@ -160,10 +164,15 @@
 													</i:Interaction.Behaviors>
 
 													<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
-														<Button Grid.Column="0" Classes="Expander" Command="{Binding CopyCommand}">
+														<Button Grid.Column="0" 
+																Classes="Expander" 
+																Command="{Binding CopyCommand}"
+																ToolTip.Tip="Копировать">
 															<PathIcon Data="{StaticResource Copy}" />
 														</Button>
-														<Button Grid.Column="1" Classes="Expander">
+														<Button Grid.Column="1" 
+																Classes="Expander" 
+																ToolTip.Tip="Удалить">
 															<Button.Flyout>
 																<MenuFlyout>
 																	<MenuItem Width="200" Header="Удалить" Command="{Binding DeleteCommand}" />
@@ -172,7 +181,11 @@
 															
 															<PathIcon Data="{StaticResource Trash}" />
 														</Button>
-														<TextBlock Grid.Column="2" Classes="Name" Text="{Binding Comment}" />
+														<TextBlock Grid.Column="2" 
+																   Classes="Name" 
+																   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+																   TextTrimming="CharacterEllipsis"
+																   />
 														<TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
 														<TextBlock Grid.Column="4" Classes="Sum"
 																   Classes.Debet="{Binding IsDebet}"

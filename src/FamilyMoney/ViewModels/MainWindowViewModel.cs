@@ -85,6 +85,7 @@ public class MainWindowViewModel : ViewModelBase
             {
                 await using var stream = await files.Single().OpenReadAsync();
                 _importer.DoImport(_repository, stream);
+                MainInit();
             }
         });
 
@@ -93,6 +94,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private void MainInit()
     {
+        _accountsViewModel.LoadAccounts();
         var state = _stateManager.GetMainState();
         state.PeriodFrom = _period.From;
         state.PeriodTo = _period.To;
