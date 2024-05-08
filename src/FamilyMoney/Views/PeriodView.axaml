@@ -8,11 +8,19 @@
              x:Class="FamilyMoney.Views.PeriodView">
 	<Grid ColumnDefinitions="auto auto auto" Height="50">
 		<Button Command="{Binding PrevCommand}"
-				CornerRadius="3 0 0 3"
-				>&lt;</Button>
-		<Button Grid.Column="1" MinWidth="200"
-				CornerRadius="0"
+				CornerRadius="12 0 0 12"
+				Height="30"
 				>
+			<PathIcon Data="{StaticResource ChevronRight}">
+				<PathIcon.RenderTransform>
+					<RotateTransform Angle="180" />
+				</PathIcon.RenderTransform>
+			</PathIcon>
+
+		</Button>
+		<Button Grid.Column="1" MinWidth="200"
+				Height="30"
+				CornerRadius="0">
 			<Button.Flyout>
 				<MenuFlyout>
 					<MenuItem Width="200" Header="Месяц" Command="{Binding ToMonthCommand}" />
@@ -26,7 +34,10 @@
 			<TextBlock Text="{Binding Text}" HorizontalAlignment="Center"></TextBlock>
 		</Button>
 		<Button Grid.Column="2" Command="{Binding NextCommand}"
-				CornerRadius="0 3 3 0"
-				>&gt;</Button>
+				Height="30"
+				CornerRadius="0 12 12 0"
+				>
+			<PathIcon Data="{StaticResource ChevronRight}" />
+		</Button>
 	</Grid>
 </UserControl>

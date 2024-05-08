@@ -74,7 +74,7 @@
 							</ia:EventTriggerBehavior>
 						</i:Interaction.Behaviors>
 						
-						<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+						<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 							<Button Classes="Expander" Command="{Binding ToggleExpand}">
 								<Grid>
 									<PathIcon Data="{StaticResource ChevronDown}"
@@ -83,7 +83,9 @@
 											  IsVisible="{Binding !IsExpanded}" />
 								</Grid>
 							</Button>
-							<TextBlock Classes="Name" Grid.Column="1" Text="{Binding Category.Name}" />
+							<TextBlock Grid.Column="1" Grid.ColumnSpan="2"
+									   Classes="Name" 
+									   Text="{Binding Category.Name}" />
 							<TextBlock Grid.Column="3" Classes="Sum"
 									   Classes.Debet="{Binding IsDebet}"
 									   Text="{Binding Sum, StringFormat='#,##0.00'}" />
@@ -93,7 +95,7 @@
 						</Grid>
 					</Border>
 
-					<ItemsControl Margin="50 0 0 0"
+					<ItemsControl Margin="30 0 0 0"
 								  IsVisible="{Binding IsExpanded}"
 								  ItemsSource="{Binding SubCategories}">
 						<ItemsControl.ItemsPanel>
@@ -115,7 +117,7 @@
 											</ia:EventTriggerBehavior>
 										</i:Interaction.Behaviors>
 
-										<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 200 100">
+										<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 											<Button Classes="Expander" Command="{Binding ToggleExpand}">
 												<Grid>
 													<PathIcon Data="{StaticResource ChevronDown}"
@@ -124,7 +126,9 @@
 															  IsVisible="{Binding !IsExpanded}" />
 												</Grid>
 											</Button>
-											<TextBlock Classes="Name" Grid.Column="1" Text="{Binding SubCategory.Name}" />
+											<TextBlock Grid.Column="1" Grid.ColumnSpan="2" 
+													   Classes="Name" 
+													   Text="{Binding SubCategory.Name}" />
 											<TextBlock Grid.Column="3" Classes="Sum"
 													   Classes.Debet="{Binding IsDebet}"
 													   Text="{Binding Sum, StringFormat='#,##0.00'}" />
@@ -134,7 +138,7 @@
 										</Grid>
 									</Border>
 
-									<ItemsControl Margin="50 0 0 0"
+									<ItemsControl Margin="30 0 0 0"
 												  IsVisible="{Binding IsExpanded}"
 												  ItemsSource="{Binding Transactions}">
 										<ItemsControl.ItemsPanel>
@@ -155,13 +159,25 @@
 														</ia:EventTriggerBehavior>
 													</i:Interaction.Behaviors>
 
-													<Grid RowDefinitions="auto" ColumnDefinitions="* 100 200 100">
-														<TextBlock Classes="Name" Text="{Binding Comment}" />
-														<TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-														<TextBlock Grid.Column="2" Classes="Sum"
+													<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
+														<Button Grid.Column="0" Classes="Expander" Command="{Binding CopyCommand}">
+															<PathIcon Data="{StaticResource Copy}" />
+														</Button>
+														<Button Grid.Column="1" Classes="Expander">
+															<Button.Flyout>
+																<MenuFlyout>
+																	<MenuItem Width="200" Header="Удалить" Command="{Binding DeleteCommand}" />
+																</MenuFlyout>
+															</Button.Flyout>
+															
+															<PathIcon Data="{StaticResource Trash}" />
+														</Button>
+														<TextBlock Grid.Column="2" Classes="Name" Text="{Binding Comment}" />
+														<TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+														<TextBlock Grid.Column="4" Classes="Sum"
 																   Classes.Debet="{Binding IsDebet}"
 																   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-														<TextBlock Grid.Column="3" Classes="Sum"
+														<TextBlock Grid.Column="5" Classes="Sum"
 																   Classes.Debet="{Binding IsDebet}"
 																   Text="{Binding Percent, StringFormat=P}" />
 													</Grid>

@@ -11,7 +11,7 @@ public sealed class TransactionsGroup: ViewModelBase
 {
     private bool _isDebet = false;
     private decimal _sum = 0;
-    private ObservableCollection<CategoryTransactionsGroupViewModel> _categories = new();
+    private ObservableCollection<CategoryTransactionsGroupViewModel> _categories = [];
 
     public bool IsDebet
     {
@@ -115,11 +115,25 @@ public class TransactionGroupViewModel : BaseTransactionsGroupViewModel
 
     public ICommand EditCommand { get; }
 
+    public ICommand CopyCommand { get; }
+
+    public ICommand DeleteCommand { get; }
+
     public TransactionGroupViewModel()
     {
         EditCommand = ReactiveCommand.Create(() =>
         {
             MessageBus.Current.SendMessage(new TransactionGroupEditMessage { Element = this });
+        });
+
+        CopyCommand = ReactiveCommand.Create(() =>
+        {
+            MessageBus.Current.SendMessage(new TransactionGroupCopyMessage{ Element = this });
+        });
+
+        DeleteCommand = ReactiveCommand.Create(() =>
+        {
+            MessageBus.Current.SendMessage(new TransactionGroupDeleteMessage { Element = this });
         });
     }
 }

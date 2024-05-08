@@ -21,7 +21,7 @@
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 		</Style>
 		<Style Selector="Border.Account">
-			<Setter Property="Height" Value="50" />
+			<Setter Property="Height" Value="40" />
 		</Style>
 		<Style Selector="Border.Drag">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
@@ -56,8 +56,7 @@
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
 		</Style>
 		<Style Selector="Border.Account Image">
-			<Setter Property="Height" Value="40" />
-			<Setter Property="Width" Value="40" />
+			<Setter Property="Width" Value="50" />
 			<Setter Property="Margin" Value="10 5 0 5" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
@@ -108,15 +107,18 @@
 				</ia:EventTriggerBehavior>
 			</i:Interaction.Behaviors>
 			
-			<Grid ColumnDefinitions="* auto">
-				<StackPanel Orientation="Horizontal">
-					<Image Stretch="Uniform"
-							Source="{Binding Image}"
-							IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-							/>
-					<TextBlock Text="{Binding Name}" Name="AccountName"/>
-				</StackPanel>
-				<TextBlock Grid.Column="1" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="auto" />
+				</Grid.ColumnDefinitions>
+				<Image Stretch="Uniform"
+						Source="{Binding Image}"
+						IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+						/>
+				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
+				<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
 			</Grid>
 		</Border>
 		<Border Grid.Row="1" Classes="Separator"></Border>
@@ -154,16 +156,14 @@
 									</ia:EventTriggerBehavior>
 								</i:Interaction.Behaviors>
 
-								<Grid ColumnDefinitions="auto * auto">
+								<Grid ColumnDefinitions="auto auto * auto">
 									<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
-									<StackPanel Grid.Column="1" Orientation="Horizontal">
-										<Image Stretch="Uniform"
-												Source="{Binding Image}"
-												IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-												/>
-										<TextBlock Text="{Binding Name}" Name="AccountName"/>
-									</StackPanel>
-									<TextBlock Grid.Column="2" 
+									<Image Grid.Column="1" Stretch="Uniform"
+											Source="{Binding Image}"
+											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+											/>
+									<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName"/>
+									<TextBlock Grid.Column="3" 
 											   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 											   Name="AccountSum">
 										<TextBlock.IsVisible>
@@ -204,16 +204,14 @@
 												</ia:EventTriggerBehavior>
 											</i:Interaction.Behaviors>
 
-											<Grid ColumnDefinitions="auto * auto">
+											<Grid ColumnDefinitions="auto auto * auto">
 												<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
-												<StackPanel Grid.Column="1" Orientation="Horizontal">
-													<Image Stretch="Uniform"
-														   Source="{Binding Image}"
-														   IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-														/>
-													<TextBlock Text="{Binding Name}" Name="AccountName" />
-												</StackPanel>
-												<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
+												<Image Grid.Column="1" Stretch="Uniform"
+														Source="{Binding Image}"
+														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+													/>
+												<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" />
+												<TextBlock Grid.Column="3" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
 											</Grid>
 										</Border>
 									</DataTemplate>

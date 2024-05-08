@@ -132,7 +132,7 @@
 		<ScrollViewer Grid.Row="1">
 			<StackPanel>
 				<Border Classes="Total">
-					<Grid ColumnDefinitions="* 100 200 100">
+					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Classes="Title">Доходы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddDebetCommand}">Добавить</Button>
@@ -147,7 +147,7 @@
 				<views:TransactionsTreeControl DataContext="{Binding DebetTransactions}" />
 
 				<Border Classes="Total">
-					<Grid ColumnDefinitions="* 100 200 100">
+					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Classes="Title">Расходы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddCreditCommand}">Добавить</Button>
@@ -161,7 +161,7 @@
 				<views:TransactionsTreeControl DataContext="{Binding CreditTransactions}" />
 
 				<Border Classes="Total">
-					<Grid ColumnDefinitions="* 100 200 100">
+					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Classes="Title">Переводы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddTransferCommand}">Добавить</Button>
@@ -178,7 +178,7 @@
 		</ScrollViewer>
 
 		<Border Classes="Total" Grid.Row="2" Margin="2">
-			<Grid ColumnDefinitions="* 100 200 100">
+			<Grid ColumnDefinitions="* 100 150 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
 				<TextBlock Grid.Column="2" Classes="Sum Debet"
 						   Classes.Credit="{Binding Total, Converter={StaticResource isNegativeConverter}}"

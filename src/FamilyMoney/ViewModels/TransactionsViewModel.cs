@@ -52,8 +52,6 @@ public class TransactionsViewModel : ViewModelBase
 
     public ICommand EditCommand { get; }
 
-    public ICommand DeleteCommand { get; }
-
     public decimal Total
     {
         get => _total;
@@ -71,6 +69,16 @@ public class TransactionsViewModel : ViewModelBase
         _repository = repository;
         _stateManager = stateManager;
 
+        SubscribeMessages();
+
+        AddDebetCommand = ReactiveCommand.CreateFromTask(AddDebetTransaction);
+        AddCreditCommand = ReactiveCommand.CreateFromTask(AddCreditTransaction);
+        AddTransferCommand = ReactiveCommand.CreateFromTask(AddTransferTransaction);
+        EditCommand = ReactiveCommand.CreateFromTask(EditTransaction);
+    }
+
+    private void SubscribeMessages()
+    {
         MessageBus.Current.Listen<MainStateChangedMessage>()
             .Where(m => m.State != null)
             .Subscribe(m => RefreshTransactions(m.State));
@@ -111,60 +119,118 @@ public class TransactionsViewModel : ViewModelBase
                 }
             });
 
-        AddDebetCommand = ReactiveCommand.CreateFromTask(async () =>
+        MessageBus.Current.Listen<TransactionGroupDeleteMessage>()
+            .Where(m => m.Element != null)
+            .Subscribe(async m =>
+            {
+                DeleteTransaction(m.Element);
+            });
+
+        MessageBus.Current.Listen<TransactionGroupCopyMessage>()
+            .Where(m => m.Element != null)
+            .Subscribe(async m =>
+            {
+                await CopyTransaction(m.Element);
+            });
+    }
+
+    private async Task AddTransferTransaction()
+    {
+        var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
+            GetCategories<TransferCategory, TransferCategoryViewModel>(),
+            GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+            SelectedTransactionGroup
+            );
+
+        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        if (result != null)
         {
-            var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
+            SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
+        }
+    }
+
+    private async Task AddCreditTransaction()
+    {
+        var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
+            GetCategories<CreditCategory, CreditCategoryViewModel>(),
+            GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+            SelectedTransactionGroup
+            );
+
+        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        if (result != null)
+        {
+            SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
+        }
+    }
+
+    private async Task AddDebetTransaction()
+    {
+        var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
+            GetCategories<DebetCategory, DebetCategoryViewModel>(),
+            GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+            SelectedTransactionGroup
+            );
+
+        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        if (result != null)
+        {
+            SaveTransaction(new DebetTransaction { Id = Guid.NewGuid() }, result);
+        }
+    }
+
+    private void DeleteTransaction(TransactionGroupViewModel transactionGroupViewModel)
+    {
+        var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+        _repository.DeleteTransaction(transactionGroupViewModel.Id);
+        SendTransactionChanged(transaction, null);
+        RefreshTransactions(_stateManager.GetMainState());
+    }
+
+    private async Task CopyTransaction(TransactionGroupViewModel transactionGroupViewModel)
+    {
+        var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+
+        BaseTransactionViewModel? transactionViewModel = null;
+
+        if (transaction is DebetTransaction)
+        {
+            transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
                 GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>()
+                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+                transactionGroupViewModel
                 );
-
-            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
-            if (result != null)
-            {
-                SaveTransaction(new DebetTransaction { Id = Guid.NewGuid() }, result);
-            }
-        });
-
-        AddCreditCommand = ReactiveCommand.CreateFromTask(async () =>
+        }
+        else if (transaction is CreditTransaction)
         {
-            var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
+            transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
                 GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>()
+                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+                transactionGroupViewModel
                 );
-
-            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
-            if (result != null)
-            {
-                SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
-            }
-        });
-
-        AddTransferCommand = ReactiveCommand.CreateFromTask(async () =>
+        }
+        else if (transaction is TransferTransaction)
         {
-            var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
+            transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
                 GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>()
+                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+                transactionGroupViewModel
                 );
-
-            var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
-            if (result != null)
-            {
-                SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
-            }
-        });
-
-        EditCommand = ReactiveCommand.CreateFromTask(EditTransaction);
-
-        var canExecute = this.WhenAnyValue(x => x.SelectedTransactionGroup, x => x.Total, (t, x) => t is TransactionGroupViewModel);
-        DeleteCommand = ReactiveCommand.Create(() =>
+        }
+        else
         {
-            if (SelectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
-            {
-                var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
-                _repository.DeleteTransaction(transactionGroupViewModel.Id);
-                SendTransactionChanged(transaction, null);
-            }
-        }, canExecute);
+            return;
+        }
+
+        transactionViewModel.Sum = transaction.Sum;
+        transactionViewModel.Comment = transaction.Comment;
+
+        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        if (result != null)
+        {
+            transaction.Id = Guid.NewGuid();
+            SaveTransaction(transaction, result);
+        }
     }
 
     private void SendTransactionChanged(Transaction? before, Transaction? after)
@@ -176,7 +242,9 @@ public class TransactionsViewModel : ViewModelBase
         });
     }
 
-    private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, IList<BaseSubCategoryViewModel> subCategories) 
+    private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, 
+                                                            IList<BaseSubCategoryViewModel> subCategories,
+                                                            BaseTransactionsGroupViewModel? byGroup) 
         where T : BaseTransactionViewModel, new()
     {
         var state = _stateManager.GetMainState();
@@ -193,23 +261,25 @@ public class TransactionsViewModel : ViewModelBase
             SubCategories = subCategories,
         };
 
-        if (SelectedTransactionGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
+        if (byGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
         {
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
         }
 
-        if (SelectedTransactionGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
+        if (byGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
         {
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
             transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory;
         }
 
-        if (SelectedTransactionGroup is TransactionGroupViewModel transactionGroupViewModel)
+        if (byGroup is TransactionGroupViewModel transactionGroupViewModel)
         {
             var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
 
             transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
             transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId);
+
+            var ccategory = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transactionViewModel.SubCategory?.CategoryId);
         }
 
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategory?.Name;

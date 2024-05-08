@@ -213,7 +213,9 @@ internal class CsvImporter: IImporter
                 };
             }
 
-            var foundSubCategory = subCategories.FirstOrDefault(c => c.Name == record.SubCategory && c.GetType() == subCategory.GetType());
+            var foundSubCategory = subCategories.FirstOrDefault(c => c.Name == record.SubCategory 
+                                                                && c.CategoryId == category?.Id 
+                                                                && c.GetType() == subCategory.GetType());
             if (foundSubCategory == null)
             {
                 repository.UpdateSubCategory(subCategory);

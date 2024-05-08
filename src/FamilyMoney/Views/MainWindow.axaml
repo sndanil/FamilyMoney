@@ -97,7 +97,7 @@
 
 		<SplitView.Content>
 			<Border Classes="LeftTop" Background="{DynamicResource SystemAltMediumLowColor}">
-				<Grid RowDefinitions="50 *">
+				<Grid RowDefinitions="45 *">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="{Binding LeftSideWidth, Mode=TwoWay, Converter={StaticResource gridLengthConverter}}" />
 						<ColumnDefinition Width="4" />
