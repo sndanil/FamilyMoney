@@ -104,25 +104,34 @@
 			</ComboBox>
 
 			<TextBlock Grid.Row="3" Text="Подкадегория" Classes="Label" />
-			<AutoCompleteBox Grid.Row="3" Grid.Column="1"
-						SelectedItem="{Binding SubCategory}"
-						Text="{Binding SubCategoryText, Mode=OneWayToSource}"
-						IsTextCompletionEnabled="True"
-						Name="SubCategoryCompleteBox"
-						FilterMode="Custom"
-						Margin="0 10"
-						ItemsSource="{Binding SubCategories}"
-						Watermark="Стрелка вниз или F4 откроет выпадающий список">
-				<i:Interaction.Behaviors>
-					<bh:AutoCompleteZeroMinimumPrefixLengthDropdownBehaviour/>
-				</i:Interaction.Behaviors>
+			<DockPanel Grid.Row="3" Grid.Column="1" LastChildFill="True">
+				<Button DockPanel.Dock="Right" 
+						Margin="2"
+						Click="ShowDropDownButtonClick"
+						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
+						>
+					<PathIcon Margin="4" Height="12" Width="12" Data="{StaticResource ChevronDown}"/>
+				</Button>
+				<AutoCompleteBox DockPanel.Dock="Left"
+							SelectedItem="{Binding SubCategory}"
+							Text="{Binding SubCategoryText, Mode=OneWayToSource}"
+							IsTextCompletionEnabled="True"
+							Name="SubCategoryCompleteBox"
+							FilterMode="Custom"
+							Margin="0 10"
+							ItemsSource="{Binding SubCategories}"
+							Watermark="Стрелка вниз или F4 откроет выпадающий список">
+					<i:Interaction.Behaviors>
+						<bh:AutoCompleteForceDropdownBehaviour/>
+					</i:Interaction.Behaviors>
 				
-				<AutoCompleteBox.ItemTemplate>
-					<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
-						<TextBlock Text="{Binding Name}"/>
-					</DataTemplate>
-				</AutoCompleteBox.ItemTemplate>
-			</AutoCompleteBox>
+					<AutoCompleteBox.ItemTemplate>
+						<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
+							<TextBlock Text="{Binding Name}"/>
+						</DataTemplate>
+					</AutoCompleteBox.ItemTemplate>
+				</AutoCompleteBox>
+			</DockPanel>
 			
 			<TextBlock Grid.Row="4" Text="Сумма" Classes="Label" />
 			<NumericUpDown Grid.Row="4" Grid.Column="1" 

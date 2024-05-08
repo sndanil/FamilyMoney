@@ -1,4 +1,5 @@
 using Avalonia.ReactiveUI;
+using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
 using System;
@@ -135,6 +136,11 @@ namespace FamilyMoney.Views
                 char result;
                 return _keyboard.TryGetValue(c, out result) ? result : c;
             }).ToArray());
+        }
+
+        private void ShowDropDownButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            SubCategoryCompleteBox.ShowDropDown();
         }
     }
 }
