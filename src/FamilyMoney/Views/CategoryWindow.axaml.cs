@@ -11,9 +11,9 @@ using System.Linq;
 
 namespace FamilyMoney.Views;
 
-public partial class AccountWindow : ReactiveWindow<AccountViewModel>
+public partial class CategoryWindow : ReactiveWindow<BaseCategoryViewModel>
 {
-    public AccountWindow()
+    public CategoryWindow()
     {
         InitializeComponent();
 
@@ -27,11 +27,11 @@ public partial class AccountWindow : ReactiveWindow<AccountViewModel>
     {
         var file = e.Data.GetFiles()?.FirstOrDefault();
 
-        if (file == null || DataContext is not AccountViewModel account)
+        if (file == null || DataContext is not BaseCategoryViewModel category)
             return;
 
         using var stream = File.OpenRead(file.Path.LocalPath);
-        account.Image = ImageConverter.ToImage(stream);
+        category.Image = ImageConverter.ToImage(stream);
     }
 
     private async void ChangeImage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -47,11 +47,11 @@ public partial class AccountWindow : ReactiveWindow<AccountViewModel>
                 ]
         });
 
-        if (files.Any() && DataContext is AccountViewModel account)
+        if (files.Any() && DataContext is BaseCategoryViewModel category)
         {
             var file = files.Single();
             await using var stream = await file.OpenReadAsync();
-            account.Image = ImageConverter.ToImage(stream);
+            category.Image = Bitmap.DecodeToWidth(stream, 400);
         }
     }
 }

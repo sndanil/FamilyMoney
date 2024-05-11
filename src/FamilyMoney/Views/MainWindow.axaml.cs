@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
@@ -14,6 +13,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         this.WhenActivated(action => action(ViewModel!.Period.ShowDialog.RegisterHandler(DoShowCustomPeriodDialogAsync)));
         this.WhenActivated(action => action(AccountViewModel.ShowDialog.RegisterHandler(DoShowAccountEditDialogAsync)));
+        this.WhenActivated(action => action(BaseCategoryViewModel.ShowDialog.RegisterHandler(DoShowCategoryEditDialogAsync)));
         this.WhenActivated(action => action(BaseTransactionViewModel.ShowDialog.RegisterHandler(DoShowTransactionEditDialogAsync)));
     }
 
@@ -32,6 +32,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<AccountViewModel?>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowCategoryEditDialogAsync(InteractionContext<BaseCategoryViewModel, BaseCategoryViewModel?> interaction)
+    {
+        var dialog = new CategoryWindow();
+        dialog.DataContext = interaction.Input;
+
+        var result = await dialog.ShowDialog<BaseCategoryViewModel?>(this);
         interaction.SetOutput(result);
     }
 
