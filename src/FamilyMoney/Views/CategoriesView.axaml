@@ -48,21 +48,58 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
+		<Style Selector="Border.Header">
+			<Setter Property="Margin" Value="10 10 10 0" />
+			<Setter Property="CornerRadius" Value="12 12 0 0" />
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+		</Style>
+		<Style Selector="Border.Header Button">
+			<Setter Property="Margin" Value="20 0" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Header StackPanel">
+			<Setter Property="Width" Value="150" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Content">
+			<Setter Property="Margin" Value="10 0 10 20" />
+			<Setter Property="CornerRadius" Value="0 0 12 12" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderBrush" Value="{DynamicResource SystemRegionBrush}" />
+		</Style>
 	</UserControl.Styles>
-	<Grid ColumnDefinitions="* * *" RowDefinitions="50 30 *">
-		<TextBlock Text="Доходы" />
-		<Button Grid.Row="1" Command="{Binding CreateDebetCommand}" Content="Добавить" />
-		<ListBox Grid.Row="2" ItemsSource="{Binding DebetCategories}">
-		</ListBox>
+	<Grid ColumnDefinitions="* * *" RowDefinitions="50 *">
+		<Border Classes="Header">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Доходы" />
+				<Button Command="{Binding CreateDebetCommand}" 
+						Content="Добавить" />
+			</StackPanel>
+		</Border>
+		<Border Grid.Row="1" Classes="Content">
+			<ListBox ItemsSource="{Binding DebetCategories}" />
+		</Border>
 
-		<TextBlock Grid.Column="1" Text="Расходы" />
-		<Button Grid.Column="1" Grid.Row="1" Command="{Binding CreateDebetCommand}" Content="Добавить" />
-		<ListBox Grid.Column="1" Grid.Row="2" ItemsSource="{Binding CreditCategories}">
-		</ListBox>
+		<Border Grid.Column="1" Classes="Header">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Расходы" />
+				<Button Command="{Binding CreateCreditCommand}"
+						Content="Добавить" />
+			</StackPanel>
+		</Border>
+		<Border Grid.Column="1" Grid.Row="1" Classes="Content">
+			<ListBox ItemsSource="{Binding CreditCategories}" />
+		</Border>
 
-		<TextBlock Grid.Column="2" Text="Переводы" />
-		<Button Grid.Column="2" Grid.Row="1" Command="{Binding CreateDebetCommand}" Content="Добавить" />
-		<ListBox Grid.Column="2" Grid.Row="2" ItemsSource="{Binding TransferCategories}">
-		</ListBox>
+		<Border Grid.Column="2" Classes="Header">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Переводы" />
+				<Button Command="{Binding CreateTransferCommand}"
+						Content="Добавить" />
+			</StackPanel>
+		</Border>
+		<Border Grid.Column="2" Grid.Row="1" Classes="Content">
+			<ListBox ItemsSource="{Binding TransferCategories}" />
+		</Border>
 	</Grid>
 </UserControl>
