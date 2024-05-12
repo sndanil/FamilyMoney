@@ -19,13 +19,16 @@ public class MainWindowViewModel : ViewModelBase
 
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
+    private Control? _currentPanel;
 
     private readonly PeriodViewModel _period;
+    private readonly CategoriesViewModel _categoriesViewModel;
     private readonly AccountsViewModel _accountsViewModel;
     private readonly TransactionsViewModel _transactionsViewModel;
 
     public ICommand TriggerPaneCommand { get; }
     public ICommand ImportCommand { get; }
+    public ICommand SwitchToCommand { get; }
 
     public int LeftSideWidth
     {
@@ -39,9 +42,20 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isPaneOpen, value);
     }
 
+    public Control? CurrentPanel
+    {
+        get => _currentPanel;
+        set => this.RaiseAndSetIfChanged(ref _currentPanel, value);
+    }
+
     public PeriodViewModel Period
     {
         get => _period;
+    }
+
+    public CategoriesViewModel Categories
+    {
+        get => _categoriesViewModel;
     }
 
     public AccountsViewModel Accounts
@@ -58,13 +72,15 @@ public class MainWindowViewModel : ViewModelBase
         IStateManager stateManager,
         IImporter importer,
         PeriodViewModel period, 
+        CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts, 
         TransactionsViewModel transactionsViewModel)
     {
         _repository = repository;
         _importer = importer;
-        _stateManager = stateManager;
+        _stateManager = stateManager;        
 
+        _categoriesViewModel = categoriesViewModel;
         _accountsViewModel = accounts;
         _transactionsViewModel = transactionsViewModel;
         _period = period;
@@ -87,6 +103,11 @@ public class MainWindowViewModel : ViewModelBase
                 _importer.DoImport(_repository, stream);
                 MainInit();
             }
+        });
+
+        SwitchToCommand = ReactiveCommand.Create((Control control) =>
+        {
+            CurrentPanel = control;
         });
 
         RxApp.MainThreadScheduler.Schedule(MainInit);

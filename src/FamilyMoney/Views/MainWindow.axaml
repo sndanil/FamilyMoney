@@ -15,12 +15,12 @@
         Title="Семейные деньги">
 
 	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 	<Window.Resources>
 		<cv:GridLengthConverter x:Key="gridLengthConverter" />
+		<cv:IsEqualConverter x:Key="isEqualConverter" />
+		<cv:IsNotEqualConverter x:Key="isNotEqualConverter" />
 	</Window.Resources>
 	<Window.Styles>
 		<Style Selector="StackPanel.SideBarMenu">
@@ -37,6 +37,9 @@
 		</Style>
 		<Style Selector="Border.SideBarMenuItem:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+		</Style>
+		<Style Selector="Border.SideBarMenuItem:disabled">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem PathIcon">
 			<Setter Property="Width" Value="14"/>
@@ -69,6 +72,20 @@
 							<PathIcon Data="{StaticResource HomeRegular}" />
 							<TextBlock Text="Главная" />
 						</StackPanel>
+
+						<i:Interaction.Behaviors>
+							<ia:EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SwitchToCommand}"
+													 CommandParameter="{Binding #TransactionsPanel}"/>
+							</ia:EventTriggerBehavior>
+						</i:Interaction.Behaviors>
+
+						<Border.IsEnabled>
+							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
+								<Binding Path="CurrentPanel"/>
+								<Binding Path="#TransactionsPanel"/>
+							</MultiBinding>
+						</Border.IsEnabled>
 					</Border>
 
 					<Border Classes="SideBarMenuItem">
@@ -76,6 +93,20 @@
 							<PathIcon Data="{StaticResource Categories}" />
 							<TextBlock Text="Категории" />
 						</StackPanel>
+
+						<i:Interaction.Behaviors>
+							<ia:EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SwitchToCommand}"
+													 CommandParameter="{Binding #CategoriesPanel}"/>
+							</ia:EventTriggerBehavior>
+						</i:Interaction.Behaviors>
+
+						<Border.IsEnabled>
+							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
+								<Binding Path="CurrentPanel"/>
+								<Binding Path="#CategoriesPanel"/>
+							</MultiBinding>
+						</Border.IsEnabled>
 					</Border>
 
 					<Border Classes="SideBarMenuItem" Name="ImportButton">
@@ -96,34 +127,55 @@
 		</SplitView.Pane>
 
 		<SplitView.Content>
-			<Border Classes="LeftTop" Background="{DynamicResource SystemAltMediumLowColor}">
-				<Grid RowDefinitions="45 *">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="{Binding LeftSideWidth, Mode=TwoWay, Converter={StaticResource gridLengthConverter}}" />
-						<ColumnDefinition Width="4" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
+			<Grid>
+				<Border Name="TransactionsPanel"
+						Classes="LeftTop" 
+						Background="{DynamicResource SystemAltMediumLowColor}">
+					<Grid RowDefinitions="45 *">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="{Binding LeftSideWidth, Mode=TwoWay, Converter={StaticResource gridLengthConverter}}" />
+							<ColumnDefinition Width="4" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
 
-					<StackPanel Orientation="Horizontal" Grid.Column="2"
-								Margin="10 0 0 0"
+						<StackPanel Orientation="Horizontal" Grid.Column="2"
+									Margin="10 0 0 0"
 								>
 
-						<views:PeriodView DataContext="{Binding Period}"
-										  Margin="10 0 0 0"
+							<views:PeriodView DataContext="{Binding Period}"
+											  Margin="10 0 0 0"
 										  />
-					</StackPanel>
+						</StackPanel>
 
 
-					<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
+						<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
 
-					<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
+						<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
 
-					<views:TransactionsView Grid.Column="2"
-											Grid.Row="1"
-											DataContext="{Binding Transactions}"
-											/>
-				</Grid>
-			</Border>
+						<views:TransactionsView Grid.Column="2"
+												Grid.Row="1"
+												DataContext="{Binding Transactions}"
+											>
+						</views:TransactionsView>
+					</Grid>
+
+					<Border.IsVisible>
+						<MultiBinding Converter="{StaticResource isEqualConverter}">
+							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
+							<Binding Path="$self"/>
+						</MultiBinding>
+					</Border.IsVisible>
+				</Border>
+
+				<views:CategoriesView Name="CategoriesPanel" DataContext="{Binding Categories}">
+					<views:CategoriesView.IsVisible>
+						<MultiBinding Converter="{StaticResource isEqualConverter}">
+							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
+							<Binding Path="$self"/>
+						</MultiBinding>
+					</views:CategoriesView.IsVisible>
+				</views:CategoriesView>
+			</Grid>
 		</SplitView.Content>
 	</SplitView>
 </Window>

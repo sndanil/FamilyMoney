@@ -28,6 +28,7 @@ public partial class App : Application
         }
 
         SplatRegistrations.Register<PeriodViewModel>();
+        SplatRegistrations.Register<CategoriesViewModel>();
         SplatRegistrations.Register<AccountsViewModel>();
         SplatRegistrations.Register<TransactionsViewModel>();
         SplatRegistrations.Register<MainWindowViewModel>();

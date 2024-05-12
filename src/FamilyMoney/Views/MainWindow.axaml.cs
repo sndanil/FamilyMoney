@@ -15,6 +15,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(action => action(AccountViewModel.ShowDialog.RegisterHandler(DoShowAccountEditDialogAsync)));
         this.WhenActivated(action => action(BaseCategoryViewModel.ShowDialog.RegisterHandler(DoShowCategoryEditDialogAsync)));
         this.WhenActivated(action => action(BaseTransactionViewModel.ShowDialog.RegisterHandler(DoShowTransactionEditDialogAsync)));
+
+        this.Activated += MainWindowActivated;
+    }
+
+    private void MainWindowActivated(object? sender, System.EventArgs e)
+    {
+        if (ViewModel is not null && ViewModel.CurrentPanel == null)
+        {
+            ViewModel.CurrentPanel = TransactionsPanel;
+        }
     }
 
     private async Task DoShowCustomPeriodDialogAsync(InteractionContext<CustomPeriodViewModel, CustomPeriodViewModel?> interaction)
