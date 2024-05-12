@@ -255,20 +255,20 @@ public class TransactionsViewModel : ViewModelBase
 
         var transactionViewModel = new T()
         {
-            FlatAccounts = flatAccounts,
+            FlatAccounts = flatAccounts.Where(a => !a.IsHidden).ToList(),
             Account = account,
-            Categories = categories,
+            Categories = categories.Where(c => !c.IsHidden).ToList(),
             SubCategories = subCategories,
         };
 
         if (byGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
         {
-            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
+            transactionViewModel.Category = categories.FirstOrDefault(c => c.Id == categoryGroupViewModel.Category?.Id);
         }
 
         if (byGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
         {
-            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
+            transactionViewModel.Category = categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
             transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory;
         }
 
@@ -276,10 +276,18 @@ public class TransactionsViewModel : ViewModelBase
         {
             var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
 
-            transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
+            transactionViewModel.Category = categories.FirstOrDefault(c => c.Id == transaction?.CategoryId);
             transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == transaction?.SubCategoryId);
+        }
 
-            var ccategory = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transactionViewModel.SubCategory?.CategoryId);
+        if (transactionViewModel.Category == null && categories.Count == 1)
+        {
+            transactionViewModel.Category = categories.FirstOrDefault();
+        }
+
+        if (transactionViewModel.SubCategory == null && subCategories.Count(s => s.CategoryId == transactionViewModel.Category?.Id) == 1)
+        {
+            transactionViewModel.SubCategory = subCategories.FirstOrDefault(s => s.CategoryId == transactionViewModel.Category?.Id);
         }
 
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategory?.Name;
@@ -334,11 +342,13 @@ public class TransactionsViewModel : ViewModelBase
         }
 
         transactionViewModel.FillFrom(transaction, _repository);
-        transactionViewModel.FlatAccounts = flatAccounts;
+        transactionViewModel.FlatAccounts = flatAccounts?.Where(c => !c.IsHidden).ToList();
         transactionViewModel.Account = flatAccounts?.FirstOrDefault(a => a.Id == transaction.AccountId);
         transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
         transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId);
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
+
+        transactionViewModel.Categories = transactionViewModel.Categories.Where(c => !c.IsHidden).ToList();
 
         if (transactionViewModel == null)
         {
@@ -533,11 +543,11 @@ public class TransactionsViewModel : ViewModelBase
 
     private IList<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
     {
-        var categories = _repository.GetCategories().OfType<T>().OrderBy(c => c.Name).Select(c => new N
+        var categories = _repository.GetCategories().OfType<T>().OrderBy(c => c.Name).Select(c =>
         {
-            Id = c.Id,
-            Name = c.Name,
-            Image = ImageConverter.ToImage(_repository.TryGetImage(c.Id)),
+            var category = new N();
+            category.FillFrom(c, _repository);
+            return category;
         });
 
         return categories.Select(c => (BaseCategoryViewModel)c).ToList();
