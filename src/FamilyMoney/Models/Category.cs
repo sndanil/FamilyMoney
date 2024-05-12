@@ -7,6 +7,8 @@ public abstract class Category
     public required Guid Id { get; set; }
 
     public required string Name { get; set; }
+
+    public bool IsHidden { get; set; }
 }
 
 public sealed class DebetCategory: Category

@@ -110,7 +110,16 @@ public class MainWindowViewModel : ViewModelBase
             CurrentPanel = control;
         });
 
-        RxApp.MainThreadScheduler.Schedule(MainInit);
+        PropertyChanged += MainWindowViewModel_PropertyChanged;
+        //RxApp.MainThreadScheduler.Schedule(MainInit);
+    }
+
+    private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CurrentPanel) && CurrentPanel?.Name == "TransactionsPanel")
+        {
+            MainInit();
+        }
     }
 
     private void MainInit()

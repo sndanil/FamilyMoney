@@ -5,7 +5,6 @@ using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
 using System.Reactive;
-using System.Windows.Input;
 namespace FamilyMoney.ViewModels;
 
 public abstract class BaseCategoryViewModel : ViewModelBase
@@ -13,6 +12,7 @@ public abstract class BaseCategoryViewModel : ViewModelBase
     private Guid _id;
     private string _name = string.Empty;
     private IImage? _image = null;
+    private bool _isHidden = false;
 
     public Guid Id
     {
@@ -26,13 +26,19 @@ public abstract class BaseCategoryViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _name, value);
     }
 
+    public bool IsHidden
+    {
+        get => _isHidden;
+        set => this.RaiseAndSetIfChanged(ref _isHidden, value);
+    }
+
     public IImage? Image
     {
         get => _image;
         set => this.RaiseAndSetIfChanged(ref _image, value);
     }
 
-    public ReactiveCommand<Unit, BaseCategoryViewModel?> OkCommand { get; }
+    public ReactiveCommand<BaseCategoryViewModel, BaseCategoryViewModel?> OkCommand { get; }
 
     public ReactiveCommand<Unit, BaseCategoryViewModel?> CancelCommand { get; }
 
@@ -41,9 +47,9 @@ public abstract class BaseCategoryViewModel : ViewModelBase
     protected BaseCategoryViewModel()
     {
         var canExecute = this.WhenAnyValue(x => x.Name, (name) => !string.IsNullOrEmpty(name));
-        OkCommand = ReactiveCommand.Create(() =>
+        OkCommand = ReactiveCommand.Create((BaseCategoryViewModel self) =>
         {
-            return (BaseCategoryViewModel?)this;
+            return (BaseCategoryViewModel?)self;
         },
         canExecute);
 
@@ -63,6 +69,7 @@ public abstract class BaseCategoryViewModel : ViewModelBase
     {
         Id = category.Id;
         Name = category.Name;
+        IsHidden = category.IsHidden;
         Image = ImageConverter.ToImage(repository.TryGetImage(Id));
     }
 }

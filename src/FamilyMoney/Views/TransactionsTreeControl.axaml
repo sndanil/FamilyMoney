@@ -26,6 +26,12 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
+		<Style Selector="Image">
+			<Setter Property="Height" Value="20" />
+			<Setter Property="Width" Value="20" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
 		<Style Selector="Border.Category">
 			<Setter Property="Height" Value="30" />
 			<Setter Property="Margin" Value="10 -1 10 0" />
@@ -87,9 +93,13 @@
 											  IsVisible="{Binding !IsExpanded}" />
 								</Grid>
 							</Button>
-							<TextBlock Grid.Column="1" Grid.ColumnSpan="2"
-									   Classes="Name" 
-									   Text="{Binding Category.Name}" />
+							<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+								<Image Stretch="Uniform"
+										Source="{Binding Category.Image}"
+										IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+									/>
+								<TextBlock Classes="Name" Text="{Binding Category.Name}" />
+							</StackPanel>
 							<TextBlock Grid.Column="3" Classes="Sum"
 									   Classes.Debet="{Binding IsDebet}"
 									   Text="{Binding Sum, StringFormat='#,##0.00'}" />

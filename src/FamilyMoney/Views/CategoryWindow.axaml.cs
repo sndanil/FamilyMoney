@@ -2,6 +2,7 @@ using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
+using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
@@ -51,7 +52,7 @@ public partial class CategoryWindow : ReactiveWindow<BaseCategoryViewModel>
         {
             var file = files.Single();
             await using var stream = await file.OpenReadAsync();
-            category.Image = Bitmap.DecodeToWidth(stream, 400);
+            category.Image = ImageConverter.ToImage(stream);
         }
     }
 }

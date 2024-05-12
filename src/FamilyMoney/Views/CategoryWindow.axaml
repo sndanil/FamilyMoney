@@ -12,10 +12,15 @@
 		x:DataType="vm:BaseCategoryViewModel"		
         x:Class="FamilyMoney.Views.CategoryWindow"
         Title="">
+	<Window.Styles>
+		<Style Selector="CheckBox">
+			<Setter Property="Margin" Value="20 0" />
+		</Style>
+	</Window.Styles>
 	<Grid RowDefinitions="auto auto * auto auto">
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
-			<CheckBox>Скрытая для выбора</CheckBox>
+			<CheckBox IsChecked="{Binding IsHidden}">Скрытая для выбора</CheckBox>
 		</StackPanel>
 		<Image Grid.Row="2"
 			Name="ImageControl"
@@ -46,7 +51,7 @@
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"
 			>
-			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding}" />
 			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
 		</StackPanel>
 	</Grid>
