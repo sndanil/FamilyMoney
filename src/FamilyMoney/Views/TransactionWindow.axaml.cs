@@ -16,6 +16,7 @@ namespace FamilyMoney.Views
 {
     public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
     {
+        private bool _skipFirst = true;
         private bool _sumFocused = false;
 
         public TransactionWindow()
@@ -28,18 +29,44 @@ namespace FamilyMoney.Views
             this.WhenActivated(disposables =>
             {
                 this.WhenAnyValue(v => v.ViewModel!.Sum)
-                    .BindTo(this, v => v.ViewModel!.ToSum)
-                    .DisposeWith(disposables);
+                    .Do(v =>
+                    {
+                        if (!_skipFirst)
+                        {
+                            this.ViewModel!.ToSum = this.ViewModel!.Sum;
+                        }
+                    })
+                    .Subscribe();
+
+                this.WhenAnyValue(v => v.ViewModel!.Category)
+                    .Do(v =>
+                    {
+                        if (!_skipFirst)
+                        {
+                            this.ViewModel!.SubCategoryText = null;
+                            this.ViewModel!.SubCategory = null;
+                        }
+                    })
+                    .Subscribe();
+
+                this.WhenAnyValue(v => v.ViewModel!.SubCategory)
+                    .Do(v =>
+                    {
+                        if (!_skipFirst && this.ViewModel!.Sum == 0)
+                        {
+                            this.ViewModel!.Sum = 10;
+                        }
+                    })
+                    .Subscribe();
+
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () =>
+                {
+                    _skipFirst = false;
+                });
             });
 
             this.WhenActivated(disposables =>
             {
-                this.WhenAnyValue(v => v.ViewModel!.SubCategory)
-                    .Do(v => 
-                    {
-                        this.ViewModel!.Sum = 10;
-                    })
-                    .Subscribe();
             });
 
             this.Activated += TransactionWindowActivated;
