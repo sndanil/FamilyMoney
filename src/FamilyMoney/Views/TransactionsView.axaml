@@ -134,7 +134,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
-							<TextBlock Classes="Title">Доходы</TextBlock>
+							<TextBlock Classes="Title" MinWidth="70">Доходы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddDebetCommand}">Добавить</Button>
 						</StackPanel>
 						<TextBlock Grid.Column="2"
@@ -149,7 +149,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
-							<TextBlock Classes="Title">Расходы</TextBlock>
+							<TextBlock Classes="Title" MinWidth="70">Расходы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddCreditCommand}">Добавить</Button>
 						</StackPanel>						
 						<TextBlock Grid.Column="2" Classes="Sum Credit"
@@ -163,7 +163,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<StackPanel Orientation="Horizontal">
-							<TextBlock Classes="Title">Переводы</TextBlock>
+							<TextBlock Classes="Title" MinWidth="70">Переводы</TextBlock>
 							<Button Classes="AddButton" Command="{Binding AddTransferCommand}">Добавить</Button>
 						</StackPanel>
 						<TextBlock Grid.Column="2" Classes="Sum"

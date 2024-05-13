@@ -141,6 +141,7 @@ public class TransactionsViewModel : ViewModelBase
             GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
             SelectedTransactionGroup
             );
+        transactionViewModel.IsTransfer = true;
 
         var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
         if (result != null)
@@ -216,6 +217,7 @@ public class TransactionsViewModel : ViewModelBase
                 GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
                 transactionGroupViewModel
                 );
+            transactionViewModel.IsTransfer = true;
         }
         else
         {
@@ -334,6 +336,7 @@ public class TransactionsViewModel : ViewModelBase
                 SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
                 ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
                 ToSum = transfer.ToSum,
+                IsTransfer = true,
             };
         }
         else
@@ -443,15 +446,17 @@ public class TransactionsViewModel : ViewModelBase
         {
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, transaction, selected, true);
+                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, transaction, selected, (_, _) => true);
             }
             else if (transaction is CreditTransaction)
             {
-                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, transaction, selected);
+                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, transaction, selected, (_, _) => false);
             }
             else
             {
-                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, transaction, selected);
+                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, transaction, selected, 
+                    (t, g) => g is TransactionGroupViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
+                );
             }
         }
 
@@ -489,15 +494,16 @@ public class TransactionsViewModel : ViewModelBase
     private void FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
             Transaction transaction, 
             BaseTransactionsGroupViewModel? selected, 
-            bool isDebet = false)
+            Func<Transaction, BaseTransactionsGroupViewModel, bool> isDebet)
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
         var category = transactions.FirstOrDefault(t => t.Category?.Id == transaction.CategoryId);
         if (category == null)
         {
-            category = new CategoryTransactionsGroupViewModel { IsDebet = isDebet };
+            category = new CategoryTransactionsGroupViewModel();
             if (transaction.CategoryId != null)
             {
+                category.IsDebet = isDebet(transaction, category);
                 category.Category = new C();
                 category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
                 category.Category.FillFrom(transaction.CategoryId.Value, _repository);
@@ -512,9 +518,10 @@ public class TransactionsViewModel : ViewModelBase
         var subCategory = category.SubCategories.FirstOrDefault(c => c.SubCategory?.Id == transaction.SubCategoryId);
         if (subCategory == null)
         {
-            subCategory = new SubCategoryTransactionsGroupViewModel { IsDebet = isDebet };
+            subCategory = new SubCategoryTransactionsGroupViewModel();
             if (transaction.SubCategoryId != null)
             {
+                subCategory.IsDebet = isDebet(transaction, subCategory);
                 subCategory.SubCategory = new S();
                 subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
                 subCategory.SubCategory.FillFrom(transaction.SubCategoryId.Value, _repository);
@@ -533,8 +540,9 @@ public class TransactionsViewModel : ViewModelBase
             Date = transaction.Date,
             Comment = transaction.Comment,
             Sum = transaction.Sum,
-            IsDebet = isDebet,
         };
+        viewTransaction.IsDebet = isDebet(transaction, viewTransaction);
+
         viewTransaction.IsSelected = selected is TransactionGroupViewModel selectedTransaction && selectedTransaction.Id == transaction.Id;
         SelectedTransactionGroup = viewTransaction.IsSelected ? viewTransaction : SelectedTransactionGroup;
 

@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-		Width="600" Height="500"
+		Width="600" Height="550"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
@@ -39,6 +39,13 @@
 		<Style Selector="TextBlock.Label">
 			<Setter Property="VerticalAlignment" Value="Center"/>
 			<Setter Property="Margin" Value="0 0 15 0" />
+		</Style>
+		<Style Selector="NumericUpDown">
+			<Setter Property="FormatString" Value="0.00" />
+			<Setter Property="HorizontalContentAlignment" Value="Right" />
+			<Setter Property="Increment" Value="0.05" />
+			<Setter Property="Height" Value="20" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
 		</Style>
 	</Window.Styles>
 	<Window.Resources>
@@ -82,17 +89,16 @@
 		</DataTemplate>
 	</Window.DataTemplates>
 	
-	<Grid RowDefinitions="auto * auto">
+	<Grid RowDefinitions="auto auto auto * auto">
 		<TextBlock  Margin="0 10 0 20" HorizontalAlignment="Center" 
 					Text="{Binding ., Converter={StaticResource transactionTypeConverter}}"
 					/>
-		<Grid Grid.Row="1" ColumnDefinitions="auto *"
-			  RowDefinitions="35 55 35 auto auto auto"
-			  Margin="15 0 15 15"
+		<Grid Grid.Row="1" ColumnDefinitions="150 *"
+			  RowDefinitions="35 55 35 auto auto"
+			  Margin="15 0 15 10"
 			  >
 			
 			<TextBlock Text="Счёт" Classes="Label" />
-
 			<Border Grid.Column="1" IsVisible="{Binding Account.IsHidden}">
 				<ContentControl Content="{Binding Account}" />
 			</Border>						
@@ -131,6 +137,13 @@
 
 			<TextBlock Grid.Row="3" Text="Подкадегория" Classes="Label" />
 			<DockPanel Grid.Row="3" Grid.Column="1" LastChildFill="True">
+				<Button DockPanel.Dock="Right"
+						Margin="2"
+						Click="ClearSubCategoryButtonClick"
+						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
+						>
+					<PathIcon Margin="4" Height="12" Width="12" Data="{StaticResource Cross}"/>
+				</Button>
 				<Button DockPanel.Dock="Right" 
 						Margin="2"
 						Click="ShowDropDownButtonClick"
@@ -158,26 +171,55 @@
 					</AutoCompleteBox.ItemTemplate>
 				</AutoCompleteBox>
 			</DockPanel>
-			
+
 			<TextBlock Grid.Row="4" Text="Сумма" Classes="Label" />
-			<NumericUpDown Grid.Row="4" Grid.Column="1" 
+			<NumericUpDown Grid.Row="4" Grid.Column="1"
 						   Name="SumPicker"
-						   Value="{Binding Sum}" 
-						   FormatString="0.00"
-						   Increment="0.05" 
-						   Height="20"
-							HorizontalAlignment="Stretch"
+						   Value="{Binding Sum}"
 						   />
 
-			<TextBlock Grid.Row="5" Text="Комментарий" Classes="Label" />
-			<TextBox Grid.Row="5" Grid.Column="1"
-					 Margin="0 10"
-						   Text="{Binding Comment}"						   
+		</Grid>
+		<Grid Grid.Row="2" ColumnDefinitions="150 *"
+			  RowDefinitions="45 auto"
+			  Margin="15 0 15 10"
+			  IsVisible="{Binding IsTransfer}"
+			  >
+			<TextBlock Text="Счёт зачисления" Classes="Label" />
+			<Border Grid.Column="1" IsVisible="{Binding ToAccount.IsHidden}">
+				<ContentControl Content="{Binding ToAccount}" />
+			</Border>
+			<ComboBox Grid.Column="1"
+					  IsVisible="{Binding !ToAccount.IsHidden}"
+					  Name="ToAccountComboBox"
+					  SelectedItem="{Binding ToAccount}"
+					  ItemsSource="{Binding FlatAccounts}"
+					  HorizontalAlignment="Stretch"
+					  Height="35"
+					  >
+				<ComboBox.Styles>
+					<Style Selector="ComboBoxItem">
+						<Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
+						<Setter Property="Padding" Value="0" />
+					</Style>
+				</ComboBox.Styles>
+			</ComboBox>
+
+			<TextBlock Grid.Row="1" Text="Сумма зачисления" Classes="Label" />
+			<NumericUpDown Grid.Row="1" Grid.Column="1"
+						   Name="ToSumPicker"
+						   Value="{Binding ToSum}"
 						   />
+		</Grid>
+		<Grid Grid.Row="3" ColumnDefinitions="150 *"
+			  RowDefinitions="*"
+			  Margin="15 0"
+			  >
+			<TextBlock Text="Комментарий" Classes="Label" VerticalAlignment="Top" />
+			<TextBox Grid.Column="1" Text="{Binding Comment}" />
 		</Grid>
 
 		<StackPanel
-			Grid.Row="2"
+			Grid.Row="4"
 			Orientation="Horizontal"
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"

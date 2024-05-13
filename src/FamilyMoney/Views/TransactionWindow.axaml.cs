@@ -1,11 +1,15 @@
+using Avalonia;
 using Avalonia.ReactiveUI;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 
 namespace FamilyMoney.Views
@@ -13,47 +17,6 @@ namespace FamilyMoney.Views
     public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
     {
         private bool _sumFocused = false;
-        private readonly Dictionary<char, char> _keyboard = new() 
-        {
-            { 'q', 'é' },
-            { 'w', 'ö' },
-            { 'e', 'ó' },
-            { 'r', 'ê' },
-            { 't', 'å' },
-            { 'y', 'í' },
-            { 'u', 'ã' },
-            { 'i', 'ø' },
-            { 'o', 'ù' },
-            { 'p', 'ç' },
-            { '[', 'õ' },
-            { ']', 'ú' },
-            { 'a', 'ô' },
-            { 's', 'û' },
-            { 'd', 'â' },
-            { 'f', 'à' },
-            { 'g', 'ï' },
-            { 'h', 'ð' },
-            { 'j', 'î' },
-            { 'k', 'ë' },
-            { 'l', 'ä' },
-            { ';', 'æ' },
-            { ':', 'æ' },
-            { '\'', 'ý' },
-            { '"', 'ý' },
-            { 'z', 'ÿ' },
-            { 'x', '÷' },
-            { 'c', 'ñ' },
-            { 'v', 'ì' },
-            { 'b', 'è' },
-            { 'n', 'ò' },
-            { 'm', 'ü' },
-            { ',', 'á' },
-            { '.', 'þ' },
-            { '/', '.' },
-            { '<', 'á' },
-            { '>', 'þ' },
-            { '?', '.' },
-        };
 
         public TransactionWindow()
         {
@@ -61,6 +24,23 @@ namespace FamilyMoney.Views
 
             this.WhenActivated(action => action(ViewModel!.OkCommand.Subscribe(Close)));
             this.WhenActivated(action => action(ViewModel!.CancelCommand.Subscribe(Close)));
+
+            this.WhenActivated(disposables =>
+            {
+                this.WhenAnyValue(v => v.ViewModel!.Sum)
+                    .BindTo(this, v => v.ViewModel!.ToSum)
+                    .DisposeWith(disposables);
+            });
+
+            this.WhenActivated(disposables =>
+            {
+                this.WhenAnyValue(v => v.ViewModel!.SubCategory)
+                    .Do(v => 
+                    {
+                        this.ViewModel!.Sum = 10;
+                    })
+                    .Subscribe();
+            });
 
             this.Activated += TransactionWindowActivated;
 
@@ -71,10 +51,13 @@ namespace FamilyMoney.Views
 
         private void SubCategoryCompleteBoxDropDownClosed(object? sender, EventArgs e)
         {
-            if (SubCategoryCompleteBox.SelectedItem != null && !_sumFocused)
+            if (!_sumFocused)
             {
                 _sumFocused = true;
-                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => SumPicker.Focus());
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => {
+                    if (SubCategoryCompleteBox.SelectedItem != null)
+                        SumPicker.Focus();
+                });
                 RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () => _sumFocused = false);
             }
         }
@@ -119,7 +102,7 @@ namespace FamilyMoney.Views
                 if (!string.IsNullOrEmpty(search))
                 {
                     return (subCategory.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) == true
-                        || subCategory.Name?.Contains(Translate(search), StringComparison.OrdinalIgnoreCase) == true)
+                        || subCategory.Name?.Contains(KeyboardHelper.Translate(search), StringComparison.OrdinalIgnoreCase) == true)
                         && (transaction?.Category == null || subCategory.CategoryId == transaction?.Category.Id);
                 }
 
@@ -129,18 +112,14 @@ namespace FamilyMoney.Views
             return true;
         }
 
-        private string Translate(string str)
-        {
-            return new string(str.ToLower().Select(c => 
-            {
-                char result;
-                return _keyboard.TryGetValue(c, out result) ? result : c;
-            }).ToArray());
-        }
-
         private void ShowDropDownButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             SubCategoryCompleteBox.ShowDropDown();
+        }
+
+        private void ClearSubCategoryButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            SubCategoryCompleteBox.SelectedItem = null;
         }
     }
 }
