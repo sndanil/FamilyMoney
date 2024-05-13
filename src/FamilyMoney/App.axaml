@@ -34,6 +34,17 @@
 		<Style Selector="Button.DialogButton AccessText">
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
-		
+
+		<Style Selector="TextBox">
+			<Setter Property="ContextFlyout">
+				<Setter.Value>
+					<MenuFlyout Placement="Bottom">
+						<MenuItem x:Name="TextBoxContextFlyoutCutItem" Header="Вырезать" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
+						<MenuItem x:Name="TextBoxContextFlyoutCopyItem" Header="Копировать" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
+						<MenuItem x:Name="TextBoxContextFlyoutPasteItem" Header="Вставить" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
+					</MenuFlyout>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</Application.Styles>
 </Application>
