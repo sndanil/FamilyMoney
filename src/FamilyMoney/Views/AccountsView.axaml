@@ -13,6 +13,7 @@
 			 >
 	<UserControl.Resources>
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
+		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.Separator">
@@ -72,7 +73,10 @@
 			<Setter Property="Margin" Value="0 0 15 0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
-		</Style>		
+		</Style>
+		<Style Selector="TextBlock.Negative">
+			<Setter Property="Foreground" Value="Red" />
+		</Style>
 		<Style Selector="Border.Account.Selected">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
@@ -118,7 +122,10 @@
 						IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 						/>
 				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
-				<TextBlock Grid.Column="2" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
+				<TextBlock Grid.Column="2" 
+						   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+						   Text="{Binding Sum, StringFormat='#,##0.00'}" 
+						   Name="AccountSum"/>
 			</Grid>
 		</Border>
 		<Border Grid.Row="1" Classes="Separator"></Border>
@@ -166,6 +173,7 @@
 											   Text="{Binding Name}" 
 											   Name="AccountName"/>
 									<TextBlock Grid.Column="3" 
+												Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
 											   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 											   Name="AccountSum">
 										<TextBlock.IsVisible>
@@ -213,7 +221,10 @@
 														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 													/>
 												<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" />
-												<TextBlock Grid.Column="3" Text="{Binding Sum, StringFormat='#,##0.00'}" Name="AccountSum"/>
+												<TextBlock Grid.Column="3" 
+															Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+														   Text="{Binding Sum, StringFormat='#,##0.00'}" 
+														   Name="AccountSum"/>
 											</Grid>
 										</Border>
 									</DataTemplate>
