@@ -4,8 +4,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
-using System.Security.Cryptography;
-using System.Xml.Linq;
+using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
@@ -21,6 +20,7 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     private IList<BaseCategoryViewModel>? _categories;
     private IList<BaseSubCategoryViewModel>? _subCategories;
     private string? _comment;
+    private IList<string> _comments = [];
     private BaseCategoryViewModel? _category;
     private BaseSubCategoryViewModel? _subCategory;
     private string? _subCategoryText;
@@ -30,6 +30,8 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     public ReactiveCommand<Unit, BaseTransactionViewModel?> OkCommand { get; }
 
     public ReactiveCommand<Unit, BaseTransactionViewModel?> CancelCommand { get; }
+
+    public ICommand CommentCommand { get; }
 
     public static Interaction<BaseTransactionViewModel, BaseTransactionViewModel?> ShowDialog { get; } = new();
 
@@ -99,6 +101,12 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _comment, value);
     }
 
+    public IList<string> Comments
+    {
+        get => _comments;
+        set => this.RaiseAndSetIfChanged(ref _comments, value);
+    }
+
     public string? SubCategoryText
     {
         get => _subCategoryText;
@@ -135,6 +143,11 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         CancelCommand = ReactiveCommand.Create(() =>
         {
             return (BaseTransactionViewModel?)null;
+        });
+
+        CommentCommand = ReactiveCommand.Create((string comment) =>
+        {
+            this.Comment += comment;
         });
     }
 

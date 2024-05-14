@@ -271,7 +271,7 @@ public class TransactionsViewModel : ViewModelBase
         if (byGroup is SubCategoryTransactionsGroupViewModel subCategoryGroupViewModel)
         {
             transactionViewModel.Category = categories.FirstOrDefault(c => c.Id == subCategoryGroupViewModel.SubCategory?.CategoryId);
-            transactionViewModel.SubCategory = subCategoryGroupViewModel.SubCategory;
+            transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(s => s.Id == subCategoryGroupViewModel?.SubCategory?.Id);
         }
 
         if (byGroup is TransactionGroupViewModel transactionGroupViewModel)
@@ -293,6 +293,12 @@ public class TransactionsViewModel : ViewModelBase
         }
 
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategory?.Name;
+
+        if (transactionViewModel.SubCategory != null)
+        {
+            transactionViewModel.Sum = transactionViewModel.SubCategory.LastSum;
+            transactionViewModel.ToSum = transactionViewModel.SubCategory.LastSum;
+        }
 
         return transactionViewModel;
     }
@@ -563,11 +569,17 @@ public class TransactionsViewModel : ViewModelBase
 
     private IList<BaseSubCategoryViewModel> GetSubCategories<T, N>() where T : SubCategory where N : BaseSubCategoryViewModel, new()
     {
-        var subCategories = _repository.GetSubCategories().OfType<T>().OrderBy(c => c.Name).Select(c => new N
+        var typedSubCategories = _repository.GetSubCategories().OfType<T>();
+        var subCategoriesBySums = _repository.GetLastSumsBySubCategories(DateTime.Today.AddYears(-1), typedSubCategories.Select(c => c.Id));
+        var subCategoriesByComments = _repository.GetCommentsBySubCategories(DateTime.Today.AddYears(-1));
+
+        var subCategories = typedSubCategories.OrderBy(c => c.Name).Select(c => new N
         {
             Id = c.Id,
             Name = c.Name,
             CategoryId = c.CategoryId,
+            LastSum = subCategoriesBySums.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Sum ?? 0m,
+            Comments = subCategoriesByComments.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Comments ?? [],
         });
 
         return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();

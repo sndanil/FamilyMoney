@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FamilyMoney.DataAccess;
+
+public record SubCategoryLastSum(Guid SubCategoryId, decimal Sum);
+
+public record SubCategoryLastComments(Guid SubCategoryId, IList<string> Comments);
 
 public interface IRepository
 {
@@ -27,6 +28,8 @@ public interface IRepository
     SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory);
     IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategory(SubCategory subCategory);
+    IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds);
+    IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from);
 
     IEnumerable<Transaction> GetTransactions(TransactionsFilter filter);
     Transaction? GetTransaction(Guid id);

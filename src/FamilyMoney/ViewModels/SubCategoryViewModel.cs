@@ -4,6 +4,8 @@ using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
+
 namespace FamilyMoney.ViewModels;
 
 public abstract class BaseSubCategoryViewModel : ViewModelBase
@@ -11,6 +13,8 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
     private Guid _id;
     private Guid? _categoryId;
     private string _name = string.Empty;
+    private decimal _lastSum = 0;
+    private IList<string> _commments = [];
 
     public Guid Id
     {
@@ -28,6 +32,18 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
     {
         get => _name;
         set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
+
+    public decimal LastSum
+    {
+        get => _lastSum;
+        set => this.RaiseAndSetIfChanged(ref _lastSum, value);
+    }
+
+    public IList<string> Comments
+    {
+        get => _commments;
+        set => this.RaiseAndSetIfChanged(ref _commments, value);
     }
 
     public void FillFrom(Guid id, IRepository repository)

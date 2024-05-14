@@ -2,12 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="550"
 		Width="600" Height="550"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
 		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:s="using:System"
         xmlns:bh="using:FamilyMoney.Behaviours"
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
@@ -211,11 +212,30 @@
 						   />
 		</Grid>
 		<Grid Grid.Row="3" ColumnDefinitions="150 *"
-			  RowDefinitions="*"
+			  RowDefinitions="* auto"
 			  Margin="15 0"
 			  >
 			<TextBlock Text="Комментарий" Classes="Label" VerticalAlignment="Top" />
-			<TextBox Grid.Column="1" Text="{Binding Comment}" />
+			<TextBox Grid.Column="1" 
+					 Text="{Binding Comment}" 
+					 />
+
+			<Button Grid.Column="1" Grid.Row="1" 
+					Content="Предыдущие"
+					Margin="5"
+					IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+					>
+				<Button.Flyout>
+					<MenuFlyout ItemsSource="{Binding Comments}">
+						<MenuFlyout.ItemTemplate>
+							<DataTemplate x:DataType="s:String">
+								<MenuItem Header="{Binding .}" 
+										  Click="CommentClick" />
+							</DataTemplate>
+						</MenuFlyout.ItemTemplate>
+					</MenuFlyout>				
+				</Button.Flyout>
+			</Button>
 		</Grid>
 
 		<StackPanel

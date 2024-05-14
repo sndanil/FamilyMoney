@@ -15,7 +15,10 @@ public class LiteDbRepository : IRepository
     {
         using var db = new LiteDatabase(_connectionStr);
         var transactions = db.GetCollection<Transaction>(nameof(Transaction));
+
         transactions.EnsureIndex(t => t.Date);
+        transactions.EnsureIndex(t => t.AccountId);
+        transactions.EnsureIndex(t => t.SubCategoryId);
     }
 
     public void UpdateImage(Guid id, string fileName, Stream stream)
@@ -127,6 +130,45 @@ public class LiteDbRepository : IRepository
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         collection.Upsert(subCategory);
+    }
+
+    public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+
+        var result = new List<SubCategoryLastSum>();
+        foreach (var subCategory in subCategoryIds.Distinct())
+        {
+            db.BeginTrans();
+            var query = collection.Query().Where(t => t.Date >= from && t.SubCategoryId == subCategory).OrderByDescending(t => t.Date).Limit(1);
+            var transaction = query.FirstOrDefault();
+            if (transaction != null)
+            {
+                result.Add(new (subCategory, transaction.Sum));
+            }
+            db.Rollback();
+        }
+
+        return result;
+    }
+
+    public IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from)
+    {
+        using var db = new LiteDatabase(_connectionStr);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+
+        var query = collection.Query().Where(t => t.Date >= from && !string.IsNullOrEmpty(t.Comment))
+            .Select(t => new { t.SubCategoryId, t.Comment });
+
+        var result = query
+            .ToList()
+            .Distinct()
+            .GroupBy(t => t.SubCategoryId.GetValueOrDefault())
+            .Select(t => new SubCategoryLastComments(t.Key, t.Where(c => !string.IsNullOrEmpty(c.Comment)).Select(c => c.Comment!).ToList()))
+            .ToList();
+
+        return result;
     }
 
     public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
