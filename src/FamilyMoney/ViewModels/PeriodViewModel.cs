@@ -11,6 +11,7 @@ namespace FamilyMoney.ViewModels;
 public enum PeriodType
 {
     Custom,
+    Day,
     Month,
     Quarter,
     Year,
@@ -27,6 +28,7 @@ public class PeriodViewModel: ViewModelBase
     public ICommand NextCommand { get; }
     public ICommand PrevCommand { get; }
 
+    public ICommand ToDayCommand { get; }
     public ICommand ToMonthCommand { get; }
     public ICommand ToQuarterCommand { get; }
     public ICommand ToYearCommand { get; }
@@ -52,6 +54,16 @@ public class PeriodViewModel: ViewModelBase
         PrevCommand = ReactiveCommand.CreateFromTask(() =>
         {
             Shift(-1);
+            return Task.CompletedTask;
+        });
+
+        ToDayCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            From = DateTime.Today;
+            To = DateTime.Today;
+            PeriodType = PeriodType.Day;
+            Update();
+
             return Task.CompletedTask;
         });
 
@@ -160,6 +172,8 @@ public class PeriodViewModel: ViewModelBase
         {
             switch (_periodType) 
             {
+                case PeriodType.Day:
+                    return From.ToString("dd MMMM yyyy");
                 case PeriodType.Month:
                     return From.ToString("MMMM yyyy");
                 case PeriodType.Quarter:
@@ -179,6 +193,10 @@ public class PeriodViewModel: ViewModelBase
     {
         switch (_periodType)
         {
+            case PeriodType.Day:
+                From = From.AddDays(direction);
+                To = To.AddDays(direction);
+                break;
             case PeriodType.Month:
                 From = From.AddMonths(direction);
                 To = From.AddMonths(Math.Abs(direction)).AddDays(-1);
@@ -189,7 +207,7 @@ public class PeriodViewModel: ViewModelBase
                 break;
             case PeriodType.Year:
                 From = From.AddYears(direction);
-                To = To.AddYears(Math.Abs(direction));
+                To = From.AddYears(Math.Abs(direction));
                 break;
             case PeriodType.Custom:
                 var diff = (To - From).Days;
