@@ -61,7 +61,7 @@
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="TextBlock.Debet">
-			<Setter Property="Foreground" Value="Green" />
+			<Setter Property="Foreground" Value="#3BCE5E" />
 		</Style>
 		<Style Selector="TextBlock.Name">
 			<Setter Property="Margin" Value="10 0 0 0" />
