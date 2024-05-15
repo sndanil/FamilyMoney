@@ -1,4 +1,5 @@
-﻿using DynamicData;
+﻿using Avalonia.Styling;
+using DynamicData;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -20,7 +21,12 @@ public class TransactionsViewModel : ViewModelBase
     private readonly IStateManager _stateManager;
     private decimal _total = 0m;
 
+    private DateTime _lastTransactionDate = DateTime.Today;
+
     private HashSet<Guid> _openedNodes = new HashSet<Guid>();
+
+    private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = new();
+    private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = new();
 
     private TransactionsGroup _debetTransactions = new();
     private TransactionsGroup _creditTransactions = new();
@@ -138,7 +144,7 @@ public class TransactionsViewModel : ViewModelBase
     {
         var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
             GetCategories<TransferCategory, TransferCategoryViewModel>(),
-            GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+            GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
             SelectedTransactionGroup
             );
         transactionViewModel.IsTransfer = true;
@@ -154,7 +160,7 @@ public class TransactionsViewModel : ViewModelBase
     {
         var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
             GetCategories<CreditCategory, CreditCategoryViewModel>(),
-            GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+            GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
             SelectedTransactionGroup
             );
 
@@ -169,7 +175,7 @@ public class TransactionsViewModel : ViewModelBase
     {
         var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
             GetCategories<DebetCategory, DebetCategoryViewModel>(),
-            GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+            GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
             SelectedTransactionGroup
             );
 
@@ -198,7 +204,7 @@ public class TransactionsViewModel : ViewModelBase
         {
             transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
                 GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
                 transactionGroupViewModel
                 );
         }
@@ -206,7 +212,7 @@ public class TransactionsViewModel : ViewModelBase
         {
             transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
                 GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
                 transactionGroupViewModel
                 );
         }
@@ -214,7 +220,7 @@ public class TransactionsViewModel : ViewModelBase
         {
             transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
                 GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
                 transactionGroupViewModel
                 );
             transactionViewModel.IsTransfer = true;
@@ -260,7 +266,7 @@ public class TransactionsViewModel : ViewModelBase
             FlatAccounts = flatAccounts.Where(a => !a.IsHidden).ToList(),
             Account = account,
             Categories = categories.Where(c => !c.IsHidden).ToList(),
-            SubCategories = subCategories,
+            SubCategories = subCategories.Where(c => c.Category?.IsHidden == false).ToList(),
         };
 
         if (byGroup is CategoryTransactionsGroupViewModel categoryGroupViewModel)
@@ -300,6 +306,15 @@ public class TransactionsViewModel : ViewModelBase
             transactionViewModel.ToSum = transactionViewModel.SubCategory.LastSum;
         }
 
+        if (state.PeriodFrom == state.PeriodTo)
+        {
+            transactionViewModel.Date = state.PeriodFrom.Date;
+        }
+        else
+        {
+            transactionViewModel.Date = _lastTransactionDate;
+        }
+
         return transactionViewModel;
     }
 
@@ -323,7 +338,7 @@ public class TransactionsViewModel : ViewModelBase
             transactionViewModel = new DebetTransactionViewModel
             {
                 Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel>(),
+                SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
             };
         }
         else if (transaction is CreditTransaction)
@@ -331,7 +346,7 @@ public class TransactionsViewModel : ViewModelBase
             transactionViewModel = new CreditTransactionViewModel
             {
                 Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel>(),
+                SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
             };
         }
         else if (transaction is TransferTransaction transfer)
@@ -339,7 +354,7 @@ public class TransactionsViewModel : ViewModelBase
             transactionViewModel = new TransferTransactionViewModel
             {
                 Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel>(),
+                SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
                 ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
                 ToSum = transfer.ToSum,
                 IsTransfer = true,
@@ -358,6 +373,7 @@ public class TransactionsViewModel : ViewModelBase
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
 
         transactionViewModel.Categories = transactionViewModel.Categories.Where(c => !c.IsHidden).ToList();
+        transactionViewModel.SubCategories = transactionViewModel.SubCategories.Where(c => c.Category?.IsHidden == false).ToList();
 
         if (transactionViewModel == null)
         {
@@ -379,6 +395,8 @@ public class TransactionsViewModel : ViewModelBase
         transaction.Comment = transactionViewModel.Comment;
         transaction.Date = transactionViewModel.Date!.Value.Date;
         transaction.LastChange = DateTime.Now;
+
+        _lastTransactionDate = transaction.Date;
 
         if (!string.IsNullOrEmpty(transactionViewModel.SubCategoryText))
         {
@@ -444,6 +462,13 @@ public class TransactionsViewModel : ViewModelBase
             PeriodTo = state.PeriodTo
         });
 
+        Dictionary<Guid, CategoryTransactionsGroupViewModel> debetCategoryGroupsCache = [];
+        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> debetSubCategoryGroupsCache = [];
+        Dictionary<Guid, CategoryTransactionsGroupViewModel> creditCategoryGroupsCache = [];
+        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> creditSubCategoryGroupsCache = [];
+        Dictionary<Guid, CategoryTransactionsGroupViewModel> transferCategoryGroupsCache = [];
+        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> transferSubCategoryGroupsCache = [];
+
         var debetTransactions = new List<CategoryTransactionsGroupViewModel>();
         var creditTransactions = new List<CategoryTransactionsGroupViewModel>();
         var transferTransactions = new List<CategoryTransactionsGroupViewModel>();
@@ -452,90 +477,107 @@ public class TransactionsViewModel : ViewModelBase
         {
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, transaction, selected, (_, _) => true);
+                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, 
+                    transaction, 
+                    debetCategoryGroupsCache, 
+                    debetSubCategoryGroupsCache,
+                    selected, 
+                    (_, _) => true);
             }
             else if (transaction is CreditTransaction)
             {
-                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, transaction, selected, (_, _) => false);
+                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, 
+                    transaction, 
+                    creditCategoryGroupsCache,
+                    creditSubCategoryGroupsCache,
+                    selected, 
+                    (_, _) => false);
             }
             else
             {
-                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, transaction, selected, 
+                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, 
+                    transaction,
+                    transferCategoryGroupsCache,
+                    transferSubCategoryGroupsCache,
+                    selected, 
                     (t, g) => g is TransactionGroupViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
                 );
             }
         }
 
-        DebetTransactions = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum), IsDebet = true };
-        CalcPercents(DebetTransactions.Sum, debetTransactions);
-        DebetTransactions.Categories.AddRange(debetTransactions);
+        var debetTransactionsTemp = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum), IsDebet = true };
+        CalcPercents(debetTransactionsTemp.Sum, debetTransactions);
+        debetTransactionsTemp.Categories.AddRange(debetTransactions);
 
-        CreditTransactions = new TransactionsGroup { Sum = creditTransactions.Sum(t => t.Sum), IsDebet = false };
-        CalcPercents(CreditTransactions.Sum, creditTransactions);
-        CreditTransactions.Categories.AddRange(creditTransactions);
+        var creditTransactionsTemp = new TransactionsGroup { Sum = creditTransactions.Sum(t => t.Sum), IsDebet = false };
+        CalcPercents(creditTransactionsTemp.Sum, creditTransactions);
+        creditTransactionsTemp.Categories.AddRange(creditTransactions);
 
-        TransferTransactions = new TransactionsGroup { Sum = transferTransactions.Sum(t => t.Sum) };
-        CalcPercents(TransferTransactions.Sum, transferTransactions);
-        TransferTransactions.Categories.AddRange(transferTransactions);
+        var transferTransactionsTemp = new TransactionsGroup { Sum = transferTransactions.Sum(t => t.Sum) };
+        CalcPercents(transferTransactionsTemp.Sum, transferTransactions);
+        transferTransactionsTemp.Categories.AddRange(transferTransactions);
 
-        Total = DebetTransactions.Sum - CreditTransactions.Sum;
+        Total = debetTransactionsTemp.Sum - creditTransactionsTemp.Sum;
+        DebetTransactions = debetTransactionsTemp;
+        CreditTransactions = creditTransactionsTemp;
+        TransferTransactions = transferTransactionsTemp;
     }
 
     private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)
     {
         foreach (var category in categories)
         {
-            category.Percent = Math.Round(category.Sum / sum, 2, MidpointRounding.AwayFromZero);
+            category.Percent = Math.Round(category.Sum / sum, 4, MidpointRounding.AwayFromZero);
             foreach (var subCategory in category.SubCategories)
             {
-                subCategory.Percent = Math.Round(subCategory.Sum / sum, 2, MidpointRounding.AwayFromZero);
+                subCategory.Percent = Math.Round(subCategory.Sum / sum, 4, MidpointRounding.AwayFromZero);
                 foreach (var transaction in subCategory.Transactions)
                 {
-                    transaction.Percent = Math.Round(transaction.Sum / sum, 2, MidpointRounding.AwayFromZero);
+                    transaction.Percent = Math.Round(transaction.Sum / sum, 4, MidpointRounding.AwayFromZero);
                 }
             }
         }
     }
 
     private void FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
-            Transaction transaction, 
+            Transaction transaction,
+            Dictionary<Guid, CategoryTransactionsGroupViewModel> categoryGroupsCache,
+            Dictionary<Guid, SubCategoryTransactionsGroupViewModel> subCategoryGroupsCache,
             BaseTransactionsGroupViewModel? selected, 
             Func<Transaction, BaseTransactionsGroupViewModel, bool> isDebet)
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
-        var category = transactions.FirstOrDefault(t => t.Category?.Id == transaction.CategoryId);
-        if (category == null)
+        if (!categoryGroupsCache.TryGetValue(transaction.CategoryId.GetValueOrDefault(), out var category))
         {
             category = new CategoryTransactionsGroupViewModel();
             if (transaction.CategoryId != null)
             {
                 category.IsDebet = isDebet(transaction, category);
-                category.Category = new C();
+                category.Category = GetCategory<C>(transaction.CategoryId.Value);
                 category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
-                category.Category.FillFrom(transaction.CategoryId.Value, _repository);
                 category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId;
                 SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
             }
 
+            categoryGroupsCache.Add(transaction.CategoryId.GetValueOrDefault(), category);
             transactions.Add(category);
         }
         category.Sum += transaction.Sum;
 
-        var subCategory = category.SubCategories.FirstOrDefault(c => c.SubCategory?.Id == transaction.SubCategoryId);
-        if (subCategory == null)
+        if (!subCategoryGroupsCache.TryGetValue(transaction.SubCategoryId.GetValueOrDefault(), out var subCategory))
         {
             subCategory = new SubCategoryTransactionsGroupViewModel();
             if (transaction.SubCategoryId != null)
             {
                 subCategory.IsDebet = isDebet(transaction, subCategory);
-                subCategory.SubCategory = new S();
+                subCategory.SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value);
                 subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
-                subCategory.SubCategory.FillFrom(transaction.SubCategoryId.Value, _repository);
                 subCategory.IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory 
                                         && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId;
                 SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
             }
 
+            subCategoryGroupsCache.Add(transaction.SubCategoryId.GetValueOrDefault(), subCategory);
             category.SubCategories.Add(subCategory);
         }
         subCategory.Sum += transaction.Sum;
@@ -555,6 +597,32 @@ public class TransactionsViewModel : ViewModelBase
         subCategory.Transactions.Add(viewTransaction);
     }
 
+    private BaseCategoryViewModel GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()
+    {
+        if (!_categoriesCache.TryGetValue(id, out var category))
+        {
+            category = new C();
+            category.FillFrom(id, _repository);
+
+            _categoriesCache.Add(id, category);
+        }
+
+        return category;
+    }
+
+    private BaseSubCategoryViewModel GetSubCategory<C>(Guid id) where C : BaseSubCategoryViewModel, new()
+    {
+        if (!_subCategoriesCache.TryGetValue(id, out var subCategory))
+        {
+            subCategory = new C();
+            subCategory.FillFrom(id, _repository);
+
+            _subCategoriesCache.Add(id, subCategory);
+        }
+
+        return subCategory;
+    }
+
     private IList<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
     {
         var categories = _repository.GetCategories().OfType<T>().OrderBy(c => c.Name).Select(c =>
@@ -567,7 +635,10 @@ public class TransactionsViewModel : ViewModelBase
         return categories.Select(c => (BaseCategoryViewModel)c).ToList();
     }
 
-    private IList<BaseSubCategoryViewModel> GetSubCategories<T, N>() where T : SubCategory where N : BaseSubCategoryViewModel, new()
+    private IList<BaseSubCategoryViewModel> GetSubCategories<T, N, C>() 
+        where T : SubCategory 
+        where N : BaseSubCategoryViewModel, new()
+        where C: BaseCategoryViewModel, new()
     {
         var typedSubCategories = _repository.GetSubCategories().OfType<T>();
         var subCategoriesBySums = _repository.GetLastSumsBySubCategories(DateTime.Today.AddYears(-1), typedSubCategories.Select(c => c.Id));
@@ -578,6 +649,7 @@ public class TransactionsViewModel : ViewModelBase
             Id = c.Id,
             Name = c.Name,
             CategoryId = c.CategoryId,
+            Category = GetCategory<C>(c.CategoryId.GetValueOrDefault()),
             LastSum = subCategoriesBySums.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Sum ?? 0m,
             Comments = subCategoriesByComments.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Comments ?? [],
         });

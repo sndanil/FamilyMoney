@@ -12,6 +12,7 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
 {
     private Guid _id;
     private Guid? _categoryId;
+    private BaseCategoryViewModel? _category;
     private string _name = string.Empty;
     private decimal _lastSum = 0;
     private IList<string> _commments = [];
@@ -26,6 +27,12 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
     {
         get => _categoryId;
         set => this.RaiseAndSetIfChanged(ref _categoryId, value);
+    }
+
+    public BaseCategoryViewModel? Category
+    {
+        get => _category;
+        set => this.RaiseAndSetIfChanged(ref _category, value);
     }
 
     public string Name

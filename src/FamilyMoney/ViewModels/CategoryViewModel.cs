@@ -62,7 +62,10 @@ public abstract class BaseCategoryViewModel : ViewModelBase
     public void FillFrom(Guid id, IRepository repository)
     {
         var category = repository.GetCategory(id);
-        FillFrom(category, repository);
+        if (category != null)
+        {
+            FillFrom(category, repository);
+        }
     }
 
     public void FillFrom(Category category, IRepository repository)

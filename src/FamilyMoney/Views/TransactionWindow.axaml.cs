@@ -13,6 +13,8 @@ namespace FamilyMoney.Views;
 
 public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
 {
+    private bool _skipCategoryChange = false;
+
     public TransactionWindow()
     {
         InitializeComponent();
@@ -32,24 +34,12 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
 
             this.WhenAnyValue(v => v.ViewModel!.Category)
                 .Skip(1)
+                .Where(v => !_skipCategoryChange)
                 .Do(v =>
                 {
                     this.ViewModel!.SubCategoryText = null;
                     this.ViewModel!.SubCategory = null;
                     RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => SubCategoryCompleteBox.Focus());
-                })
-                .Subscribe();
-
-            this.WhenAnyValue(v => v.ViewModel!.SubCategory)
-                .Skip(1)
-                .Do(v =>
-                {
-                    if (this.ViewModel!.Sum == 0 && this.ViewModel!.SubCategory != null)
-                    {
-                        this.ViewModel!.Sum = this.ViewModel!.SubCategory.LastSum;
-                    }
-
-                    RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => SumPicker.Focus());
                 })
                 .Subscribe();
 
@@ -72,6 +62,36 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
 
         SubCategoryCompleteBox.ItemSelector = ItemSelector;
         SubCategoryCompleteBox.ItemFilter = ItemFilter;
+
+        bool sumFocused = false;
+        SubCategoryCompleteBox.DropDownClosed += (s, e) =>
+        {
+            if (!sumFocused)
+            {
+                sumFocused = true;
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => 
+                {
+                    if (this.ViewModel!.SubCategory != null)
+                    {
+                        if (this.ViewModel!.Sum == 0)
+                        {
+                            this.ViewModel!.Sum = this.ViewModel!.SubCategory.LastSum;
+                        }
+
+                        if (this.ViewModel!.Category == null)
+                        {
+                            _skipCategoryChange = true;
+                            this.ViewModel!.Category = this.ViewModel!.Categories?.FirstOrDefault(c => c.Id == this.ViewModel!.SubCategory.CategoryId);
+                            _skipCategoryChange = false;
+                        }
+
+                        SumPicker.Focus();
+                    }
+                });
+
+                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () => sumFocused = false);
+            }
+        };
     }
 
     private void TransactionWindowActivated(object? sender, EventArgs e)
@@ -80,11 +100,7 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
         {
             AccountComboBox.Focus();
         }
-        else if (ViewModel?.Category == null)
-        {
-            CategoryComboBox.Focus();
-        }
-        else if (ViewModel?.SubCategory == null)
+        else if (ViewModel?.Category == null || ViewModel?.SubCategory == null)
         {
             SubCategoryCompleteBox.Focus();
         }
@@ -132,6 +148,7 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
     private void ClearSubCategoryButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         SubCategoryCompleteBox.SelectedItem = null;
+        SubCategoryCompleteBox.Text = string.Empty;
     }
 
     private void CommentClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
