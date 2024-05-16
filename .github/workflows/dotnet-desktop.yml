@@ -87,6 +87,12 @@ jobs:
       env:
         Configuration: ${{ matrix.configuration }}
 
+    - name: Build the application
+      run: msbuild src/FamilyMoney/FamilyMoney.csproj /p:Configuration=$env:Configuration
+      env:
+        Configuration: ${{ matrix.configuration }}
+
+
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     #- name: Decode the pfx
     #  run: |
@@ -109,7 +115,7 @@ jobs:
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
+        name: FamilyMoney-win-x64
+        path: src\FamilyMoney\bin\Release\net8.0\win-x64
