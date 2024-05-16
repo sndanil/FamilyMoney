@@ -7,8 +7,15 @@
 			 x:DataType="vm:PeriodViewModel"
              x:Class="FamilyMoney.Views.PeriodView">
 	<Grid ColumnDefinitions="auto auto auto" Height="50">
+		<Button HotKey="Ctrl+D1" Command="{Binding ToDayCommand}" IsVisible="False" />
+		<Button HotKey="Ctrl+D2" Command="{Binding ToMonthCommand}" IsVisible="False" />
+		<Button HotKey="Ctrl+D3" Command="{Binding ToQuarterCommand}" IsVisible="False" />
+		<Button HotKey="Ctrl+D4" Command="{Binding ToYearCommand}" IsVisible="False" />
+		<Button HotKey="Ctrl+D5" Command="{Binding ToCustomCommand}" IsVisible="False" />
+
 		<Button Command="{Binding PrevCommand}"
 				CornerRadius="12 0 0 12"
+				HotKey="Ctrl+Left"
 				Height="30"
 				>
 			<PathIcon Data="{StaticResource ChevronRight}">
@@ -20,6 +27,7 @@
 		</Button>
 		<Button Grid.Column="1" MinWidth="200"
 				Height="30"
+				HotKey="Ctrl+P"
 				CornerRadius="0">
 			<Button.Flyout>
 				<MenuFlyout>
@@ -36,6 +44,7 @@
 		</Button>
 		<Button Grid.Column="2" Command="{Binding NextCommand}"
 				Height="30"
+				HotKey="Ctrl+Right"
 				CornerRadius="0 12 12 0"
 				>
 			<PathIcon Data="{StaticResource ChevronRight}" />

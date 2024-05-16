@@ -14,6 +14,7 @@ internal class CsvImporter: IImporter
 {
     public void DoImport(IRepository repository, Stream stream)
     {
+#pragma warning disable CS0168 // Variable is declared but never used
         try
         {
 
@@ -111,6 +112,7 @@ internal class CsvImporter: IImporter
         {
 
         }
+#pragma warning restore CS0168 // Variable is declared but never used
     }
 
     private static Account? TryGetAccount(IRepository repository, List<Account> accounts, string? accountName)

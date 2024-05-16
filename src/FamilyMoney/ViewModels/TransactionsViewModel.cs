@@ -256,7 +256,7 @@ public class TransactionsViewModel : ViewModelBase
         where T : BaseTransactionViewModel, new()
     {
         var state = _stateManager.GetMainState();
-        var flatAccounts = GetFlatAccouunts();
+        var flatAccounts = state.FlatAccounts;
         var account = state.SelectedAccountId.HasValue ?
                             flatAccounts.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId))
                             : flatAccounts.FirstOrDefault(a => !a.IsGroup);
@@ -332,7 +332,7 @@ public class TransactionsViewModel : ViewModelBase
             return;
         }
 
-        var flatAccounts = GetFlatAccouunts();
+        var flatAccounts = _stateManager.GetMainState().FlatAccounts;
         if (transaction is DebetTransaction)
         {
             transactionViewModel = new DebetTransactionViewModel
@@ -655,21 +655,5 @@ public class TransactionsViewModel : ViewModelBase
         });
 
         return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
-    }
-
-    private IList<AccountViewModel> GetFlatAccouunts()
-    {
-        var state = _stateManager.GetMainState();
-        var result = new List<AccountViewModel>();
-        foreach (var account in state.Accounts)
-        {
-            result.Add(account);
-            foreach (var childAccount in account.Children)
-            {
-                result.Add(childAccount);
-            }
-        }
-
-        return result;
     }
 }

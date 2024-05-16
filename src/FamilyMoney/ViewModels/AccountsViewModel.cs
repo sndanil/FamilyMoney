@@ -7,7 +7,6 @@ using ReactiveUI;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -31,6 +30,10 @@ public class AccountsViewModel : ViewModelBase
     public ICommand EditCommand { get; }
 
     public ICommand ShowHiddenCommand { get; }
+
+    public ICommand PrevAccount { get; }
+
+    public ICommand NextAccount { get; }
 
     public AccountViewModel Total
     {
@@ -63,6 +66,10 @@ public class AccountsViewModel : ViewModelBase
 
             return _total;
         }
+        set
+        {
+            MessageBus.Current.SendMessage(new AccountSelectMessage { AccountId = value?.Id });
+        }
     }
 
     public AccountsViewModel(IRepository repository, IStateManager stateManager)
@@ -78,6 +85,48 @@ public class AccountsViewModel : ViewModelBase
         {
             ShowHidden = !ShowHidden;
             return Task.CompletedTask;
+        });
+
+        NextAccount = ReactiveCommand.Create(() =>
+        {
+            if (SelectedAccount == null)
+            {
+                SelectedAccount = Total;
+            }
+
+            var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
+            var index = flatAccounts.IndexOf(SelectedAccount);
+            if (index < flatAccounts.Count - 1)
+            {
+                SelectedAccount = flatAccounts[index + 1];
+            }
+            else
+            {
+                SelectedAccount = Total;
+            }
+        });
+
+        PrevAccount = ReactiveCommand.Create(() =>
+        {
+            if (SelectedAccount == null)
+            {
+                SelectedAccount = Total;
+            }
+
+            var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
+            var index = flatAccounts.IndexOf(SelectedAccount);
+            if (index == 0)
+            {
+                SelectedAccount = Total;
+            }
+            else if (index > 0)
+            {
+                SelectedAccount = flatAccounts[index - 1];
+            }
+            else
+            {
+                SelectedAccount = flatAccounts[^1];
+            }
         });
 
         SubscribeMessages();

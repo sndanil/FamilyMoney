@@ -98,8 +98,11 @@
 	<Grid Name="MainContainer" 
 				DragDrop.AllowDrop="True" 
 				RowDefinitions="auto auto * auto"
-		  Background="{DynamicResource SystemAltMediumLowColor}"
+				Background="{DynamicResource SystemAltMediumLowColor}"
 				>
+		<Button HotKey="Ctrl+Up" Command="{Binding PrevAccount}" IsVisible="False" />
+		<Button HotKey="Ctrl+Down" Command="{Binding NextAccount}" IsVisible="False" />
+		
 		<Border Classes="Account Group LeftTop" 
 				CornerRadius="12"
 				Classes.Selected="{Binding IsSelected}"

@@ -7,8 +7,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>wallet.ico</ApplicationIcon>
-	<PublishSingleFile>true</PublishSingleFile>
-	<SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
