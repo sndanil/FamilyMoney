@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using DynamicData;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using ReactiveUI;
 using System;
@@ -130,6 +131,8 @@ public class CategoriesViewModel : ViewModelBase
         var category = factory();
         category.IsHidden = categoryForSave.IsHidden;
         _repository.UpdateCategroty(category);
+
+        MessageBus.Current.SendMessage(new CategoryUpdateMessage { CategoryId = category.Id });
 
         if (categoryForUpdate is not null)
         {

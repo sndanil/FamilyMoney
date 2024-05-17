@@ -1,10 +1,8 @@
-﻿using Avalonia.Controls;
-using FamilyMoney.ViewModels;
+﻿using FamilyMoney.ViewModels;
 
-namespace FamilyMoney.Messages
+namespace FamilyMoney.Messages;
+
+public class TransactionGroupDeleteMessage
 {
-    public class TransactionGroupDeleteMessage
-    {
-        public required TransactionGroupViewModel Element { get; init; }
-    }
+    public required TransactionGroupViewModel Element { get; init; }
 }

@@ -138,6 +138,16 @@ public class TransactionsViewModel : ViewModelBase
             {
                 await CopyTransaction(m.Element);
             });
+
+        MessageBus.Current.Listen<CategoryUpdateMessage>()
+            .Where(m => m.CategoryId != null)
+            .Subscribe(m =>
+            {
+                if (_categoriesCache.ContainsKey(m.CategoryId.GetValueOrDefault()))
+                {
+                    _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
+                }
+            });
     }
 
     private async Task AddTransferTransaction()

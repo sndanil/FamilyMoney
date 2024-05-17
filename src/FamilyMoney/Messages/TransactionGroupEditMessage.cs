@@ -1,9 +1,8 @@
 ﻿using FamilyMoney.ViewModels;
 
-namespace FamilyMoney.Messages
+namespace FamilyMoney.Messages;
+
+public class TransactionGroupEditMessage
 {
-    public class TransactionGroupEditMessage
-    {
-        public required TransactionGroupViewModel Element { get; init; }
-    }
+    public required TransactionGroupViewModel Element { get; init; }
 }

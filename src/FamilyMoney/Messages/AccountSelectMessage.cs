@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace FamilyMoney.Messages
+namespace FamilyMoney.Messages;
+
+public class AccountSelectMessage
 {
-    public class AccountSelectMessage
-    {
-        public Guid? AccountId { get; init; }
-    }
+    public Guid? AccountId { get; init; }
 }

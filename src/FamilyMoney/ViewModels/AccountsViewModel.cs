@@ -390,6 +390,7 @@ public class AccountsViewModel : ViewModelBase
             one.IsNotSummable = other.IsNotSummable;
         }
 
+        _stateManager.GetMainState().Accounts = Total.Children.ToArray();
         _repository!.UpdateAccount(new Models.Account
         {
             Id = other.Id.Value,
