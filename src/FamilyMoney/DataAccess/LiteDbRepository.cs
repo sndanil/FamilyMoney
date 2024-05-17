@@ -2,6 +2,7 @@
 using LiteDB;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -13,6 +14,16 @@ public class LiteDbRepository : IRepository
 
     public LiteDbRepository()
     {
+        if (File.Exists(_connectionStr))
+        {
+            if (!Directory.Exists("Backups")) 
+            {
+                Directory.CreateDirectory("Backups");
+            }
+
+            File.Copy(_connectionStr, Path.Combine("Backups", "Backup_" + DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss", CultureInfo.InvariantCulture) + ".db"));
+        }
+
         using var db = new LiteDatabase(_connectionStr);
         var transactions = db.GetCollection<Transaction>(nameof(Transaction));
 
