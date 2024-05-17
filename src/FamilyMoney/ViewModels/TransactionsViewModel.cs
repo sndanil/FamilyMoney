@@ -127,7 +127,7 @@ public class TransactionsViewModel : ViewModelBase
 
         MessageBus.Current.Listen<TransactionGroupDeleteMessage>()
             .Where(m => m.Element != null)
-            .Subscribe(async m =>
+            .Subscribe(m =>
             {
                 DeleteTransaction(m.Element);
             });

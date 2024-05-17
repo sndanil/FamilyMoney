@@ -7,6 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>wallet.ico</ApplicationIcon>
+	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,6 +49,16 @@
     <AvaloniaXaml Update="Assets\Icons.axaml">
       <SubType>Designer</SubType>
     </AvaloniaXaml>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="D:\Projects\FamilyMoney\src\FamilyMoney\.editorconfig" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="D:\Projects\FamilyMoney\src\FamilyMoney\.editorconfig" />
   </ItemGroup>
 
 </Project>

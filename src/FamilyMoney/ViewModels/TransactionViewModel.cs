@@ -20,7 +20,7 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     private IList<BaseCategoryViewModel>? _categories;
     private IList<BaseSubCategoryViewModel>? _subCategories;
     private string? _comment;
-    private IList<string> _comments;
+    private IList<string> _comments = [];
     private BaseCategoryViewModel? _category;
     private BaseSubCategoryViewModel? _subCategory;
     private string? _subCategoryText;
