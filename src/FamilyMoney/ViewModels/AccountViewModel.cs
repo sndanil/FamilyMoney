@@ -101,11 +101,6 @@ public class AccountViewModel : ViewModelBase
         get => Children.Count == 0;
     }
 
-    public bool IsLastElement
-    {
-        get => Parent?.Children.IndexOf(this) == Parent?.Children.Count - 1;
-    }
-
     public ObservableCollection<AccountViewModel> Children { get => _children; }
 
     public AccountViewModel()

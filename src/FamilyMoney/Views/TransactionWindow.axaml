@@ -136,7 +136,7 @@
 					  HorizontalAlignment="Stretch"
 						/>
 
-			<TextBlock Grid.Row="3" Text="Подкадегория" Classes="Label" />
+			<TextBlock Grid.Row="3" Text="Подкатегория" Classes="Label" />
 			<DockPanel Grid.Row="3" Grid.Column="1" LastChildFill="True">
 				<Button DockPanel.Dock="Right"
 						Margin="2"
@@ -228,7 +228,7 @@
 			<Button Grid.Column="1" Grid.Row="1" 
 					Content="Предыдущие"
 					Margin="5"
-					IsVisible="{Binding SubCategory.Comments.Count}"
+					IsVisible="{Binding Comments.Count}"
 					>
 				<Button.Flyout>
 					<MenuFlyout ItemsSource="{Binding Comments}">

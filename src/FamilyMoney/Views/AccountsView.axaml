@@ -43,15 +43,17 @@
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 		</Style>
 		<Style Selector="Border.AloneGroup">
-			<Setter Property="CornerRadius" Value="12 12 12 12"/>
+			<Setter Property="CornerRadius" Value="12"/>
 		</Style>
 		<Style Selector="Border.AloneElement">
-			<Setter Property="CornerRadius" Value="12 12 12 12"/>
+			<Setter Property="CornerRadius" Value="12"/>
 			<Setter Property="Margin" Value="1 0 1 2" />
+			<Setter Property="BorderThickness" Value="1" />
 		</Style>
-		<Style Selector="Border.LastElement">
+		<Style Selector="ItemsControl.Children > ContentPresenter:nth-last-child(1) > Border">
 			<Setter Property="CornerRadius" Value="0 0 12 12"/>
 			<Setter Property="Margin" Value="1 0 1 2" />
+			<Setter Property="BorderThickness" Value="1" />
 		</Style>
 		<Style Selector="Border.Account:pointerover">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
@@ -188,7 +190,7 @@
 									</TextBlock>
 								</Grid>
 							</Border>
-							<ItemsControl ItemsSource="{Binding Children}">
+							<ItemsControl ItemsSource="{Binding Children}" Classes="Children">
 								<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
 										<StackPanel Orientation="Vertical" />
@@ -198,7 +200,6 @@
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<Border Classes="Account Element" 
-												Classes.LastElement="{Binding IsLastElement}"
 												Classes.Selected="{Binding IsSelected}"
 												>
 											<Border.IsVisible>
