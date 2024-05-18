@@ -18,6 +18,9 @@
 		</Style>
 	</Window.Styles>
 	<Grid RowDefinitions="auto auto * auto auto">
+		<TextBlock Text="Группа счетов" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding IsGroup}"/>
+		<TextBlock Text="Счёт" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding !IsGroup}"/>
+
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
 			<CheckBox IsChecked="{Binding IsHidden}">Скрытый</CheckBox>
@@ -30,17 +33,18 @@
 			Source="{Binding Image}"
 			VerticalAlignment="Center"
 			/>
-		<TextBlock Grid.Row="2"
-				   VerticalAlignment="Center"
-				   HorizontalAlignment="Center"
-				   Text="Выберите картинку"
-				   IsVisible="{Binding Image, 
-								Converter={x:Static ObjectConverters.IsNull}}"
-				   />
 		
+		<Svg Grid.Row="2"
+			 VerticalAlignment="Stretch"
+			 HorizontalAlignment="Stretch"
+			 Css="{DynamicResource SvgColor}"
+			 IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"			 
+			 Path="/Assets/Svg/image.svg"/>
+
 		<Button Grid.Row="3" 
 				Classes="DialogButton" 
-				Content="Изменить" 
+				Width="250"
+				Content="Загрузить картинку из файла" 
 				HorizontalAlignment="Center"
 				x:Name="ChangeImageButton"
 				Click="ChangeImage"

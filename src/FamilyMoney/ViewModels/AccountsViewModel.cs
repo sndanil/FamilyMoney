@@ -260,6 +260,7 @@ public class AccountsViewModel : ViewModelBase
             Parent = editAccount.Parent,
             Name = editAccount.Name,
             Sum = editAccount.Sum,
+            IsGroup = editAccount.IsGroup,
             Image = editAccount.Image,
             IsHidden = editAccount.IsHidden,
             IsNotSummable = editAccount.IsNotSummable,

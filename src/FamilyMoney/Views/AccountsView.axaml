@@ -257,7 +257,7 @@
 			<StackPanel Orientation="Horizontal">
 				<Button Command="{Binding AddGroupCommand}" 
 						Classes="BottomButton"
-						ToolTip.Tip="Добавить группу">
+						ToolTip.Tip="Добавить группу счетов">
 					<PathIcon Data="{StaticResource Tree}" />
 				</Button>
 				<Button Command="{Binding AddElementCommand}" 
