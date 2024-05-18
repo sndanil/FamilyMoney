@@ -138,9 +138,17 @@
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
 
-						<StackPanel Orientation="Horizontal" Grid.Column="2"
-									Margin="10 0 0 0"
-								>
+						<StackPanel Orientation="Horizontal" Grid.Column="2">
+
+							<Button Height="30" VerticalAlignment="Center" Margin="5 0">
+								<Svg Css="{DynamicResource SvgColor}"
+										Path="/Assets/Svg/transactions-tree.svg"/>
+							</Button>
+
+							<Button Height="30" VerticalAlignment="Center" Margin="10 0">
+								<Svg Css="{DynamicResource SvgColor}"
+										Path="/Assets/Svg/calendar-lines.svg"/>
+							</Button>
 
 							<views:PeriodView DataContext="{Binding Period}"
 											  Margin="10 0 0 0"

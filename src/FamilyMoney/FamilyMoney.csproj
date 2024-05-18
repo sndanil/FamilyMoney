@@ -19,8 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Svg\calendar-lines.svg" />
     <None Remove="Assets\Svg\copy.svg" />
+    <None Remove="Assets\Svg\folder-plus.svg" />
     <None Remove="Assets\Svg\image.svg" />
+    <None Remove="Assets\Svg\transactions-tree.svg" />
     <None Remove="Assets\wallet.ico" />
   </ItemGroup>
 

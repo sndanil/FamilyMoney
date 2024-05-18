@@ -258,7 +258,8 @@
 				<Button Command="{Binding AddGroupCommand}" 
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить группу счетов">
-					<PathIcon Data="{StaticResource Tree}" />
+					<Svg Css="{DynamicResource SvgColor}"
+						Path="/Assets/Svg/folder-plus.svg"/>
 				</Button>
 				<Button Command="{Binding AddElementCommand}" 
 						Classes="BottomButton"

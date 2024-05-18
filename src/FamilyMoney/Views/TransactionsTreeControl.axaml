@@ -191,8 +191,7 @@
 																Command="{Binding CopyCommand}"
 																ToolTip.Tip="Копировать"
 																>
-															<Svg 
-																Css="{DynamicResource SvgColor}"
+															<Svg Css="{DynamicResource SvgColor}"
 																Path="/Assets/Svg/copy.svg"/>
 														</Button>
 														<Button Grid.Column="1" 
