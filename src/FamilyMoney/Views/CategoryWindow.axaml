@@ -29,17 +29,17 @@
 			Source="{Binding Image}"
 			VerticalAlignment="Center"
 			/>
-		<TextBlock Grid.Row="2"
-				   VerticalAlignment="Center"
-				   HorizontalAlignment="Center"
-				   Text="Выберите картинку"
-				   IsVisible="{Binding Image, 
-								Converter={x:Static ObjectConverters.IsNull}}"
-				   />
+		<Svg Grid.Row="2"
+			 VerticalAlignment="Stretch"
+			 HorizontalAlignment="Stretch"
+			 Css="{DynamicResource SvgColor}"
+			 IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"
+			 Path="/Assets/Svg/image.svg"/>
 
 		<Button Grid.Row="3"
 				Classes="DialogButton"
-				Content="Изменить"
+				Width="250"
+				Content="Загрузить картинку из файла"
 				HorizontalAlignment="Center"
 				x:Name="ChangeImageButton"
 				Click="ChangeImage"
