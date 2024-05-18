@@ -26,6 +26,13 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
+		<Style Selector="Svg">
+			<Setter Property="Height" Value="10" />
+			<Setter Property="Width" Value="10" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
+		</Style>
 		<Style Selector="Image">
 			<Setter Property="Height" Value="20" />
 			<Setter Property="Width" Value="20" />
@@ -182,8 +189,11 @@
 														<Button Grid.Column="0" 
 																Classes="Expander" 
 																Command="{Binding CopyCommand}"
-																ToolTip.Tip="Копировать">
-															<PathIcon Data="{StaticResource Copy}" />
+																ToolTip.Tip="Копировать"
+																>
+															<Svg 
+																Css="{DynamicResource SvgColor}"
+																Path="/Assets/Svg/copy.svg"/>
 														</Button>
 														<Button Grid.Column="1" 
 																Classes="Expander" 
