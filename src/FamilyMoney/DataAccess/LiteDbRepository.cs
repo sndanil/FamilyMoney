@@ -11,17 +11,30 @@ namespace FamilyMoney.DataAccess;
 public class LiteDbRepository : IRepository
 {
     private string _connectionStr = "database.db";
+    private string _backupDirectory = "Backups";
 
     public LiteDbRepository()
     {
         if (File.Exists(_connectionStr))
         {
-            if (!Directory.Exists("Backups")) 
+            if (!Directory.Exists(_backupDirectory)) 
             {
-                Directory.CreateDirectory("Backups");
+                Directory.CreateDirectory(_backupDirectory);
             }
 
-            File.Copy(_connectionStr, Path.Combine("Backups", "Backup_" + DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss", CultureInfo.InvariantCulture) + ".db"));
+            var backupPath = Path.Combine(_backupDirectory, "Backup_" + DateTime.Now.ToString("yyyy_MM_dd", CultureInfo.InvariantCulture) + ".db");
+            if (!File.Exists(backupPath))
+            {
+                File.Copy(_connectionStr, backupPath);
+            }
+
+            foreach (var file in Directory.GetFiles(_backupDirectory).OrderByDescending(b => b).Skip(10))
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
         }
 
         using var db = new LiteDatabase(_connectionStr);
