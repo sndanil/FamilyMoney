@@ -38,8 +38,11 @@ public class LiteDbRepository : IRepository
         }
 
         using var db = new LiteDatabase(_connectionStr);
-        var transactions = db.GetCollection<Transaction>(nameof(Transaction));
 
+        var subcategories = db.GetCollection<SubCategory>(nameof(SubCategory));
+        subcategories.EnsureIndex(s => s.Name);
+
+        var transactions = db.GetCollection<Transaction>(nameof(Transaction));
         transactions.EnsureIndex(t => t.Date);
         transactions.EnsureIndex(t => t.AccountId);
         transactions.EnsureIndex(t => t.SubCategoryId);
@@ -131,8 +134,15 @@ public class LiteDbRepository : IRepository
         using var db = new LiteDatabase(_connectionStr);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         var result = collection.Query()
-                        .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name.ToLower())
+                        .Where(s => s.CategoryId == categoryId && s.Name == name)
                         .FirstOrDefault();
+
+        if (result == null)
+        {
+            result = collection.Query()
+                            .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name.ToLower())
+                            .FirstOrDefault();
+        }
         if (result == null)
         {
             result = factory();
