@@ -44,6 +44,12 @@
 		<Style Selector="Border.SideBarMenuItem PathIcon">
 			<Setter Property="Width" Value="14"/>
 		</Style>
+		<Style Selector="Button.AddButton">
+			<Setter Property="Margin" Value="20 0 0 0" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="CornerRadius" Value="12" />
+		</Style>
 	</Window.Styles>
 
 	<SplitView IsPaneOpen="{Binding IsPaneOpen}"
@@ -140,19 +146,35 @@
 
 						<StackPanel Orientation="Horizontal" Grid.Column="2">
 
-							<Button Height="30" VerticalAlignment="Center" Margin="5 0">
-								<Svg Css="{DynamicResource SvgColor}"
-										Path="/Assets/Svg/transactions-tree.svg"/>
-							</Button>
+							<ToggleButton IsChecked="{Binding ShowTransactionsTree}" 
+										  Height="30" 
+										  VerticalAlignment="Center" 
+										  Margin="5 0">
+								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/transactions-tree.svg"/>
+							</ToggleButton >
 
-							<Button Height="30" VerticalAlignment="Center" Margin="10 0">
-								<Svg Css="{DynamicResource SvgColor}"
-										Path="/Assets/Svg/calendar-lines.svg"/>
-							</Button>
+							<ToggleButton IsChecked="{Binding !ShowTransactionsTree}"
+										  Height="30" 
+										  VerticalAlignment="Center" 
+										  Margin="10 0">
+								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/calendar-check.svg"/>
+							</ToggleButton >
 
-							<views:PeriodView DataContext="{Binding Period}"
-											  Margin="10 0 0 0"
-										  />
+							<views:PeriodView DataContext="{Binding Period}" Margin="10 0 0 0" />
+
+							<Button Classes="AddButton"
+									HotKey="Alt+C"
+									Command="{Binding Transactions.AddCreditCommand}">Расход</Button>
+
+							<Button Classes="AddButton"
+									HotKey="Alt+D"
+									Command="{Binding Transactions.AddDebetCommand}">Доход</Button>
+
+							<Button Classes="AddButton"
+								HotKey="Alt+T"
+								Command="{Binding Transactions.AddTransferCommand}">Перевод</Button>
+
+
 						</StackPanel>
 
 
@@ -160,11 +182,13 @@
 
 						<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
 
-						<views:TransactionsView Grid.Column="2"
-												Grid.Row="1"
-												DataContext="{Binding Transactions}"
-											>
-						</views:TransactionsView>
+						<Panel IsVisible="{Binding ShowTransactionsTree}" Grid.Column="2"	Grid.Row="1">
+							<views:TransactionsView DataContext="{Binding Transactions}" />
+						</Panel>
+						<Panel IsVisible="{Binding !ShowTransactionsTree}" Grid.Column="2"	Grid.Row="1">
+							<views:TransactionsByDatesView DataContext="{Binding Transactions}" />
+						</Panel>
+
 					</Grid>
 
 					<Border.IsVisible>

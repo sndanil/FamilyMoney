@@ -4,10 +4,10 @@ using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.State;
-using FamilyMoney.Utils;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ public class TransactionsViewModel : ViewModelBase
 
     private DateTime _lastTransactionDate = DateTime.Today;
 
-    private HashSet<Guid> _openedNodes = new HashSet<Guid>();
+    private HashSet<Guid> _openedNodes = new();
 
     private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = new();
     private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = new();
@@ -32,6 +32,8 @@ public class TransactionsViewModel : ViewModelBase
     private TransactionsGroup _creditTransactions = new();
     private TransactionsGroup _transferTransactions = new();
 
+    private ObservableCollection<TransactionsByDatesGroup> _transactionsDyDates = new();
+
     private BaseTransactionsGroupViewModel? _selectedTransactionGroup = null;
 
     public TransactionsGroup DebetTransactions
@@ -39,15 +41,23 @@ public class TransactionsViewModel : ViewModelBase
         get => _debetTransactions;
         set => this.RaiseAndSetIfChanged(ref _debetTransactions, value);
     }
+
     public TransactionsGroup CreditTransactions
     {
         get => _creditTransactions;
         set => this.RaiseAndSetIfChanged(ref _creditTransactions, value);
     }
+
     public TransactionsGroup TransferTransactions
     {
         get => _transferTransactions;
         set => this.RaiseAndSetIfChanged(ref _transferTransactions, value);
+    }
+
+    public ObservableCollection<TransactionsByDatesGroup> TransactionsDyDates
+    {
+        get => _transactionsDyDates;
+        set => this.RaiseAndSetIfChanged(ref _transactionsDyDates, value);
     }
 
     public ICommand AddDebetCommand { get; }
@@ -483,35 +493,67 @@ public class TransactionsViewModel : ViewModelBase
         var creditTransactions = new List<CategoryTransactionsGroupViewModel>();
         var transferTransactions = new List<CategoryTransactionsGroupViewModel>();
 
+        var transactionsDyDates = new ObservableCollection<TransactionsByDatesGroup>();
+
+        var lastDate = DateTime.MinValue;
+        TransactionsByDatesGroup? lastDateGroup = null;
+
         foreach (var transaction in transactions)
         {
+            if (transaction.Date != lastDate)
+            {
+                if (lastDateGroup != null)
+                {
+                    var sortedTransactions = lastDateGroup.Transactions.OrderBy(t => t.LastChange).ToList();
+                    lastDateGroup.Transactions.Clear();
+                    lastDateGroup.Transactions.AddRange(sortedTransactions);
+                    lastDateGroup.Sum = lastDateGroup.Transactions.Sum(t => t.SumForTotal);
+                    lastDateGroup.IsDebet = lastDateGroup.Sum >= 0;
+                }
+
+                lastDateGroup = new TransactionsByDatesGroup { Date = transaction.Date };
+                lastDate = transaction.Date;
+                transactionsDyDates.Add(lastDateGroup);
+            }
+
+            TransactionGroupViewModel? transactionView = null;
             if (transaction is DebetTransaction)
             {
-                FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, 
+                transactionView = FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactions, 
                     transaction, 
                     debetCategoryGroupsCache, 
                     debetSubCategoryGroupsCache,
                     selected, 
                     (_, _) => true);
+                transactionView.SumForTotal = transaction.Sum;
             }
             else if (transaction is CreditTransaction)
             {
-                FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, 
+                transactionView = FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactions, 
                     transaction, 
                     creditCategoryGroupsCache,
                     creditSubCategoryGroupsCache,
                     selected, 
                     (_, _) => false);
+                transactionView.SumForTotal = -transaction.Sum;
             }
-            else
+            else if (transaction is TransferTransaction transferTransaction)
             {
-                FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, 
+                transactionView = FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactions, 
                     transaction,
                     transferCategoryGroupsCache,
                     transferSubCategoryGroupsCache,
                     selected, 
                     (t, g) => g is TransactionGroupViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
                 );
+                transactionView.SumForTotal = state.SelectedAccountId.HasValue ? 
+                    (state.SelectedAccountId == transferTransaction.AccountId ? -transferTransaction.Sum : transferTransaction.ToSum) 
+                    : 0;
+            }
+
+            if (transactionView != null && lastDateGroup != null)
+            {
+                lastDateGroup.Transactions.Add(transactionView);
             }
         }
 
@@ -531,6 +573,7 @@ public class TransactionsViewModel : ViewModelBase
         DebetTransactions = debetTransactionsTemp;
         CreditTransactions = creditTransactionsTemp;
         TransferTransactions = transferTransactionsTemp;
+        TransactionsDyDates = transactionsDyDates;
     }
 
     private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)
@@ -549,7 +592,7 @@ public class TransactionsViewModel : ViewModelBase
         }
     }
 
-    private void FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
+    private TransactionGroupViewModel FillTransactions<C, S>(List<CategoryTransactionsGroupViewModel> transactions, 
             Transaction transaction,
             Dictionary<Guid, CategoryTransactionsGroupViewModel> categoryGroupsCache,
             Dictionary<Guid, SubCategoryTransactionsGroupViewModel> subCategoryGroupsCache,
@@ -596,8 +639,11 @@ public class TransactionsViewModel : ViewModelBase
         {
             Id = transaction.Id,
             Date = transaction.Date,
+            LastChange = transaction.LastChange,
             Comment = transaction.Comment,
             Sum = transaction.Sum,
+            Category = category.Category,
+            SubCategory = subCategory.SubCategory,
         };
         viewTransaction.IsDebet = isDebet(transaction, viewTransaction);
 
@@ -605,6 +651,8 @@ public class TransactionsViewModel : ViewModelBase
         SelectedTransactionGroup = viewTransaction.IsSelected ? viewTransaction : SelectedTransactionGroup;
 
         subCategory.Transactions.Add(viewTransaction);
+
+        return viewTransaction;
     }
 
     private BaseCategoryViewModel GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()

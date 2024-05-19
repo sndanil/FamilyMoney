@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+			 xmlns:cv="using:FamilyMoney.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+			 x:DataType="vm:TransactionsViewModel"
+			 x:Class="FamilyMoney.Views.TransactionsByDatesView">
+	<UserControl.Resources>
+		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
+	</UserControl.Resources>
+	<UserControl.Styles>
+		<Style Selector="Border.Total">
+			<Setter Property="Margin" Value="2 2 2 0" />
+			<Setter Property="Height" Value="30" />
+			<Setter Property="CornerRadius" Value="5" />
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.Total Grid">
+			<Setter Property="Margin" Value="10 5 5 5" />
+		</Style>
+		<Style Selector="Border.Total TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.Trsansaction">
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Margin" Value="10 -1 10 0" />
+			<Setter Property="CornerRadius" Value="1" />
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Border.Trsansaction:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+		</Style>
+		<Style Selector="Border.Trsansaction.Selected">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+		</Style>
+		<Style Selector="Border.Trsansaction > Grid">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="5 0" />
+		</Style>
+		<Style Selector="TextBlock.Name">
+			<Setter Property="Margin" Value="10 0 0 0" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
+		</Style>
+		<Style Selector="TextBlock.Title">
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
+		</Style>
+		<Style Selector="TextBlock.Sum">
+			<Setter Property="FontFamily" Value="Verdana" />
+			<Setter Property="HorizontalAlignment" Value="Right" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="0 0 4 0" />
+		</Style>
+		<Style Selector="TextBlock.Debet">
+			<Setter Property="Foreground" Value="#3BCE5E" />
+		</Style>
+		<Style Selector="Image">
+			<Setter Property="Margin" Value="5 0" />
+			<Setter Property="Height" Value="20" />
+			<Setter Property="Width" Value="20" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="PathIcon">
+			<Setter Property="Height" Value="10" />
+			<Setter Property="Width" Value="10" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Svg">
+			<Setter Property="Height" Value="10" />
+			<Setter Property="Width" Value="10" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
+		</Style>
+		<Style Selector="Button.Expander">
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Height" Value="22" />
+			<Setter Property="Width" Value="22" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+	</UserControl.Styles>
+
+	<ScrollViewer>
+		<ItemsControl ItemsSource="{Binding TransactionsDyDates}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Vertical" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<StackPanel>
+						<Border Classes="Total">
+							<Grid ColumnDefinitions="500 115">
+								<TextBlock Classes="Title"
+										   MinWidth="70"
+										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
+								<TextBlock Grid.Column="1"
+										   Classes="Sum"
+										   Classes.Debet="{Binding IsDebet}"
+										   Classes.Negative="{Binding !IsDebet}"
+										   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+							</Grid>
+						</Border>
+
+						<ItemsControl ItemsSource="{Binding Transactions}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Vertical" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<StackPanel>
+										<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
+											<i:Interaction.Behaviors>
+												<ia:EventTriggerBehavior EventName="Tapped">
+													<InvokeCommandAction Command="{Binding SelectCommand}" />
+												</ia:EventTriggerBehavior>
+												<ia:EventTriggerBehavior EventName="DoubleTapped">
+													<InvokeCommandAction Command="{Binding EditCommand}" />
+												</ia:EventTriggerBehavior>
+											</i:Interaction.Behaviors>
+
+											<Grid ColumnDefinitions="25 25 20 130 150 150 100">
+												<Button Classes="Expander"
+														Command="{Binding CopyCommand}"
+														ToolTip.Tip="Копировать">
+													<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/copy.svg"/>
+												</Button>
+
+												<Button Grid.Column="1" Classes="Expander" ToolTip.Tip="Удалить">
+													<Button.Flyout>
+														<MenuFlyout>
+															<MenuItem Width="200" Header="Удалить" Command="{Binding DeleteCommand}" />
+														</MenuFlyout>
+													</Button.Flyout>
+
+													<PathIcon Data="{StaticResource Trash}" />
+												</Button>
+
+												<Image Stretch="Uniform" Grid.Column="2"
+														Source="{Binding Category.Image}"
+														IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+														/>
+												<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
+												<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
+												<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment}" />
+												<TextBlock Grid.Column="6"
+														   Classes="Sum"
+														   Classes.Debet="{Binding IsDebet}"
+														   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+											</Grid>
+										</Border>
+									</StackPanel>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</ScrollViewer>
+</UserControl>

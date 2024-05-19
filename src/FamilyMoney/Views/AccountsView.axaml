@@ -76,9 +76,6 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 		</Style>
-		<Style Selector="TextBlock.Negative">
-			<Setter Property="Foreground" Value="Red" />
-		</Style>
 		<Style Selector="Border.Account.Selected">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>

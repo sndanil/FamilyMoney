@@ -4,9 +4,9 @@ using Avalonia.Platform.Storage;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.State;
+using FamilyMoney.Views;
 using ReactiveUI;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -19,6 +19,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private int _leftSideWidth = 400;
     private bool _isPaneOpen = false;
+    private bool _showTransactionsTree = true;
     private Control? _currentPanel;
 
     private readonly PeriodViewModel _period;
@@ -40,6 +41,12 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _isPaneOpen;
         set => this.RaiseAndSetIfChanged(ref _isPaneOpen, value);
+    }
+
+    public bool ShowTransactionsTree
+    {
+        get => _showTransactionsTree;
+        set => this.RaiseAndSetIfChanged(ref _showTransactionsTree, value);
     }
 
     public Control? CurrentPanel
