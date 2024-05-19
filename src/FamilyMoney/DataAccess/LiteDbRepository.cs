@@ -226,7 +226,7 @@ public class LiteDbRepository : IRepository
             query = query.Where(Query.Or(queries.ToArray()));
         }
             
-        return query.OrderBy(t => t.Date)
+        return query.OrderByDescending(t => t.Date)
             .ToList();
     }
 
