@@ -34,15 +34,13 @@ public sealed class TransactionsGroup: ViewModelBase
 
 public sealed class TransactionsByDatesGroup : ViewModelBase
 {
-    private bool _isDebet = false;
     private DateTime _date;
     private decimal _sum = 0;
     private ObservableCollection<TransactionGroupViewModel> _transactions = [];
 
     public bool IsDebet
     {
-        get => _isDebet;
-        set => this.RaiseAndSetIfChanged(ref _isDebet, value);
+        get => Sum >= 0;
     }
 
     public DateTime Date
@@ -68,7 +66,6 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
 {
     private bool _isDebet = false;
     private decimal _sum = 0;
-    private decimal _sumForTotal = 0;
     private decimal _percent = 0;
     private bool _isExpanded = false;
     private bool _isSelected = false;
@@ -83,12 +80,6 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
     {
         get => _sum;
         set => this.RaiseAndSetIfChanged(ref _sum, value);
-    }
-
-    public decimal SumForTotal
-    {
-        get => _sumForTotal;
-        set => this.RaiseAndSetIfChanged(ref _sumForTotal, value);
     }
 
     public decimal Percent

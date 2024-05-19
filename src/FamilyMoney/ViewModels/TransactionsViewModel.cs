@@ -500,15 +500,13 @@ public class TransactionsViewModel : ViewModelBase
 
         foreach (var transaction in transactions)
         {
-            if (transaction.Date != lastDate)
+            if (transaction.Date != lastDate || lastDateGroup == null)
             {
                 if (lastDateGroup != null)
                 {
                     var sortedTransactions = lastDateGroup.Transactions.OrderBy(t => t.LastChange).ToList();
                     lastDateGroup.Transactions.Clear();
                     lastDateGroup.Transactions.AddRange(sortedTransactions);
-                    lastDateGroup.Sum = lastDateGroup.Transactions.Sum(t => t.SumForTotal);
-                    lastDateGroup.IsDebet = lastDateGroup.Sum >= 0;
                 }
 
                 lastDateGroup = new TransactionsByDatesGroup { Date = transaction.Date };
@@ -525,7 +523,7 @@ public class TransactionsViewModel : ViewModelBase
                     debetSubCategoryGroupsCache,
                     selected, 
                     (_, _) => true);
-                transactionView.SumForTotal = transaction.Sum;
+                lastDateGroup.Sum += transaction.Sum;
             }
             else if (transaction is CreditTransaction)
             {
@@ -535,7 +533,7 @@ public class TransactionsViewModel : ViewModelBase
                     creditSubCategoryGroupsCache,
                     selected, 
                     (_, _) => false);
-                transactionView.SumForTotal = -transaction.Sum;
+                lastDateGroup.Sum -= transaction.Sum;
             }
             else if (transaction is TransferTransaction transferTransaction)
             {
@@ -546,7 +544,7 @@ public class TransactionsViewModel : ViewModelBase
                     selected, 
                     (t, g) => g is TransactionGroupViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
                 );
-                transactionView.SumForTotal = state.SelectedAccountId.HasValue ? 
+                lastDateGroup.Sum += state.SelectedAccountId.HasValue ? 
                     (state.SelectedAccountId == transferTransaction.AccountId ? -transferTransaction.Sum : transferTransaction.ToSum) 
                     : 0;
             }
