@@ -600,35 +600,49 @@ public class TransactionsViewModel : ViewModelBase
             Func<Transaction, BaseTransactionsGroupViewModel, bool> isDebet)
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
-        if (!categoryGroupsCache.TryGetValue(transaction.CategoryId.GetValueOrDefault(), out var category))
+        CategoryTransactionsGroupViewModel? category = null;
+        if (transaction.CategoryId == null)
+        {
+            category = transactions.FirstOrDefault(t => t.Category == null); 
+            if (category == null)
+            {
+                category = new CategoryTransactionsGroupViewModel();
+                transactions.Add(category);
+            }
+        }
+        if (category == null && !categoryGroupsCache.TryGetValue(transaction.CategoryId!.Value, out category))
         {
             category = new CategoryTransactionsGroupViewModel();
-            if (transaction.CategoryId != null)
-            {
-                category.IsDebet = isDebet(transaction, category);
-                category.Category = GetCategory<C>(transaction.CategoryId.Value);
-                category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
-                category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId;
-                SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
-            }
+            category.IsDebet = isDebet(transaction, category);
+            category.Category = GetCategory<C>(transaction.CategoryId.Value);
+            category.IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value);
+            category.IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId;
+            SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
 
             categoryGroupsCache.Add(transaction.CategoryId.GetValueOrDefault(), category);
             transactions.Add(category);
         }
         category.Sum += transaction.Sum;
 
-        if (!subCategoryGroupsCache.TryGetValue(transaction.SubCategoryId.GetValueOrDefault(), out var subCategory))
+        SubCategoryTransactionsGroupViewModel? subCategory = null;
+        if (transaction.SubCategoryId == null)
+        {
+            subCategory = category.SubCategories.FirstOrDefault(t => t.SubCategory == null);
+            if (subCategory == null)
+            {
+                subCategory = new SubCategoryTransactionsGroupViewModel();
+                category.SubCategories.Add(subCategory);
+            }
+        }
+        if (subCategory == null && !subCategoryGroupsCache.TryGetValue(transaction.SubCategoryId!.Value, out subCategory))
         {
             subCategory = new SubCategoryTransactionsGroupViewModel();
-            if (transaction.SubCategoryId != null)
-            {
-                subCategory.IsDebet = isDebet(transaction, subCategory);
-                subCategory.SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value);
-                subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
-                subCategory.IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory 
-                                        && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId;
-                SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
-            }
+            subCategory.IsDebet = isDebet(transaction, subCategory);
+            subCategory.SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value);
+            subCategory.IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value);
+            subCategory.IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory 
+                                    && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId;
+            SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
 
             subCategoryGroupsCache.Add(transaction.SubCategoryId.GetValueOrDefault(), subCategory);
             category.SubCategories.Add(subCategory);
