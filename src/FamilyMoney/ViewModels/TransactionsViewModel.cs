@@ -493,7 +493,7 @@ public class TransactionsViewModel : ViewModelBase
         var creditTransactions = new List<CategoryTransactionsGroupViewModel>();
         var transferTransactions = new List<CategoryTransactionsGroupViewModel>();
 
-        var transactionsDyDates = new ObservableCollection<TransactionsByDatesGroup>();
+        var transactionsDyDates = new List<TransactionsByDatesGroup>();
 
         var lastDate = DateTime.MinValue;
         TransactionsByDatesGroup? lastDateGroup = null;
@@ -571,7 +571,9 @@ public class TransactionsViewModel : ViewModelBase
         DebetTransactions = debetTransactionsTemp;
         CreditTransactions = creditTransactionsTemp;
         TransferTransactions = transferTransactionsTemp;
-        TransactionsDyDates = transactionsDyDates;
+
+        TransactionsDyDates.Clear();
+        TransactionsDyDates.AddRange(transactionsDyDates.Take(100));
     }
 
     private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)
