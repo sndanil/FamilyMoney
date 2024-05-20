@@ -59,8 +59,8 @@
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
 		</Style>
 		<Style Selector="Border.Account Image">
-			<Setter Property="Width" Value="50" />
-			<Setter Property="Margin" Value="10 5 0 5" />
+			<Setter Property="Width" Value="40" />
+			<Setter Property="Margin" Value="5 5 0 5" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Border.Account TextBlock#AccountName">
@@ -126,6 +126,7 @@
 				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
 				<TextBlock Grid.Column="2" 
 						   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+						   FontWeight="Bold"
 						   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 						   Name="AccountSum"/>
 			</Grid>
