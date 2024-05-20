@@ -97,12 +97,14 @@ internal class CsvImporter: IImporter
 
             repository.InsertTransactions(transactions);
 
+            var dbTransactions = repository.GetTransactions(new TransactionsFilter { PeriodFrom = DateTime.MinValue, PeriodTo = DateTime.MaxValue });
+
             foreach (var account in accounts)
             {
-                var debetSum = transactions.OfType<DebetTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
-                var debetTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.ToAccountId == account.Id).Sum(a => a.ToSum);
-                var creditSum = transactions.OfType<CreditTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
-                var creditTransferSum = transactions.OfType<TransferTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                var debetSum = dbTransactions.OfType<DebetTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                var debetTransferSum = dbTransactions.OfType<TransferTransaction>().Where(t => t.ToAccountId == account.Id).Sum(a => a.ToSum);
+                var creditSum = dbTransactions.OfType<CreditTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
+                var creditTransferSum = dbTransactions.OfType<TransferTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
                 account.Sum = debetSum + debetTransferSum - creditSum - creditTransferSum;
 
                 repository.UpdateAccount(account);
