@@ -11,6 +11,9 @@ public record SubCategoryLastComments(Guid SubCategoryId, IList<string> Comments
 
 public interface IRepository
 {
+    void UpdateDbSchema();
+
+    void DoBackup();
     void UpdateImage(Guid id, string fileName, Stream stream);
 
     Stream? TryGetImage(Guid id);

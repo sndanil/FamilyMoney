@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.State;
@@ -16,14 +17,16 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
+        SplatRegistrations.Register<IGlobalConfiguration, MsExtensionConfiguration>();
+
         if (Avalonia.Controls.Design.IsDesignMode)
         {
-            SplatRegistrations.RegisterConstant<IRepository>(new DesignerRepository());
+            SplatRegistrations.Register<IRepository, DesignerRepository>();
         }
         else
         {
 #pragma warning disable SPLATDI006 // Interface has been registered before
-            SplatRegistrations.RegisterConstant<IRepository>(new LiteDbRepository());
+            SplatRegistrations.Register<IRepository, LiteDbRepository>();
 #pragma warning restore SPLATDI006 // Interface has been registered before
         }
 

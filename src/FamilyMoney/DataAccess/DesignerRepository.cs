@@ -17,6 +17,11 @@ internal class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
+    public void DoBackup()
+    {
+        throw new NotImplementedException();
+    }
+
     public Account GetAccount(Guid id)
     {
         throw new NotImplementedException();
@@ -87,6 +92,11 @@ internal class DesignerRepository : IRepository
     }
 
     public void UpdateCategroty(Category category)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UpdateDbSchema()
     {
         throw new NotImplementedException();
     }
