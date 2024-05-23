@@ -21,12 +21,16 @@ public class MsExtensionConfiguration: IGlobalConfiguration
 
         return config.Get<RootConfiguration>() ?? new RootConfiguration 
         { 
-            Database = new DatabaseConfiguration 
+            Database = new DatabaseConfiguration
             { 
                 Path = "database.db",
                 BackupsFolder = "Backups",
                 MaxBackups = 10,
-            } 
+            },
+            Transactions = new TransactionsViewConfiguration
+            {
+                MaxTransactionsByDate = 100,
+            },
         };
         //var db = config.GetSection(nameof(DatabaseConfiguration)).Get<DatabaseConfiguration>();
     }

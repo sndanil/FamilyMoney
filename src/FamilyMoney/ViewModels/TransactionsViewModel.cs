@@ -1,5 +1,6 @@
 ﻿using Avalonia.Styling;
 using DynamicData;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -19,6 +20,7 @@ public class TransactionsViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
+    private readonly IGlobalConfiguration _configuration;
     private decimal _total = 0m;
 
     private DateTime _lastTransactionDate = DateTime.Today;
@@ -80,10 +82,11 @@ public class TransactionsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedTransactionGroup, value);
     }
 
-    public TransactionsViewModel(IRepository repository, IStateManager stateManager)
+    public TransactionsViewModel(IRepository repository, IStateManager stateManager, IGlobalConfiguration configuration)
     {
         _repository = repository;
         _stateManager = stateManager;
+        _configuration = configuration;
 
         SubscribeMessages();
 
@@ -573,7 +576,7 @@ public class TransactionsViewModel : ViewModelBase
         TransferTransactions = transferTransactionsTemp;
 
         TransactionsDyDates.Clear();
-        TransactionsDyDates.AddRange(transactionsDyDates.Take(100));
+        TransactionsDyDates.AddRange(transactionsDyDates.Take(_configuration.Get().Transactions.MaxTransactionsByDate));
     }
 
     private void CalcPercents(decimal sum, IEnumerable<CategoryTransactionsGroupViewModel> categories)

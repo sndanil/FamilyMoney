@@ -11,7 +11,7 @@ namespace FamilyMoney.DataAccess;
 
 public class LiteDbRepository : IRepository
 {
-    private DatabaseConfiguration _databaseConfiguration;
+    private readonly DatabaseConfiguration _databaseConfiguration;
 
     public LiteDbRepository(IGlobalConfiguration configuration)
     {
