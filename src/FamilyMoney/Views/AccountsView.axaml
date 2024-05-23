@@ -189,6 +189,13 @@
 								</Grid>
 							</Border>
 							<ItemsControl ItemsSource="{Binding Children}" Classes="Children">
+								<ItemsControl.IsVisible>
+									<MultiBinding Converter="{x:Static BoolConverters.Or}">
+										<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
+										<Binding Path="!IsHidden" />
+									</MultiBinding>
+								</ItemsControl.IsVisible>
+
 								<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
 										<StackPanel Orientation="Vertical" />

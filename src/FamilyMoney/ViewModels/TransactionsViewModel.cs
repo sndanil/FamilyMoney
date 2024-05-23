@@ -276,7 +276,7 @@ public class TransactionsViewModel : ViewModelBase
         where T : BaseTransactionViewModel, new()
     {
         var state = _stateManager.GetMainState();
-        var flatAccounts = state.FlatAccounts;
+        var flatAccounts = state.FlatAccounts.Where(a => !a.IsHidden && a.Parent?.IsHidden == false).ToList();
         var account = state.SelectedAccountId.HasValue ?
                             flatAccounts.FirstOrDefault(a => !a.IsGroup && (a.Id == state.SelectedAccountId || a.Parent?.Id == state.SelectedAccountId))
                             : flatAccounts.FirstOrDefault(a => !a.IsGroup);

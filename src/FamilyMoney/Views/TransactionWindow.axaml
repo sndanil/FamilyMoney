@@ -101,22 +101,35 @@
 			
 			<TextBlock Text="Счёт" Classes="Label" />
 			<Border Grid.Column="1" IsVisible="{Binding Account.IsHidden}">
+				<Border.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="Account.Parent.IsHidden"/>
+						<Binding Path="Account.IsHidden" />
+					</MultiBinding>
+				</Border.IsVisible>
+				
 				<ContentControl Content="{Binding Account}" />
 			</Border>						
 			<ComboBox Grid.Column="1"
-					  IsVisible="{Binding !Account.IsHidden}"
 					  Name="AccountComboBox"
 					  SelectedItem="{Binding Account}"
 					  ItemsSource="{Binding FlatAccounts}"
 					  HorizontalAlignment="Stretch"
 					  >
+				<ComboBox.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!Account.Parent.IsHidden"/>
+						<Binding Path="!Account.IsHidden" />
+					</MultiBinding>
+				</ComboBox.IsVisible>
 				<ComboBox.Styles>
 					<Style Selector="ComboBoxItem">
 						<Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
 						<Setter Property="Padding" Value="0" />
 					</Style>
 				</ComboBox.Styles>
-			</ComboBox>
+			
+		</ComboBox>
 
 			<TextBlock Grid.Row="1" Text="Дата" Classes="Label" />
 			<DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding Date}" 
