@@ -7,6 +7,7 @@ using FamilyMoney.State;
 using FamilyMoney.Views;
 using ReactiveUI;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
@@ -118,7 +119,11 @@ public class MainWindowViewModel : ViewModelBase
         });
 
         PropertyChanged += MainWindowViewModel_PropertyChanged;
-        //RxApp.MainThreadScheduler.Schedule(MainInit);
+        RxApp.MainThreadScheduler.Schedule(() =>
+        {
+            _repository.DoBackup();
+            _repository.UpdateDbSchema();
+        });
     }
 
     private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
