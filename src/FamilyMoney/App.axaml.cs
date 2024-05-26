@@ -7,50 +7,97 @@ using FamilyMoney.Import;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.Views;
-using Splat;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NLog.Extensions.Logging;
+using Splat.Microsoft.Extensions.Logging;
+using System;
+using System.IO;
 
 namespace FamilyMoney;
 
 public partial class App : Application
 {
+    private IHost? GlobalHost;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-
-        SplatRegistrations.Register<IGlobalConfiguration, MsExtensionConfiguration>();
-
-        if (Avalonia.Controls.Design.IsDesignMode)
-        {
-            SplatRegistrations.Register<IRepository, DesignerRepository>();
-        }
-        else
-        {
-#pragma warning disable SPLATDI006 // Interface has been registered before
-            SplatRegistrations.Register<IRepository, LiteDbRepository>();
-#pragma warning restore SPLATDI006 // Interface has been registered before
-        }
-
-        SplatRegistrations.Register<PeriodViewModel>();
-        SplatRegistrations.Register<CategoriesViewModel>();
-        SplatRegistrations.Register<AccountsViewModel>();
-        SplatRegistrations.Register<TransactionsViewModel>();
-        SplatRegistrations.Register<MainWindowViewModel>();
-        SplatRegistrations.Register<IImporter, CsvImporter>();
-        SplatRegistrations.Register<IStateManager, StateManager>();
-
-        SplatRegistrations.SetupIOC();
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
+        GlobalHost = InitHost();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = Locator.Current.GetService<MainWindowViewModel>(),
+                DataContext = GlobalHost.Services.GetRequiredService<MainWindowViewModel>(),
+            };
+            desktop.Exit += (sender, args) =>
+            {
+                //GlobalHost.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                GlobalHost.Dispose();
             };
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static IHost InitHost()
+    {
+        var host = Host
+          .CreateDefaultBuilder()
+          .ConfigureServices(services =>
+          {
+              //services.UseMicrosoftDependencyResolver();
+              //var resolver = Locator.CurrentMutable;
+              //resolver.InitializeSplat();
+              //resolver.InitializeReactiveUI();
+
+              ConfigureServices(services);
+          })
+          .ConfigureAppConfiguration((hostingContext, config) =>
+          {
+              var userSettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FamilyMoney");
+              var userSettingsPath = Path.Combine(userSettingsDirectory, "appsettings.json");
+              config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
+              config.AddCommandLine(System.Environment.GetCommandLineArgs());
+          })
+          .ConfigureLogging((hostingContext, builder) =>
+          {
+              builder.AddSplat();
+              builder.AddNLog(hostingContext.Configuration);
+          })
+          .Build();
+
+        return host;
+    }
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<IGlobalConfiguration, GlobalConfiguration>();
+
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            services.AddTransient<IRepository, DesignerRepository>();
+        }
+        else
+        {
+            services.AddTransient<IRepository, LiteDbRepository>();
+        }
+
+        services.AddTransient<PeriodViewModel>();
+        services.AddTransient<CategoriesViewModel>();
+        services.AddTransient<IImporter, CsvImporter>();
+        services.AddTransient<IStateManager, StateManager>();
+
+        services.AddSingleton<AccountsViewModel>();
+        services.AddSingleton<TransactionsViewModel>();
+        services.AddSingleton<MainWindowViewModel>();
     }
 }

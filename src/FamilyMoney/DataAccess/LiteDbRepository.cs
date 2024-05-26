@@ -1,6 +1,7 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,14 +13,18 @@ namespace FamilyMoney.DataAccess;
 public class LiteDbRepository : IRepository
 {
     private readonly DatabaseConfiguration _databaseConfiguration;
+    private readonly ILogger<LiteDbRepository> _logger;
 
-    public LiteDbRepository(IGlobalConfiguration configuration)
+    public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
     {
         _databaseConfiguration = configuration.Get().Database;
+        _logger = logger;
     }
 
     public void UpdateDbSchema()
     {
+        _logger.LogInformation("Start update schema");
+
         using var db = new LiteDatabase(_databaseConfiguration.Path);
 
         var subcategories = db.GetCollection<SubCategory>(nameof(SubCategory));
@@ -29,6 +34,8 @@ public class LiteDbRepository : IRepository
         transactions.EnsureIndex(t => t.Date);
         transactions.EnsureIndex(t => t.AccountId);
         transactions.EnsureIndex(t => t.SubCategoryId);
+
+        _logger.LogInformation("End update schema");
     }
 
     public void DoBackup()
