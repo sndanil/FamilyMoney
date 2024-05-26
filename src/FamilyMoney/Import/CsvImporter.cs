@@ -7,26 +7,34 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Import;
 
 internal class CsvImporter: IImporter
 {
-    public void DoImport(IRepository repository, Stream stream)
+    private readonly ILogger _logger;
+    private readonly IRepository _repository;
+
+    public CsvImporter(ILogger<CsvImporter> logger, IRepository repository)
     {
-#pragma warning disable CS0168 // Variable is declared but never used
+        _logger = logger;
+        _repository = repository;
+    }
+
+    public void DoImport(Stream stream)
+    {
         try
         {
-
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 Delimiter = ";",
                 HasHeaderRecord = false,
             };
 
-            var categories = repository.GetCategories().ToList();
-            var subCategories = repository.GetSubCategories().ToList();
-            var accounts = repository.GetAccounts().Where(a => !a.IsGroup).ToList();
+            var categories = _repository.GetCategories().ToList();
+            var subCategories = _repository.GetSubCategories().ToList();
+            var accounts = _repository.GetAccounts().Where(a => !a.IsGroup).ToList();
 
             var transactions = new List<Transaction>();
 
@@ -39,11 +47,11 @@ internal class CsvImporter: IImporter
                 var isTransfer = record.Accounts?.Contains(':') == true;
                 var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
 
-                Category? category = TryGetCategory(repository, categories, record, isTransfer, isCredit);
-                SubCategory? subCategory = TryGetSubCategory(repository, category, subCategories, record, isTransfer, isCredit);
+                Category? category = TryGetCategory(_repository, categories, record, isTransfer, isCredit);
+                SubCategory? subCategory = TryGetSubCategory(_repository, category, subCategories, record, isTransfer, isCredit);
 
-                var creditAccount = TryGetAccount(repository, accounts, record.CreditAccount);
-                var debetAccount = TryGetAccount(repository, accounts, record.DebetAccount);
+                var creditAccount = TryGetAccount(_repository, accounts, record.CreditAccount);
+                var debetAccount = TryGetAccount(_repository, accounts, record.DebetAccount);
 
                 Transaction? transaction = null;
                 if (isTransfer)
@@ -95,9 +103,9 @@ internal class CsvImporter: IImporter
             }
 
 
-            repository.InsertTransactions(transactions);
+            _repository.InsertTransactions(transactions);
 
-            var dbTransactions = repository.GetTransactions(new TransactionsFilter { PeriodFrom = DateTime.MinValue, PeriodTo = DateTime.MaxValue });
+            var dbTransactions = _repository.GetTransactions(new TransactionsFilter { PeriodFrom = DateTime.MinValue, PeriodTo = DateTime.MaxValue });
 
             foreach (var account in accounts)
             {
@@ -107,14 +115,13 @@ internal class CsvImporter: IImporter
                 var creditTransferSum = dbTransactions.OfType<TransferTransaction>().Where(t => t.AccountId == account.Id).Sum(a => a.Sum);
                 account.Sum = debetSum + debetTransferSum - creditSum - creditTransferSum;
 
-                repository.UpdateAccount(account);
+                _repository.UpdateAccount(account);
             }
         }
         catch (Exception ex)
         {
-
+            _logger.LogError(ex, ex.Message);
         }
-#pragma warning restore CS0168 // Variable is declared but never used
     }
 
     private static Account? TryGetAccount(IRepository repository, List<Account> accounts, string? accountName)
@@ -172,7 +179,7 @@ internal class CsvImporter: IImporter
             var foundCategory = categories.FirstOrDefault(c => c.Name == record.Category && c.GetType() == category.GetType());
             if (foundCategory == null)
             {
-                repository.UpdateCategroty(category);
+                _repository.UpdateCategroty(category);
                 categories.Add(category);
             }
             else
@@ -222,7 +229,7 @@ internal class CsvImporter: IImporter
                                                                 && c.GetType() == subCategory.GetType());
             if (foundSubCategory == null)
             {
-                repository.UpdateSubCategory(subCategory);
+                _repository.UpdateSubCategory(subCategory);
                 subCategories.Add(subCategory);
             }
             else

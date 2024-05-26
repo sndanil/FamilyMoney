@@ -108,7 +108,7 @@ public class MainWindowViewModel : ViewModelBase
             if (files.Any())
             {
                 await using var stream = await files.Single().OpenReadAsync();
-                _importer.DoImport(_repository, stream);
+                _importer.DoImport(stream);
                 MainInit();
             }
         });

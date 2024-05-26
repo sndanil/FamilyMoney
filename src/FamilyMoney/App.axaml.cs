@@ -38,7 +38,6 @@ public partial class App : Application
             };
             desktop.Exit += (sender, args) =>
             {
-                //GlobalHost.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 GlobalHost.Dispose();
             };
         }
@@ -52,11 +51,6 @@ public partial class App : Application
           .CreateDefaultBuilder()
           .ConfigureServices(services =>
           {
-              //services.UseMicrosoftDependencyResolver();
-              //var resolver = Locator.CurrentMutable;
-              //resolver.InitializeSplat();
-              //resolver.InitializeReactiveUI();
-
               ConfigureServices(services);
           })
           .ConfigureAppConfiguration((hostingContext, config) =>
