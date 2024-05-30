@@ -130,7 +130,9 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
             if (!string.IsNullOrEmpty(search))
             {
                 return (subCategory.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) == true
-                    || subCategory.Name?.Contains(KeyboardHelper.Translate(search), StringComparison.OrdinalIgnoreCase) == true)
+                    || subCategory.Name?.Contains(KeyboardHelper.Translate(search), StringComparison.OrdinalIgnoreCase) == true
+                    || subCategory.Category?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) == true
+                    || subCategory.Category?.Name?.Contains(KeyboardHelper.Translate(search), StringComparison.OrdinalIgnoreCase) == true)
                     && (transaction?.Category == null || subCategory.CategoryId == transaction?.Category.Id);
             }
 
