@@ -146,6 +146,14 @@ public class AccountsViewModel : ViewModelBase
         Total = total;
     }
 
+    private void RecalcAccounts()
+    {
+        foreach (var account in Total.Children.Where(a => a.IsGroup))
+        {
+            account.RecalcByChildren();
+        }
+    }
+
     private void SubscribeMessages()
     {
         MessageBus.Current.Listen<MainStateChangedMessage>()
@@ -407,6 +415,8 @@ public class AccountsViewModel : ViewModelBase
                         .Select(i => i.index)
                         .First(),
         });
+
+        RecalcAccounts();
     }
 
     private void UpdateChildren(AccountViewModel account)

@@ -142,6 +142,11 @@ public class AccountViewModel : ViewModelBase
             account.AddFromAccount(repository, accounts);
         }
 
+        RecalcByChildren();
+    }
+
+    public void RecalcByChildren()
+    {
         if (IsGroup)
         {
             Sum = Children.Where(a => !a.IsNotSummable).Sum(c => c.Sum);
