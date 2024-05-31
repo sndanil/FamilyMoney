@@ -170,22 +170,15 @@ public class PeriodViewModel: ViewModelBase
     {
         get
         {
-            switch (_periodType) 
+            return _periodType switch
             {
-                case PeriodType.Day:
-                    return From.ToString("dd MMMM yyyy");
-                case PeriodType.Month:
-                    return From.ToString("MMMM yyyy");
-                case PeriodType.Quarter:
-                    return From.ToString($"Квартал {(From.Month + 2) / 3} {From.Year}");
-                case PeriodType.Year:
-                    return From.ToString("yyyy");
-                case PeriodType.All:
-                    return From.ToString("Всё время");
-
-                default: 
-                    return From.ToString("dd.MM.yyyy") + " - " + To.ToString("dd.MM.yyyy");
-            }
+                PeriodType.Day => From.ToString("dd MMMM yyyy"),
+                PeriodType.Month => From.ToString("MMMM yyyy"),
+                PeriodType.Quarter => From.ToString($"Квартал {(From.Month + 2) / 3} {From.Year}"),
+                PeriodType.Year => From.ToString("yyyy"),
+                PeriodType.All => From.ToString("Всё время"),
+                _ => From.ToString("dd.MM.yyyy") + " - " + To.ToString("dd.MM.yyyy"),
+            };
         }
     }
 

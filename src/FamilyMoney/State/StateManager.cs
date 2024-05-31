@@ -7,7 +7,7 @@ namespace FamilyMoney.State;
 
 public sealed class StateManager : IStateManager
 {
-    private static MainState _mainState = new (Array.Empty<AccountViewModel>(), null, DateTime.Today, DateTime.Today.AddDays(1));
+    private static MainState _mainState = new ([], null, DateTime.Today, DateTime.Today.AddDays(1));
 
     public MainState GetMainState()
     {

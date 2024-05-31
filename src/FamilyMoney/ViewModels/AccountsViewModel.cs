@@ -5,6 +5,7 @@ using FamilyMoney.Models;
 using FamilyMoney.State;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -64,7 +65,7 @@ public class AccountsViewModel : ViewModelBase
             var state = _stateManager.GetMainState();
             if (state.SelectedAccountId != null)
             {
-                var found = _total.Children.Union(_total.Children.SelectMany(a => a.Children)).FirstOrDefault(a => a.Id == state.SelectedAccountId);
+                var found = state.FlatAccounts.FirstOrDefault(a => a.Id == state.SelectedAccountId);
                 return found;
             }
 
@@ -130,11 +131,13 @@ public class AccountsViewModel : ViewModelBase
         SubscribeMessages();
     }
 
-    public void LoadAccounts()
+    public IReadOnlyList<AccountViewModel> LoadAccounts()
     {
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
         _total.AddFromAccount(_repository, accounts);
+
+        return [.. _total.Children];
     }
 
     private void RecalcAccounts()
@@ -390,7 +393,7 @@ public class AccountsViewModel : ViewModelBase
         }
 
         var state = _stateManager.GetMainState();
-        _stateManager.SetMainState(state with { Accounts = Total.Children.ToArray() });
+        _stateManager.SetMainState(state with { Accounts = [.. Total.Children] });
         _repository!.UpdateAccount(new Models.Account
         {
             Id = other.Id.Value,

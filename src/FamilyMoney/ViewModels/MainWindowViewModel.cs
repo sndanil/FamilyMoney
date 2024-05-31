@@ -136,11 +136,11 @@ public class MainWindowViewModel : ViewModelBase
 
     private void MainInit()
     {
-        _accountsViewModel.LoadAccounts();
+        var accounts = _accountsViewModel.LoadAccounts();
         var state = _stateManager.GetMainState();
         var newState = state with
         {
-            Accounts = _accountsViewModel.Total.Children.ToArray(),
+            Accounts = accounts,
             PeriodFrom = _period.From,
             PeriodTo = _period.To,
         };
