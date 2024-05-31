@@ -15,7 +15,12 @@ namespace FamilyMoney.ViewModels;
 
 public class AccountsViewModel : ViewModelBase
 {
-    private AccountViewModel _total = new AccountViewModel();
+    private readonly AccountViewModel _total = new() 
+    {
+        Name = "Всего",
+        IsGroup = true,
+    };
+
     private AccountViewModel? _draggingAccount = null;
 
     private bool _showHidden = false;
@@ -38,7 +43,6 @@ public class AccountsViewModel : ViewModelBase
     public AccountViewModel Total
     {
         get => _total;
-        set => this.RaiseAndSetIfChanged(ref _total, value);
     }
 
     public AccountViewModel? DraggingAccount
@@ -89,10 +93,7 @@ public class AccountsViewModel : ViewModelBase
 
         NextAccount = ReactiveCommand.Create(() =>
         {
-            if (SelectedAccount == null)
-            {
-                SelectedAccount = Total;
-            }
+            SelectedAccount ??= Total;
 
             var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
             var index = flatAccounts.IndexOf(SelectedAccount);
@@ -108,10 +109,7 @@ public class AccountsViewModel : ViewModelBase
 
         PrevAccount = ReactiveCommand.Create(() =>
         {
-            if (SelectedAccount == null)
-            {
-                SelectedAccount = Total;
-            }
+            SelectedAccount ??= Total;
 
             var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
             var index = flatAccounts.IndexOf(SelectedAccount);
@@ -134,16 +132,9 @@ public class AccountsViewModel : ViewModelBase
 
     public void LoadAccounts()
     {
-        var total = new AccountViewModel
-        {
-            Name = "Всего",
-            IsGroup = true,
-        };
-
+        _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
-        total.AddFromAccount(_repository, accounts);
-
-        Total = total;
+        _total.AddFromAccount(_repository, accounts);
     }
 
     private void RecalcAccounts()
@@ -165,8 +156,7 @@ public class AccountsViewModel : ViewModelBase
             .Subscribe(m =>
             {
                 var state = _stateManager.GetMainState();
-                state.SelectedAccountId = m.AccountId;
-                _stateManager.SetMainState(state);
+                _stateManager.SetMainState(state with { SelectedAccountId = m.AccountId });
 
                 this.RaisePropertyChanged(nameof(SelectedAccount));
             });
@@ -399,7 +389,8 @@ public class AccountsViewModel : ViewModelBase
             one.IsNotSummable = other.IsNotSummable;
         }
 
-        _stateManager.GetMainState().Accounts = Total.Children.ToArray();
+        var state = _stateManager.GetMainState();
+        _stateManager.SetMainState(state with { Accounts = Total.Children.ToArray() });
         _repository!.UpdateAccount(new Models.Account
         {
             Id = other.Id.Value,

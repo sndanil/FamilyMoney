@@ -223,8 +223,6 @@ public class PeriodViewModel: ViewModelBase
     {
         this.RaisePropertyChanged(nameof(Text));
         var state = _stateManager.GetMainState();
-        state.PeriodFrom = _from;
-        state.PeriodTo = _to;
-        _stateManager.SetMainState(state);
+        _stateManager.SetMainState(state with { PeriodFrom = _from, PeriodTo = _to });
     }
 }

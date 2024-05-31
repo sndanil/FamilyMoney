@@ -32,7 +32,7 @@ public class AccountViewModel : ViewModelBase
     private bool _isGroup = false;
     private bool _isHidden = false;
     private bool _isNotSummable = false;
-    private ObservableCollection<AccountViewModel> _children = new();
+    private readonly ObservableCollection<AccountViewModel> _children = [];
 
     public ICommand SelectCommand { get; }
 

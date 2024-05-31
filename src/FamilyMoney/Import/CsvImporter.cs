@@ -11,16 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Import;
 
-internal class CsvImporter: IImporter
+internal class CsvImporter(ILogger<CsvImporter> logger, IRepository repository) : IImporter
 {
-    private readonly ILogger _logger;
-    private readonly IRepository _repository;
-
-    public CsvImporter(ILogger<CsvImporter> logger, IRepository repository)
-    {
-        _logger = logger;
-        _repository = repository;
-    }
+    private readonly ILogger _logger = logger;
+    private readonly IRepository _repository = repository;
 
     public void DoImport(Stream stream)
     {
@@ -47,11 +41,11 @@ internal class CsvImporter: IImporter
                 var isTransfer = record.Accounts?.Contains(':') == true;
                 var isCredit = record.Sum < 0 && string.IsNullOrEmpty(record.DebetAccount);
 
-                Category? category = TryGetCategory(_repository, categories, record, isTransfer, isCredit);
-                SubCategory? subCategory = TryGetSubCategory(_repository, category, subCategories, record, isTransfer, isCredit);
+                Category? category = TryGetCategory(categories, record, isTransfer, isCredit);
+                SubCategory? subCategory = TryGetSubCategory(category, subCategories, record, isTransfer, isCredit);
 
-                var creditAccount = TryGetAccount(_repository, accounts, record.CreditAccount);
-                var debetAccount = TryGetAccount(_repository, accounts, record.DebetAccount);
+                var creditAccount = TryGetAccount(accounts, record.CreditAccount);
+                var debetAccount = TryGetAccount(accounts, record.DebetAccount);
 
                 Transaction? transaction = null;
                 if (isTransfer)
@@ -120,11 +114,11 @@ internal class CsvImporter: IImporter
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, message: ex.Message);
         }
     }
 
-    private static Account? TryGetAccount(IRepository repository, List<Account> accounts, string? accountName)
+    private Account? TryGetAccount(List<Account> accounts, string? accountName)
     {
         Account? account = null;
         if (!string.IsNullOrEmpty(accountName))
@@ -138,7 +132,7 @@ internal class CsvImporter: IImporter
                     Name = accountName,
                 };
 
-                repository.UpdateAccount(account);
+                _repository.UpdateAccount(account);
                 accounts.Add(account);
             }
         }
@@ -146,7 +140,7 @@ internal class CsvImporter: IImporter
         return account;
     }
 
-    private Category? TryGetCategory(IRepository repository, List<Category> categories, CsvImportRow record, bool isTransfer, bool isCredit)
+    private Category? TryGetCategory(List<Category> categories, CsvImportRow record, bool isTransfer, bool isCredit)
     {
         Category? category = null;
         if (!string.IsNullOrEmpty(record.Category))
@@ -191,7 +185,7 @@ internal class CsvImporter: IImporter
         return category;
     }
 
-    private SubCategory? TryGetSubCategory(IRepository repository, Category? category, List<SubCategory> subCategories, CsvImportRow record, bool isTransfer, bool isCredit)
+    private SubCategory? TryGetSubCategory(Category? category, List<SubCategory> subCategories, CsvImportRow record, bool isTransfer, bool isCredit)
     {
         SubCategory? subCategory = null;
         if (!string.IsNullOrEmpty(record.SubCategory))

@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 namespace FamilyMoney.State;
 
-public sealed class MainState
+public record MainState(IReadOnlyCollection<AccountViewModel> Accounts, Guid? SelectedAccountId, DateTime PeriodFrom, DateTime PeriodTo)
 {
-    public required IReadOnlyCollection<AccountViewModel> Accounts { get; set; }
-
     public IList<AccountViewModel> FlatAccounts
     {
         get
@@ -25,10 +23,4 @@ public sealed class MainState
             return result;
         }
     }
-
-    public Guid? SelectedAccountId { get; set; }
-
-    public DateTime PeriodFrom { get; set; }
-
-    public DateTime PeriodTo { get; set; }
 }

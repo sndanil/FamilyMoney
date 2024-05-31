@@ -123,9 +123,8 @@ public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel
     private bool ItemFilter(string? search, object? item)
     {
         var transaction = ViewModel;
-        var subCategory = item as BaseSubCategoryViewModel;
 
-        if (subCategory != null)
+        if (item is BaseSubCategoryViewModel subCategory)
         {
             if (!string.IsNullOrEmpty(search))
             {
