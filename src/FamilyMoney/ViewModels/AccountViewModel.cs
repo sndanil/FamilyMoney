@@ -107,7 +107,7 @@ public class AccountViewModel : ViewModelBase
     {
         SelectCommand = ReactiveCommand.CreateFromTask(() =>
         {
-            MessageBus.Current.SendMessage(new AccountSelectMessage { AccountId = Id });
+            MessageBus.Current.SendMessage(new AccountSelectMessage(Id));
             return Task.CompletedTask;
         });
 

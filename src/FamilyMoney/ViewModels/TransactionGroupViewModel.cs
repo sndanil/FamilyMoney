@@ -109,12 +109,12 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
         ToggleExpand = ReactiveCommand.Create(() =>
         {
             IsExpanded = !IsExpanded;
-            MessageBus.Current.SendMessage(new TransactionGroupExpandMessage { Element = this });
+            MessageBus.Current.SendMessage(new TransactionGroupExpandMessage(this));
         });
 
         SelectCommand = ReactiveCommand.Create(() =>
         {
-            MessageBus.Current.SendMessage(new TransactionGroupSelectMessage { Element = this });
+            MessageBus.Current.SendMessage(new TransactionGroupSelectMessage(this));
         });
     }
 }
@@ -174,17 +174,17 @@ public class TransactionGroupViewModel : BaseTransactionsGroupViewModel
     {
         EditCommand = ReactiveCommand.Create(() =>
         {
-            MessageBus.Current.SendMessage(new TransactionGroupEditMessage { Element = this });
+            MessageBus.Current.SendMessage(new TransactionGroupEditMessage(this));
         });
 
         CopyCommand = ReactiveCommand.Create(() =>
         {
-            MessageBus.Current.SendMessage(new TransactionGroupCopyMessage{ Element = this });
+            MessageBus.Current.SendMessage(new TransactionGroupCopyMessage(this));
         });
 
         DeleteCommand = ReactiveCommand.Create(() =>
         {
-            MessageBus.Current.SendMessage(new TransactionGroupDeleteMessage { Element = this });
+            MessageBus.Current.SendMessage(new TransactionGroupDeleteMessage(this));
         });
     }
 }

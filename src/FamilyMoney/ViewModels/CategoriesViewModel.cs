@@ -132,7 +132,7 @@ public class CategoriesViewModel : ViewModelBase
         category.IsHidden = categoryForSave.IsHidden;
         _repository.UpdateCategroty(category);
 
-        MessageBus.Current.SendMessage(new CategoryUpdateMessage { CategoryId = category.Id });
+        MessageBus.Current.SendMessage(new CategoryUpdateMessage(category.Id));
 
         if (categoryForUpdate is not null)
         {

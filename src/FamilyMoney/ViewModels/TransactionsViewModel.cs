@@ -266,11 +266,7 @@ public class TransactionsViewModel : ViewModelBase
 
     private void SendTransactionChanged(Transaction? before, Transaction? after)
     {
-        MessageBus.Current.SendMessage(new TransactionChangedMessage
-        {
-            Before = before,
-            After = after,
-        });
+        MessageBus.Current.SendMessage(new TransactionChangedMessage(before, after));
     }
 
     private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, 

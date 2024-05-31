@@ -73,7 +73,7 @@ public class AccountsViewModel : ViewModelBase
         }
         set
         {
-            MessageBus.Current.SendMessage(new AccountSelectMessage { AccountId = value?.Id });
+            MessageBus.Current.SendMessage(new AccountSelectMessage(value?.Id));
         }
     }
 

@@ -17,6 +17,6 @@ public sealed class StateManager : IStateManager
     public void SetMainState(MainState state)
     {
         _mainState = state;
-        MessageBus.Current.SendMessage(new MainStateChangedMessage { State = state });
+        MessageBus.Current.SendMessage(new MainStateChangedMessage(state));
     }
 }
