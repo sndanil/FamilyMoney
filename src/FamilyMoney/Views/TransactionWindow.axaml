@@ -127,15 +127,32 @@
 						<Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
 						<Setter Property="Padding" Value="0" />
 					</Style>
-				</ComboBox.Styles>
-			
-		</ComboBox>
+				</ComboBox.Styles>			
+			</ComboBox>
 
 			<TextBlock Grid.Row="1" Text="Дата" Classes="Label" />
-			<DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding Date}" 
-					HorizontalAlignment="Stretch"
+			<Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="30 * 30">
+				<Button Command="{Binding PrevDayCommand}"
+						CornerRadius="12 0 0 12"
+						HotKey="Ctrl+Left"
+						Height="28">
+					<PathIcon Data="{StaticResource ChevronRight}">
+						<PathIcon.RenderTransform>
+							<RotateTransform Angle="180" />
+						</PathIcon.RenderTransform>
+					</PathIcon>
+				</Button>
+				<DatePicker Grid.Column="1" SelectedDate="{Binding Date}"
+						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						/>
+				<Button Grid.Column="2" Command="{Binding NextDayCommand}"
+						HotKey="Ctrl+Right"
+						CornerRadius="0 12 12 0"
+						Height="28">
+					<PathIcon Data="{StaticResource ChevronRight}" />
+				</Button>
+			</Grid>
 
 			<TextBlock Grid.Row="2" Text="Категория" Classes="Label" />
 			<Border Grid.Row="2" Grid.Column="1" IsVisible="{Binding Category.IsHidden}">

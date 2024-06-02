@@ -33,6 +33,10 @@ public abstract class BaseTransactionViewModel : ViewModelBase
 
     public ICommand CommentCommand { get; }
 
+    public ICommand PrevDayCommand { get; }
+
+    public ICommand NextDayCommand { get; }
+
     public static Interaction<BaseTransactionViewModel, BaseTransactionViewModel?> ShowDialog { get; } = new();
 
     public Guid Id
@@ -148,6 +152,16 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         CommentCommand = ReactiveCommand.Create((string comment) =>
         {
             this.Comment += comment;
+        });
+
+        PrevDayCommand = ReactiveCommand.Create(() =>
+        {
+            Date = Date!.Value.AddDays(-1);
+        });
+
+        NextDayCommand = ReactiveCommand.Create(() =>
+        {
+            Date = Date!.Value.AddDays(1);
         });
     }
 
