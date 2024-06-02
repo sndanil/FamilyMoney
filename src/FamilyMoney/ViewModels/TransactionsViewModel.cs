@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -132,7 +133,10 @@ public class TransactionsViewModel : ViewModelBase
 
         CopyCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
         {
-            await CopyTransaction(child);
+            RxApp.MainThreadScheduler.Schedule(async () =>
+            {
+                await CopyTransaction(child);
+            });
         });
 
         DeleteCommand = ReactiveCommand.Create((TransactionRowViewModel child) =>
