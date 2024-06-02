@@ -1,19 +1,30 @@
-﻿using DynamicData;
-using ReactiveUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace FamilyMoney.ViewModels;
 
 public sealed class SummaryTransactionsGroup : ViewModelBase
 {
+    private readonly Dictionary<Guid, CategoryTransactionsGroupViewModel> _categoryGroupsCache = [];
+
     public bool IsDebet { get; init; }
 
     public decimal Sum { get; set; }
 
     public List<CategoryTransactionsGroupViewModel> Categories { get; private set; } = [];
+
+    public CategoryTransactionsGroupViewModel TryAddCategory(Guid categoryId, Func<CategoryTransactionsGroupViewModel> factory)
+    {
+        if (!_categoryGroupsCache.TryGetValue(categoryId, out var category))
+        {
+            category = factory();
+            _categoryGroupsCache.Add(categoryId, category);
+            Categories.Add(category);
+        }
+
+        return category;
+    }
 
     public void CalcPercentsAndSort()
     {

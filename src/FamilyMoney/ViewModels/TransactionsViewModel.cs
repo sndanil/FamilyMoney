@@ -25,10 +25,10 @@ public class TransactionsViewModel : ViewModelBase
 
     private DateTime _lastTransactionDate = DateTime.Today;
 
-    private HashSet<Guid> _openedNodes = new();
+    private readonly HashSet<Guid> _openedNodes = [];
 
-    private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = new();
-    private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = new();
+    private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = [];
+    private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = [];
 
     private SummaryTransactionsGroup _debetTransactions = new();
     private SummaryTransactionsGroup _creditTransactions = new();
@@ -151,10 +151,7 @@ public class TransactionsViewModel : ViewModelBase
             .Where(m => m.CategoryId != null)
             .Subscribe(m =>
             {
-                if (_categoriesCache.ContainsKey(m.CategoryId.GetValueOrDefault()))
-                {
-                    _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
-                }
+                _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
             });
     }
 
@@ -216,8 +213,7 @@ public class TransactionsViewModel : ViewModelBase
     {
         var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
 
-        BaseTransactionViewModel? transactionViewModel = null;
-
+        BaseTransactionViewModel? transactionViewModel;
         if (transaction is DebetTransaction)
         {
             transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
@@ -259,7 +255,7 @@ public class TransactionsViewModel : ViewModelBase
         }
     }
 
-    private void SendTransactionChanged(Transaction? before, Transaction? after)
+    private static void SendTransactionChanged(Transaction? before, Transaction? after)
     {
         MessageBus.Current.SendMessage(new TransactionChangedMessage(before, after));
     }
@@ -476,13 +472,6 @@ public class TransactionsViewModel : ViewModelBase
             PeriodTo = state.PeriodTo
         });
 
-        Dictionary<Guid, CategoryTransactionsGroupViewModel> debetCategoryGroupsCache = [];
-        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> debetSubCategoryGroupsCache = [];
-        Dictionary<Guid, CategoryTransactionsGroupViewModel> creditCategoryGroupsCache = [];
-        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> creditSubCategoryGroupsCache = [];
-        Dictionary<Guid, CategoryTransactionsGroupViewModel> transferCategoryGroupsCache = [];
-        Dictionary<Guid, SubCategoryTransactionsGroupViewModel> transferSubCategoryGroupsCache = [];
-
         var debetTransactionsTemp = new SummaryTransactionsGroup { IsDebet = true };
         var creditTransactionsTemp = new SummaryTransactionsGroup { IsDebet = false };
         var transferTransactionsTemp = new SummaryTransactionsGroup { };
@@ -507,8 +496,6 @@ public class TransactionsViewModel : ViewModelBase
             {
                 transactionView = FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactionsTemp, 
                     transaction, 
-                    debetCategoryGroupsCache, 
-                    debetSubCategoryGroupsCache,
                     selected, 
                     (_, _) => true);
                 lastDateGroup.Sum += transaction.Sum;
@@ -517,8 +504,6 @@ public class TransactionsViewModel : ViewModelBase
             {
                 transactionView = FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactionsTemp, 
                     transaction, 
-                    creditCategoryGroupsCache,
-                    creditSubCategoryGroupsCache,
                     selected, 
                     (_, _) => false);
                 lastDateGroup.Sum -= transaction.Sum;
@@ -527,8 +512,6 @@ public class TransactionsViewModel : ViewModelBase
             {
                 transactionView = FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactionsTemp, 
                     transaction,
-                    transferCategoryGroupsCache,
-                    transferSubCategoryGroupsCache,
                     selected, 
                     (t, g) => g is TransactionRowViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
                 );
@@ -559,41 +542,39 @@ public class TransactionsViewModel : ViewModelBase
 
     private TransactionRowViewModel FillTransactions<C, S>(SummaryTransactionsGroup summary, 
             Transaction transaction,
-            Dictionary<Guid, CategoryTransactionsGroupViewModel> categoryGroupsCache,
-            Dictionary<Guid, SubCategoryTransactionsGroupViewModel> subCategoryGroupsCache,
             BaseTransactionsGroupViewModel? selected, 
             Func<Transaction, BaseTransactionsGroupViewModel?, bool> isDebet)
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
         summary.Sum += transaction.Sum;
-        CategoryTransactionsGroupViewModel? category = null;
-        if (transaction.CategoryId == null)
+        var category = summary.TryAddCategory(transaction.CategoryId.GetValueOrDefault(), () => 
         {
-            category = summary.Categories.FirstOrDefault(t => t.Category == null); 
-            if (category == null)
-            {
-                category = new CategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this };
-                summary.Categories.Add(category);
-            }
-        }
-        if (category == null && !categoryGroupsCache.TryGetValue(transaction.CategoryId!.Value, out category))
-        {
-            category = new CategoryTransactionsGroupViewModel
-            {
-                Category = GetCategory<C>(transaction.CategoryId.Value),
-                Parent = this,
-                IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value),
-                IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId
-            };
-            category.IsDebet = isDebet(transaction, category);
-            SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
-
-            categoryGroupsCache.Add(transaction.CategoryId.GetValueOrDefault(), category);
-            summary.Categories.Add(category);
-        }
+            return transaction.CategoryId == null ? new CategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this }
+             : new CategoryTransactionsGroupViewModel
+             {
+                 Category = GetCategory<C>(transaction.CategoryId.Value),
+                 Parent = this,
+                 IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value),
+                 IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId,
+                 IsDebet = isDebet(transaction, null),
+             };
+        });
+        SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
         category.Sum += transaction.Sum;
 
-        SubCategoryTransactionsGroupViewModel? subCategory = null;
+        var subCategory = category.TryAddSubCategory(transaction.SubCategoryId.GetValueOrDefault(), () =>
+        {
+            return transaction.SubCategoryId == null ? new SubCategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this }
+            : new SubCategoryTransactionsGroupViewModel
+            {
+                Parent = this,
+                SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value),
+                IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value),
+                IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory
+                                    && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId,
+                IsDebet = isDebet(transaction, null),
+            };
+        });
         if (transaction.SubCategoryId == null)
         {
             subCategory = category.SubCategories.FirstOrDefault(t => t.SubCategory == null);
@@ -603,22 +584,7 @@ public class TransactionsViewModel : ViewModelBase
                 category.SubCategories.Add(subCategory);
             }
         }
-        if (subCategory == null && !subCategoryGroupsCache.TryGetValue(transaction.SubCategoryId!.Value, out subCategory))
-        {
-            subCategory = new SubCategoryTransactionsGroupViewModel 
-            { 
-                Parent = this,
-                SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value),
-                IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value),
-                IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory
-                                    && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId,
-            };
-            subCategory.IsDebet = isDebet(transaction, subCategory);
-            SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
-
-            subCategoryGroupsCache.Add(transaction.SubCategoryId.GetValueOrDefault(), subCategory);
-            category.SubCategories.Add(subCategory);
-        }
+        SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
         subCategory.Sum += transaction.Sum;
 
         var viewTransaction = new TransactionRowViewModel
@@ -668,7 +634,7 @@ public class TransactionsViewModel : ViewModelBase
         return subCategory;
     }
 
-    private IList<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
+    private List<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
     {
         var categories = _repository.GetCategories().OfType<T>().OrderBy(c => c.Name).Select(c =>
         {
@@ -680,7 +646,7 @@ public class TransactionsViewModel : ViewModelBase
         return categories.Select(c => (BaseCategoryViewModel)c).ToList();
     }
 
-    private IList<BaseSubCategoryViewModel> GetSubCategories<T, N, C>() 
+    private List<BaseSubCategoryViewModel> GetSubCategories<T, N, C>() 
         where T : SubCategory 
         where N : BaseSubCategoryViewModel, new()
         where C: BaseCategoryViewModel, new()
