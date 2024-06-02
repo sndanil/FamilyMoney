@@ -130,16 +130,17 @@
 										<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
-													<InvokeCommandAction Command="{Binding SelectCommand}" />
+													<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 												</ia:EventTriggerBehavior>
 												<ia:EventTriggerBehavior EventName="DoubleTapped">
-													<InvokeCommandAction Command="{Binding EditCommand}" />
+													<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
 												</ia:EventTriggerBehavior>
 											</i:Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="25 25 20 130 150 150 100">
 												<Button Classes="Expander"
-														Command="{Binding CopyCommand}"
+														Command="{Binding Parent.CopyCommand}"
+														CommandParameter="{Binding}"
 														ToolTip.Tip="Копировать">
 													<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/copy.svg"/>
 												</Button>
@@ -147,7 +148,10 @@
 												<Button Grid.Column="1" Classes="Expander" ToolTip.Tip="Удалить">
 													<Button.Flyout>
 														<MenuFlyout>
-															<MenuItem Width="200" Header="Удалить" Command="{Binding DeleteCommand}" />
+															<MenuItem Width="200" Header="Удалить" 
+																	  Command="{Binding Parent.DeleteCommand}" 
+																	  CommandParameter="{Binding}"
+																	  />
 														</MenuFlyout>
 													</Button.Flyout>
 

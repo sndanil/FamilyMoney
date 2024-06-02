@@ -7,7 +7,7 @@
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
-			 x:DataType="vm:TransactionsGroup"
+			 x:DataType="vm:SummaryTransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
 	<UserControl.Resources>
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
@@ -89,15 +89,15 @@
 					<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
 						<i:Interaction.Behaviors>
 							<ia:EventTriggerBehavior EventName="Tapped">
-								<InvokeCommandAction Command="{Binding SelectCommand}" />
+								<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 							</ia:EventTriggerBehavior>
 							<ia:EventTriggerBehavior EventName="DoubleTapped">
-								<InvokeCommandAction Command="{Binding ToggleExpand}" />
+								<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
 							</ia:EventTriggerBehavior>
 						</i:Interaction.Behaviors>
 						
 						<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
-							<Button Classes="Expander" Command="{Binding ToggleExpand}">
+							<Button Classes="Expander" Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}">
 								<Grid>
 									<PathIcon Data="{StaticResource ChevronDown}"
 											  IsVisible="{Binding IsExpanded}" />
@@ -136,15 +136,17 @@
 									<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
 										<i:Interaction.Behaviors>
 											<ia:EventTriggerBehavior EventName="Tapped">
-												<InvokeCommandAction Command="{Binding SelectCommand}" />
+												<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 											</ia:EventTriggerBehavior>
 											<ia:EventTriggerBehavior EventName="DoubleTapped">
-												<InvokeCommandAction Command="{Binding ToggleExpand}" />
+												<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
 											</ia:EventTriggerBehavior>
 										</i:Interaction.Behaviors>
 
 										<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
-											<Button Classes="Expander" Command="{Binding ToggleExpand}">
+											<Button Classes="Expander" Command="{Binding Parent.ToggleExpand}"
+													CommandParameter="{Binding}"
+													>
 												<Grid>
 													<PathIcon Data="{StaticResource ChevronDown}"
 															  IsVisible="{Binding IsExpanded}" />
@@ -178,17 +180,18 @@
 												<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
 													<i:Interaction.Behaviors>
 														<ia:EventTriggerBehavior EventName="Tapped">
-															<InvokeCommandAction Command="{Binding SelectCommand}" />
+															<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 														</ia:EventTriggerBehavior>
 														<ia:EventTriggerBehavior EventName="DoubleTapped">
-															<InvokeCommandAction Command="{Binding EditCommand}" />
+															<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
 														</ia:EventTriggerBehavior>
 													</i:Interaction.Behaviors>
 
 													<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
 														<Button Grid.Column="0" 
 																Classes="Expander" 
-																Command="{Binding CopyCommand}"
+																Command="{Binding Parent.CopyCommand}"
+																CommandParameter="{Binding}"
 																ToolTip.Tip="Копировать"
 																>
 															<Svg Css="{DynamicResource SvgColor}"
@@ -199,7 +202,10 @@
 																ToolTip.Tip="Удалить">
 															<Button.Flyout>
 																<MenuFlyout>
-																	<MenuItem Width="200" Header="Удалить" Command="{Binding DeleteCommand}" />
+																	<MenuItem Width="200" Header="Удалить" 
+																			  Command="{Binding Parent.DeleteCommand}" 
+																			  CommandParameter="{Binding}"
+																			  />
 																</MenuFlyout>
 															</Button.Flyout>
 															
