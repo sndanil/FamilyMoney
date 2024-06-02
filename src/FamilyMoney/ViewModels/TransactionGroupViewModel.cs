@@ -1,7 +1,9 @@
-﻿using FamilyMoney.Messages;
+﻿using DynamicData;
+using FamilyMoney.Messages;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -59,6 +61,13 @@ public sealed class TransactionsByDatesGroup : ViewModelBase
     {
         get => _transactions;
         set => this.RaiseAndSetIfChanged(ref _transactions, value);
+    }
+
+    public void SortByLastChange()
+    {
+        var sortedTransactions = Transactions.OrderBy(t => t.LastChange).ToList();
+        Transactions.Clear();
+        Transactions.AddRange(sortedTransactions);
     }
 }
 

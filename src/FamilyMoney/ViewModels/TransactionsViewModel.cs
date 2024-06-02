@@ -501,13 +501,7 @@ public class TransactionsViewModel : ViewModelBase
         {
             if (transaction.Date != lastDate || lastDateGroup == null)
             {
-                if (lastDateGroup != null)
-                {
-                    var sortedTransactions = lastDateGroup.Transactions.OrderBy(t => t.LastChange).ToList();
-                    lastDateGroup.Transactions.Clear();
-                    lastDateGroup.Transactions.AddRange(sortedTransactions);
-                }
-
+                lastDateGroup?.SortByLastChange();
                 lastDateGroup = new TransactionsByDatesGroup { Date = transaction.Date };
                 lastDate = transaction.Date;
                 transactionsDyDates.Add(lastDateGroup);
@@ -553,6 +547,7 @@ public class TransactionsViewModel : ViewModelBase
                 lastDateGroup.Transactions.Add(transactionView);
             }
         }
+        lastDateGroup?.SortByLastChange();
 
         var debetTransactionsTemp = new TransactionsGroup { Sum = debetTransactions.Sum(t => t.Sum), IsDebet = true };
         CalcPercents(debetTransactionsTemp.Sum, debetTransactions);
