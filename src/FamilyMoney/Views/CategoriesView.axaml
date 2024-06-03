@@ -20,13 +20,6 @@
 						/>
 					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
 				</StackPanel>
-
-				<i:Interaction.Behaviors>
-					<ia:EventTriggerBehavior EventName="DoubleTapped">
-						<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:CategoriesViewModel)DataContext).EditCommand}"
-											 CommandParameter="{Binding}"/>
-					</ia:EventTriggerBehavior>
-				</i:Interaction.Behaviors>
 			</Border>
 		</DataTemplate>
 	</UserControl.DataTemplates>
@@ -77,7 +70,15 @@
 			</StackPanel>
 		</Border>
 		<Border Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding DebetCategories}" />
+			<ListBox ItemsSource="{Binding DebetCategories}" Name="DebetCategories" >
+				<i:Interaction.Behaviors>
+					<ia:EventTriggerBehavior EventName="DoubleTapped">
+						<InvokeCommandAction Command="{Binding EditCommand}"
+											 CommandParameter="{Binding #DebetCategories.SelectedItem}"/>
+					</ia:EventTriggerBehavior>
+				</i:Interaction.Behaviors>
+
+			</ListBox>
 		</Border>
 
 		<Border Grid.Column="1" Classes="Header">
@@ -88,7 +89,16 @@
 			</StackPanel>
 		</Border>
 		<Border Grid.Column="1" Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding CreditCategories}" />
+			<ListBox ItemsSource="{Binding CreditCategories}" Name="CreditCategories" >
+				<i:Interaction.Behaviors>
+					<ia:EventTriggerBehavior EventName="DoubleTapped">
+						<InvokeCommandAction Command="{Binding EditCommand}"
+											 CommandParameter="{Binding #CreditCategories.SelectedItem}"/>
+					</ia:EventTriggerBehavior>
+				</i:Interaction.Behaviors>
+
+			</ListBox>
+
 		</Border>
 
 		<Border Grid.Column="2" Classes="Header">
@@ -99,7 +109,16 @@
 			</StackPanel>
 		</Border>
 		<Border Grid.Column="2" Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding TransferCategories}" />
+			<ListBox ItemsSource="{Binding TransferCategories}" Name="TransferCategories" >
+				<i:Interaction.Behaviors>
+					<ia:EventTriggerBehavior EventName="DoubleTapped">
+						<InvokeCommandAction Command="{Binding EditCommand}"
+											 CommandParameter="{Binding #TransferCategories.SelectedItem}"/>
+					</ia:EventTriggerBehavior>
+				</i:Interaction.Behaviors>
+
+			</ListBox>
+
 		</Border>
 	</Grid>
 </UserControl>
