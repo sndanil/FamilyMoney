@@ -46,7 +46,7 @@
 			<Setter Property="Margin" Value="5 0" />
 		</Style>
 		<Style Selector="TextBlock.Name">
-			<Setter Property="Margin" Value="10 0 0 0" />
+			<Setter Property="Margin" Value="15 0 0 0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
 		</Style>
@@ -105,7 +105,7 @@
 				<DataTemplate>
 					<StackPanel>
 						<Border Classes="Total">
-							<Grid ColumnDefinitions="500 115">
+							<Grid ColumnDefinitions="600 115">
 								<TextBlock Classes="Title"
 										   MinWidth="70"
 										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
@@ -137,7 +137,7 @@
 												</ia:EventTriggerBehavior>
 											</i:Interaction.Behaviors>
 
-											<Grid ColumnDefinitions="25 25 20 130 150 150 100">
+											<Grid ColumnDefinitions="25 25 20 130 200 200 100">
 												<Button Classes="Expander"
 														Command="{Binding Parent.CopyCommand}"
 														CommandParameter="{Binding}"
