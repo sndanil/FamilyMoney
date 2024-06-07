@@ -183,8 +183,8 @@ public class AccountsViewModel : ViewModelBase
 
     private void ProcessAccounts(Transaction transaction, int direction)
     {
-        var accounts = Total.Children.Union(Total.Children.SelectMany(a => a.Children)).ToList();
-        var account = accounts.FirstOrDefault(a => a.Id == transaction.AccountId);
+        var flatAccounts = _stateManager.GetMainState().FlatAccounts;
+        var account = flatAccounts.FirstOrDefault(a => a.Id == transaction.AccountId);
         if (account != null)
         {
             if (transaction is DebetTransaction)
@@ -198,7 +198,7 @@ public class AccountsViewModel : ViewModelBase
             else if (transaction is TransferTransaction transfer)
             {
                 UpdateAccountSum(account, -transaction.Sum * direction);
-                var toAccount = accounts.FirstOrDefault(a => a.Id == transfer.ToAccountId);
+                var toAccount = flatAccounts.FirstOrDefault(a => a.Id == transfer.ToAccountId);
                 if (toAccount != null)
                 {
                     UpdateAccountSum(toAccount, transfer.ToSum * direction);
