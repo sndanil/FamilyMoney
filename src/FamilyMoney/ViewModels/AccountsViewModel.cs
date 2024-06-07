@@ -142,10 +142,12 @@ public class AccountsViewModel : ViewModelBase
 
     private void RecalcAccounts()
     {
-        foreach (var account in Total.Children.Where(a => a.IsGroup))
+        foreach (var account in Total.Children)
         {
             account.RecalcByChildren();
         }
+
+        Total.RecalcByChildren();
     }
 
     private void SubscribeMessages()
@@ -187,38 +189,31 @@ public class AccountsViewModel : ViewModelBase
         {
             if (transaction is DebetTransaction)
             {
-                UpdateAccounts(account, transaction.Sum * direction);
+                UpdateAccountSum(account, transaction.Sum * direction);
             }
             else if (transaction is CreditTransaction)
             {
-                UpdateAccounts(account, -transaction.Sum * direction);
+                UpdateAccountSum(account, -transaction.Sum * direction);
             }
             else if (transaction is TransferTransaction transfer)
             {
-                UpdateAccounts(account, -transaction.Sum * direction);
+                UpdateAccountSum(account, -transaction.Sum * direction);
                 var toAccount = accounts.FirstOrDefault(a => a.Id == transfer.ToAccountId);
                 if (toAccount != null)
                 {
-                    UpdateAccounts(toAccount, transfer.ToSum * direction);
+                    UpdateAccountSum(toAccount, transfer.ToSum * direction);
                 }
             }
         }
     }
 
-    private void UpdateAccounts(AccountViewModel account, decimal sum)
+    private void UpdateAccountSum(AccountViewModel account, decimal sum)
     {
         account.Sum += sum;
         if (!account.IsGroup)
         {
             Save(null, account);
         }
-
-        if (account.IsNotSummable || account.Parent == null)
-        {
-            return;
-        }
-
-        UpdateAccounts(account.Parent, sum);
     }
 
     private async Task AddGroupAccount()
