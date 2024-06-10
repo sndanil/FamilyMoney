@@ -65,6 +65,11 @@ public abstract class BaseSubCategoryViewModel : ViewModelBase
         Name = subCategory.Name;
         CategoryId = subCategory.CategoryId;
     }
+
+    public override string ToString()
+    {
+        return Name;
+    }
 }
 
 public sealed class DebetSubCategoryViewModel : BaseSubCategoryViewModel
