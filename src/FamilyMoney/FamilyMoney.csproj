@@ -8,6 +8,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>wallet.ico</ApplicationIcon>
 	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	<SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
