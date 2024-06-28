@@ -53,6 +53,7 @@
 		<cv:IsNotAccountGroupConverter x:Key="accountConverter" />
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 		<cv:TransactionTypeConverter x:Key="transactionTypeConverter" />
+		<cv:NumericUpDownValueConverter x:Key="numericUpDownValueConverter" />
 	</Window.Resources>
 	<Window.DataTemplates>
 		<DataTemplate DataType="vm:AccountViewModel">
@@ -212,7 +213,7 @@
 			<NumericUpDown Grid.Row="4" Grid.Column="1"
 						   Name="SumPicker"
 						   FormatString="#,##0.00"
-						   Value="{Binding Sum}"
+						   Value="{Binding Sum, Converter={StaticResource numericUpDownValueConverter}}"
 						   />
 
 		</Grid>
@@ -245,7 +246,7 @@
 			<NumericUpDown Grid.Row="1" Grid.Column="1"
 						   Name="ToSumPicker"
 						   FormatString="#,##0.00"
-						   Value="{Binding ToSum}"
+						   Value="{Binding ToSum, Converter={StaticResource numericUpDownValueConverter}}"
 						   />
 		</Grid>
 		<Grid Grid.Row="3" ColumnDefinitions="150 *"
