@@ -1,4 +1,5 @@
-﻿using Avalonia.Styling;
+﻿using Avalonia.Controls;
+using Avalonia.Styling;
 using DynamicData;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
@@ -69,6 +70,8 @@ public class TransactionsViewModel : ViewModelBase
 
     public ICommand AddTransferCommand { get; }
 
+    public ICommand ClearSelectionCommand { get; }
+
     public ICommand ToggleExpand { get; }
 
     public ICommand SelectCommand { get; }
@@ -103,6 +106,8 @@ public class TransactionsViewModel : ViewModelBase
         AddCreditCommand = ReactiveCommand.CreateFromTask(AddCreditTransaction);
         AddTransferCommand = ReactiveCommand.CreateFromTask(AddTransferTransaction);
 
+        ClearSelectionCommand = ReactiveCommand.Create(ClearSelection);
+        
         ToggleExpand = ReactiveCommand.Create((BaseTransactionsGroupViewModel child) =>
         {
             child.IsExpanded = !child.IsExpanded;
