@@ -448,6 +448,10 @@ public class TransactionsViewModel : ViewModelBase
 
             transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategoryText!, factory).Id;
         }
+        else
+        {
+            transaction.SubCategoryId = null;
+        }
 
         var before = _repository.GetTransaction(transaction.Id);
         _repository.UpdateTransaction(transaction);
