@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using DynamicData;
 using FamilyMoney.Configuration;
@@ -136,7 +137,7 @@ public class TransactionsViewModel : ViewModelBase
             await EditTransaction();
         });
 
-        CopyCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
+        CopyCommand = ReactiveCommand.Create((TransactionRowViewModel child) =>
         {
             RxApp.MainThreadScheduler.Schedule(async () =>
             {
@@ -344,7 +345,6 @@ public class TransactionsViewModel : ViewModelBase
             return;
         }
 
-        BaseTransactionViewModel? transactionViewModel = null;
         var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
         if (transaction == null)
         {
@@ -352,36 +352,36 @@ public class TransactionsViewModel : ViewModelBase
         }
 
         var flatAccounts = _stateManager.GetMainState().FlatAccounts;
-        if (transaction is DebetTransaction)
+
+        BaseTransactionViewModel transactionViewModel;
+        switch(transaction)
         {
-            transactionViewModel = new DebetTransactionViewModel
-            {
-                Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-            };
-        }
-        else if (transaction is CreditTransaction)
-        {
-            transactionViewModel = new CreditTransactionViewModel
-            {
-                Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-            };
-        }
-        else if (transaction is TransferTransaction transfer)
-        {
-            transactionViewModel = new TransferTransactionViewModel
-            {
-                Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-                ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
-                ToSum = transfer.ToSum,
-                IsTransfer = true,
-            };
-        }
-        else
-        {
-            return;
+            case DebetTransaction:
+                transactionViewModel = new DebetTransactionViewModel
+                {
+                    Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                    SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
+                };
+                break;
+            case CreditTransaction:
+                transactionViewModel = new CreditTransactionViewModel
+                {
+                    Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                    SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
+                };
+                break;
+            case TransferTransaction transfer:
+                transactionViewModel = new TransferTransactionViewModel
+                {
+                    Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                    SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
+                    ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
+                    ToSum = transfer.ToSum,
+                    IsTransfer = true,
+                };
+                break;
+            default:
+                throw new ApplicationException("Unknown type of transaction " + transaction);
         }
 
         transactionViewModel.FillFrom(transaction, _repository);
@@ -417,30 +417,27 @@ public class TransactionsViewModel : ViewModelBase
 
         _lastTransactionDate = transaction.Date;
 
-        if (!string.IsNullOrEmpty(transactionViewModel.SubCategoryText))
+        Func<SubCategory> subCategoryFactory;
+        switch (transaction)
         {
-            Func<SubCategory> factory = () => new DebetSubCategory
-            {
-                Id = Guid.NewGuid(),
-                Name = transactionViewModel.SubCategoryText!,
-                CategoryId = transaction.CategoryId
-            };
-
-            if (transaction is DebetTransaction)
-            {
-            }
-            else if (transaction is CreditTransaction)
-            {
-                factory = () => new CreditSubCategory
+            case DebetTransaction:
+                subCategoryFactory = () => new DebetSubCategory
                 {
                     Id = Guid.NewGuid(),
                     Name = transactionViewModel.SubCategoryText!,
                     CategoryId = transaction.CategoryId
                 };
-            }
-            else if (transaction is TransferTransaction transferTransaction)
-            {
-                factory = () => new TransferSubCategory
+                break;
+            case CreditTransaction:
+                subCategoryFactory = () => new CreditSubCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Name = transactionViewModel.SubCategoryText!,
+                    CategoryId = transaction.CategoryId
+                };
+                break;
+            case TransferTransaction transferTransaction:
+                subCategoryFactory = () => new TransferSubCategory
                 {
                     Id = Guid.NewGuid(),
                     Name = transactionViewModel.SubCategoryText!,
@@ -449,13 +446,15 @@ public class TransactionsViewModel : ViewModelBase
 
                 transferTransaction.ToAccountId = transactionViewModel.ToAccount?.Id;
                 transferTransaction.ToSum = transactionViewModel.ToSum;
-            }
-
-            transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategoryText!, factory).Id;
+                break;
+            default:
+                throw new ApplicationException("Unknown type of transaction " + transaction);
         }
-        else
+
+        transaction.SubCategoryId = null;
+        if (!string.IsNullOrEmpty(transactionViewModel.SubCategoryText))
         {
-            transaction.SubCategoryId = null;
+            transaction.SubCategoryId = _repository.GetOrCreateSubCategory(transaction.CategoryId, transactionViewModel.SubCategoryText!, subCategoryFactory).Id;
         }
 
         var before = _repository.GetTransaction(transaction.Id);
