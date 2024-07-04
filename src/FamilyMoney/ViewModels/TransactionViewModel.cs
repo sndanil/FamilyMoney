@@ -137,7 +137,9 @@ public abstract class BaseTransactionViewModel : ViewModelBase
 
     public BaseTransactionViewModel()
     {
-        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
+        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, x => x.Category, x => x.SubCategoryText,
+                                            (sum, account, category, subCategoryText) => 
+                                            sum != 0 && account != null && category != null && subCategoryText != "");
         OkCommand = ReactiveCommand.Create(() =>
         {
             return (BaseTransactionViewModel?)this;
