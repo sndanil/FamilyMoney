@@ -60,7 +60,7 @@
 		</Style>
 		<Style Selector="Border.Account Image">
 			<Setter Property="Width" Value="40" />
-			<Setter Property="Margin" Value="5 5 0 5" />
+			<Setter Property="Margin" Value="10 5 0 5" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Border.Account TextBlock#AccountName">
@@ -167,7 +167,10 @@
 								</i:Interaction.Behaviors>
 
 								<Grid ColumnDefinitions="auto auto * auto">
-									<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+									<Svg Css="{DynamicResource SvgColor}"
+											Path="/Assets/Svg/reorder.svg"
+											PointerPressed="OnPointerPressed"
+											IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 									<Image Grid.Column="1" Stretch="Uniform"
 											Source="{Binding Image}"
 											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -224,7 +227,10 @@
 											</i:Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="auto auto * auto">
-												<PathIcon PointerPressed="OnPointerPressed" Data="{StaticResource ThreeDots}" />
+												<Svg Css="{DynamicResource SvgColor}" 
+														Path="/Assets/Svg/reorder.svg" 
+														PointerPressed="OnPointerPressed"
+														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 												<Image Grid.Column="1" Stretch="Uniform"
 														Source="{Binding Image}"
 														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -275,6 +281,13 @@
 						Classes="BottomButton"
 						ToolTip.Tip="Изменить">
 					<PathIcon Data="{StaticResource Edit}" />
+				</Button>
+				<Button Command="{Binding ReorderCommand}"
+					Classes="BottomButton"
+					Classes.Checked="{Binding ShowHiddenReorder}"
+					ToolTip.Tip="Изменить порядок">
+					<Svg Css="{DynamicResource SvgColor}"
+						Path="/Assets/Svg/up-down.svg"/>
 				</Button>
 				<Button Command="{Binding ShowHiddenCommand}" 						
 						Classes="BottomButton"

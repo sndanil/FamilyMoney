@@ -25,6 +25,7 @@ public class AccountsViewModel : ViewModelBase
     private AccountViewModel? _draggingAccount = null;
 
     private bool _showHidden = false;
+    private bool _showHiddenReorder = false;
 
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
@@ -34,6 +35,8 @@ public class AccountsViewModel : ViewModelBase
     public ICommand AddElementCommand { get; }
 
     public ICommand EditCommand { get; }
+
+    public ICommand ReorderCommand { get; }
 
     public ICommand ShowHiddenCommand { get; }
 
@@ -56,6 +59,12 @@ public class AccountsViewModel : ViewModelBase
     {
         get => _showHidden;
         set => this.RaiseAndSetIfChanged(ref _showHidden, value);
+    }
+
+    public bool ShowHiddenReorder
+    {
+        get => _showHiddenReorder;
+        set => this.RaiseAndSetIfChanged(ref _showHiddenReorder, value);
     }
 
     public AccountViewModel? SelectedAccount
@@ -89,6 +98,12 @@ public class AccountsViewModel : ViewModelBase
         ShowHiddenCommand = ReactiveCommand.CreateFromTask(() =>
         {
             ShowHidden = !ShowHidden;
+            return Task.CompletedTask;
+        });
+
+        ReorderCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            ShowHiddenReorder = !ShowHiddenReorder;
             return Task.CompletedTask;
         });
 
