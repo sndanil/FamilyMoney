@@ -170,7 +170,7 @@ public class TransactionsViewModel : ViewModelBase
         var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
             GetCategories<TransferCategory, TransferCategoryViewModel>(),
             GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-            SelectedTransactionGroup
+            null
             );
         transactionViewModel.IsTransfer = true;
 
@@ -186,7 +186,7 @@ public class TransactionsViewModel : ViewModelBase
         var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
             GetCategories<CreditCategory, CreditCategoryViewModel>(),
             GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-            SelectedTransactionGroup
+            null
             );
 
         var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
@@ -201,7 +201,7 @@ public class TransactionsViewModel : ViewModelBase
         var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
             GetCategories<DebetCategory, DebetCategoryViewModel>(),
             GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-            SelectedTransactionGroup
+            null
             );
 
         var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
