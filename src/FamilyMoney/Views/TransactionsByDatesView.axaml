@@ -11,6 +11,7 @@
 			 x:Class="FamilyMoney.Views.TransactionsByDatesView">
 	<UserControl.Resources>
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
+		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.Total">
@@ -164,7 +165,7 @@
 														/>
 												<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 												<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
-												<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment}" />
+												<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}" />
 												<TextBlock Grid.Column="6"
 														   Classes="Sum"
 														   Classes.Debet="{Binding IsDebet}"

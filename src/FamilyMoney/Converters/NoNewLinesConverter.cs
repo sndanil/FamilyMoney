@@ -13,7 +13,7 @@ public class NoNewLinesConverter : IValueConverter
             return str.Replace(Environment.NewLine, " ");
         }
 
-        return true;
+        return string.Empty;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
