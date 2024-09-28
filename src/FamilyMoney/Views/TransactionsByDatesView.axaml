@@ -73,24 +73,29 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="PathIcon">
-			<Setter Property="Height" Value="10" />
-			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="14" />
+			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Svg">
-			<Setter Property="Height" Value="10" />
-			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="14" />
+			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
 		</Style>
 		<Style Selector="Button.Expander">
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
-			<Setter Property="Height" Value="22" />
-			<Setter Property="Width" Value="22" />
+			<Setter Property="Height" Value="24" />
+			<Setter Property="Width" Value="24" />
+			<Setter Property="Margin" Value="15 0 0 0" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ZIndex" Value="10" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="ToolTip.Placement" Value="Top" />
+			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
 	</UserControl.Styles>
 
@@ -128,50 +133,53 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<StackPanel>
-										<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
-											<i:Interaction.Behaviors>
-												<ia:EventTriggerBehavior EventName="Tapped">
-													<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-												</ia:EventTriggerBehavior>
-												<ia:EventTriggerBehavior EventName="DoubleTapped">
-													<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-												</ia:EventTriggerBehavior>
-											</i:Interaction.Behaviors>
+										<Grid>
+											<Button Classes="Expander"
+													Command="{Binding Parent.CopyCommand}"
+													CommandParameter="{Binding}"
+													ToolTip.Tip="Копировать">
+												<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/copy.svg"/>
+											</Button>
 
-											<Grid ColumnDefinitions="25 25 20 130 200 200 100">
-												<Button Classes="Expander"
-														Command="{Binding Parent.CopyCommand}"
-														CommandParameter="{Binding}"
-														ToolTip.Tip="Копировать">
-													<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/copy.svg"/>
-												</Button>
-
-												<Button Grid.Column="1" Classes="Expander" ToolTip.Tip="Удалить">
-													<Button.Flyout>
-														<MenuFlyout>
-															<MenuItem Width="200" Header="Удалить" 
-																	  Command="{Binding Parent.DeleteCommand}" 
-																	  CommandParameter="{Binding}"
+											<Button Margin="40 0 0 0" Classes="Expander" ToolTip.Tip="Удалить">
+												<Button.Flyout>
+													<MenuFlyout>
+														<MenuItem Width="200" Header="Удалить"
+																  Command="{Binding Parent.DeleteCommand}"
+																  CommandParameter="{Binding}"
 																	  />
-														</MenuFlyout>
-													</Button.Flyout>
+													</MenuFlyout>
+												</Button.Flyout>
 
-													<PathIcon Data="{StaticResource Trash}" />
-												</Button>
+												<PathIcon Data="{StaticResource Trash}" />
+											</Button>
 
-												<Image Stretch="Uniform" Grid.Column="2"
-														Source="{Binding Category.Image}"
-														IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+											<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
+												<i:Interaction.Behaviors>
+													<ia:EventTriggerBehavior EventName="Tapped">
+														<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+													</ia:EventTriggerBehavior>
+													<ia:EventTriggerBehavior EventName="DoubleTapped">
+														<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
+													</ia:EventTriggerBehavior>
+												</i:Interaction.Behaviors>
+
+												<Grid ColumnDefinitions="25 25 20 130 200 200 100">
+
+													<Image Stretch="Uniform" Grid.Column="2"
+															Source="{Binding Category.Image}"
+															IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 														/>
-												<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
-												<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
-												<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}" />
-												<TextBlock Grid.Column="6"
-														   Classes="Sum"
-														   Classes.Debet="{Binding IsDebet}"
-														   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-											</Grid>
-										</Border>
+													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
+													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
+													<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}" />
+													<TextBlock Grid.Column="6"
+															   Classes="Sum"
+															   Classes.Debet="{Binding IsDebet}"
+															   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+												</Grid>
+											</Border>
+										</Grid>
 									</StackPanel>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

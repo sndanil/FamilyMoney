@@ -15,20 +15,25 @@
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
-			<Setter Property="Height" Value="22" />
-			<Setter Property="Width" Value="22" />
+			<Setter Property="Height" Value="24" />
+			<Setter Property="Width" Value="24" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="ZIndex" Value="10" />
+			<Setter Property="Margin" Value="15 0 0 0" />
+			<Setter Property="ToolTip.Placement" Value="Top" />
+			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
 		<Style Selector="PathIcon">
-			<Setter Property="Height" Value="10" />
-			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="14" />
+			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Svg">
-			<Setter Property="Height" Value="10" />
-			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="14" />
+			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
@@ -86,40 +91,45 @@
 		<ItemsControl.ItemTemplate>
 			<DataTemplate>
 				<StackPanel>
-					<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-						<i:Interaction.Behaviors>
-							<ia:EventTriggerBehavior EventName="Tapped">
-								<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-							</ia:EventTriggerBehavior>
-							<ia:EventTriggerBehavior EventName="DoubleTapped">
-								<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
-							</ia:EventTriggerBehavior>
-						</i:Interaction.Behaviors>
-						
-						<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
-							<Button Classes="Expander" Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}">
-								<Grid>
-									<PathIcon Data="{StaticResource ChevronDown}"
-											  IsVisible="{Binding IsExpanded}" />
-									<PathIcon Data="{StaticResource ChevronRight}"
-											  IsVisible="{Binding !IsExpanded}" />
-								</Grid>
-							</Button>
-							<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-								<Image Stretch="Uniform"
-										Source="{Binding Category.Image}"
-										IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+					<Grid>
+						<Button Classes="Expander" 
+								Command="{Binding Parent.ToggleExpand}" 
+								CommandParameter="{Binding}">
+							<Grid>
+								<PathIcon Data="{StaticResource ChevronDown}"
+										  IsVisible="{Binding IsExpanded}" />
+								<PathIcon Data="{StaticResource ChevronRight}"
+										  IsVisible="{Binding !IsExpanded}" />
+							</Grid>
+						</Button>
+
+						<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+							<i:Interaction.Behaviors>
+								<ia:EventTriggerBehavior EventName="Tapped" >
+									<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+								</ia:EventTriggerBehavior>
+								<ia:EventTriggerBehavior EventName="DoubleTapped">
+									<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
+								</ia:EventTriggerBehavior>
+							</i:Interaction.Behaviors>
+
+							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
+								<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+									<Image Stretch="Uniform"
+											Source="{Binding Category.Image}"
+											IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 									/>
-								<TextBlock Classes="Name" Text="{Binding Category.Name}" />
-							</StackPanel>
-							<TextBlock Grid.Column="3" Classes="Sum"
-									   Classes.Debet="{Binding IsDebet}"
-									   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-							<TextBlock Grid.Column="4" Classes="Sum" 
-									   Classes.Debet="{Binding IsDebet}" 
-									   Text="{Binding Percent, StringFormat=P}" />
-						</Grid>
-					</Border>
+									<TextBlock Classes="Name" Text="{Binding Category.Name}" />
+								</StackPanel>
+								<TextBlock Grid.Column="3" Classes="Sum"
+										   Classes.Debet="{Binding IsDebet}"
+										   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+								<TextBlock Grid.Column="4" Classes="Sum"
+										   Classes.Debet="{Binding IsDebet}"
+										   Text="{Binding Percent, StringFormat=P}" />
+							</Grid>
+						</Border>
+					</Grid>
 
 					<ItemsControl Margin="30 0 0 0"
 								  IsVisible="{Binding IsExpanded}"
@@ -133,38 +143,41 @@
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<StackPanel>
-									<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-										<i:Interaction.Behaviors>
-											<ia:EventTriggerBehavior EventName="Tapped">
-												<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-											</ia:EventTriggerBehavior>
-											<ia:EventTriggerBehavior EventName="DoubleTapped">
-												<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
-											</ia:EventTriggerBehavior>
-										</i:Interaction.Behaviors>
+									<Grid>
+										<Button Classes="Expander" 
+												Command="{Binding Parent.ToggleExpand}"
+												CommandParameter="{Binding}">
+											<Grid>
+												<PathIcon Data="{StaticResource ChevronDown}"
+														  IsVisible="{Binding IsExpanded}" />
+												<PathIcon Data="{StaticResource ChevronRight}"
+														  IsVisible="{Binding !IsExpanded}" />
+											</Grid>
+										</Button>
+										<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+											<i:Interaction.Behaviors>
+												<ia:EventTriggerBehavior EventName="Tapped" >
+													<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+												</ia:EventTriggerBehavior>
+												<ia:EventTriggerBehavior EventName="DoubleTapped">
+													<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
+												</ia:EventTriggerBehavior>
+											</i:Interaction.Behaviors>
 
-										<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
-											<Button Classes="Expander" Command="{Binding Parent.ToggleExpand}"
-													CommandParameter="{Binding}"
-													>
-												<Grid>
-													<PathIcon Data="{StaticResource ChevronDown}"
-															  IsVisible="{Binding IsExpanded}" />
-													<PathIcon Data="{StaticResource ChevronRight}"
-															  IsVisible="{Binding !IsExpanded}" />
-												</Grid>
-											</Button>
-											<TextBlock Grid.Column="1" Grid.ColumnSpan="2" 
-													   Classes="Name" 
-													   Text="{Binding SubCategory.Name}" />
-											<TextBlock Grid.Column="3" Classes="Sum"
-													   Classes.Debet="{Binding IsDebet}"
-													   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-											<TextBlock Grid.Column="4" Classes="Sum"
-													   Classes.Debet="{Binding IsDebet}"
-													   Text="{Binding Percent, StringFormat=P}" />
-										</Grid>
-									</Border>
+											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
+												<TextBlock Grid.Column="1" Grid.ColumnSpan="2" 
+														   Classes="Name" 
+														   Text="{Binding SubCategory.Name}">
+												</TextBlock>
+												<TextBlock Grid.Column="3" Classes="Sum"
+														   Classes.Debet="{Binding IsDebet}"
+														   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+												<TextBlock Grid.Column="4" Classes="Sum"
+														   Classes.Debet="{Binding IsDebet}"
+														   Text="{Binding Percent, StringFormat=P}" />
+											</Grid>
+										</Border>
+									</Grid>
 
 									<ItemsControl Margin="30 0 0 0"
 												  IsVisible="{Binding IsExpanded}"
@@ -177,54 +190,58 @@
 
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
-												<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-													<i:Interaction.Behaviors>
-														<ia:EventTriggerBehavior EventName="Tapped">
-															<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-														</ia:EventTriggerBehavior>
-														<ia:EventTriggerBehavior EventName="DoubleTapped">
-															<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-														</ia:EventTriggerBehavior>
-													</i:Interaction.Behaviors>
-
-													<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
-														<Button Grid.Column="0" 
-																Classes="Expander" 
-																Command="{Binding Parent.CopyCommand}"
-																CommandParameter="{Binding}"
-																ToolTip.Tip="Копировать"
-																>
-															<Svg Css="{DynamicResource SvgColor}"
-																Path="/Assets/Svg/copy.svg"/>
-														</Button>
-														<Button Grid.Column="1" 
-																Classes="Expander" 
-																ToolTip.Tip="Удалить">
-															<Button.Flyout>
-																<MenuFlyout>
-																	<MenuItem Width="200" Header="Удалить" 
-																			  Command="{Binding Parent.DeleteCommand}" 
-																			  CommandParameter="{Binding}"
+												<Grid>
+													<Button Classes="Expander"
+															Command="{Binding Parent.CopyCommand}"
+															CommandParameter="{Binding}"
+															ToolTip.Tip="Копировать">
+														<Svg Css="{DynamicResource SvgColor}"
+															Path="/Assets/Svg/copy.svg"/>
+													</Button>
+													<Button Margin="45 0 0 0" 
+															Classes="Expander"
+															ToolTip.Tip="Удалить">
+														<Button.Flyout>
+															<MenuFlyout>
+																<MenuItem Width="200" Header="Удалить"
+																		  Command="{Binding Parent.DeleteCommand}"
+																		  CommandParameter="{Binding}"
 																			  />
-																</MenuFlyout>
-															</Button.Flyout>
-															
-															<PathIcon Data="{StaticResource Trash}" />
-														</Button>
-														<TextBlock Grid.Column="2" 
-																   Classes="Name" 
-																   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
-																   TextTrimming="CharacterEllipsis"
-																   />
-														<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-														<TextBlock Grid.Column="4" Classes="Sum"
-																   Classes.Debet="{Binding IsDebet}"
-																   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-														<TextBlock Grid.Column="5" Classes="Sum"
-																   Classes.Debet="{Binding IsDebet}"
-																   Text="{Binding Percent, StringFormat=P}" />
-													</Grid>
-												</Border>
+															</MenuFlyout>
+														</Button.Flyout>
+
+														<PathIcon Data="{StaticResource Trash}" />
+													</Button>
+
+													<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
+														<i:Interaction.Behaviors>
+															<ia:EventTriggerBehavior EventName="Tapped" >
+																<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+															</ia:EventTriggerBehavior>
+														</i:Interaction.Behaviors>
+														<i:Interaction.Behaviors>
+															<ia:EventTriggerBehavior EventName="DoubleTapped">
+																<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
+															</ia:EventTriggerBehavior>
+														</i:Interaction.Behaviors>
+
+														<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
+															<TextBlock Grid.Column="2"
+																		Classes="Name"
+																		Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+																		TextTrimming="CharacterEllipsis"
+																/>
+															<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+															<TextBlock Grid.Column="4" Classes="Sum"
+																	   Classes.Debet="{Binding IsDebet}"
+																	   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+															<TextBlock Grid.Column="5" Classes="Sum"
+																	   Classes.Debet="{Binding IsDebet}"
+																	   Text="{Binding Percent, StringFormat=P}" />
+														</Grid>
+													</Border>
+
+												</Grid>
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>

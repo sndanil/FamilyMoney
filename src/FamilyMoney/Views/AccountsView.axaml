@@ -85,6 +85,8 @@
 		<Style Selector="Button.BottomButton">
 			<Setter Property="Margin" Value="5 0" />
 			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="ToolTip.Placement" Value="Top" />
+			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
 		<Style Selector="Button.Checked">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
@@ -269,8 +271,6 @@
 				<Button Command="{Binding AddGroupCommand}" 
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить группу счетов"
-						ToolTip.Placement="Top"
-						ToolTip.VerticalOffset="-5"
 						>					
 					<Svg Css="{DynamicResource SvgColor}"
 						Path="/Assets/Svg/folder-plus.svg"/>
@@ -278,16 +278,12 @@
 				<Button Command="{Binding AddElementCommand}" 
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить счёт"
-						ToolTip.Placement="Top"
-						ToolTip.VerticalOffset="-5"
 						>					
 					<PathIcon Data="{StaticResource Rectangles}" />
 				</Button>
 				<Button Command="{Binding EditCommand}" CommandParameter="{Binding SelectedAccount}"
 						Classes="BottomButton"
 						ToolTip.Tip="Изменить"
-						ToolTip.Placement="Top"
-						ToolTip.VerticalOffset="-5"
 						>					
 					<PathIcon Data="{StaticResource Edit}" />
 				</Button>
@@ -295,8 +291,6 @@
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHiddenReorder}"
 						ToolTip.Tip="Изменить порядок"
-						ToolTip.Placement="Top"
-						ToolTip.VerticalOffset="-5"
 						>					
 					<Svg Css="{DynamicResource SvgColor}"
 						Path="/Assets/Svg/up-down.svg"/>
@@ -305,8 +299,6 @@
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHidden}"
 						ToolTip.Tip="Показать скрытые"
-						ToolTip.Placement="Top"
-						ToolTip.VerticalOffset="-5"
 						>					
 					<PathIcon Data="{StaticResource Hidden}" />
 				</Button>
