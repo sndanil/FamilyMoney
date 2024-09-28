@@ -95,16 +95,14 @@ public class AccountsViewModel : ViewModelBase
         AddElementCommand = ReactiveCommand.CreateFromTask(AddElementAccount);
         EditCommand = ReactiveCommand.CreateFromTask<AccountViewModel>(EditAccount);
 
-        ShowHiddenCommand = ReactiveCommand.CreateFromTask(() =>
+        ShowHiddenCommand = ReactiveCommand.Create(() =>
         {
             ShowHidden = !ShowHidden;
-            return Task.CompletedTask;
         });
 
-        ReorderCommand = ReactiveCommand.CreateFromTask(() =>
+        ReorderCommand = ReactiveCommand.Create(() =>
         {
             ShowHiddenReorder = !ShowHiddenReorder;
-            return Task.CompletedTask;
         });
 
         NextAccount = ReactiveCommand.Create(() =>
