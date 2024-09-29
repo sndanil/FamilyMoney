@@ -12,6 +12,7 @@
              x:Class="FamilyMoney.Views.TransactionsView">
 	<UserControl.Resources>
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
+		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
@@ -164,9 +165,14 @@
 		</ScrollViewer>
 
 		<Border Classes="Total" Grid.Row="2" Margin="2">
-			<Grid ColumnDefinitions="* 100 150 100">
+			<Grid ColumnDefinitions="* 100 100 150 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
 				<TextBlock Grid.Column="2" Classes="Sum Debet"
+						   IsVisible="{Binding MultiSelectTotal, Converter={StaticResource isNotZeroConverter}}"
+						   Classes.Credit="{Binding MultiSelectTotal, Converter={StaticResource isNegativeConverter}}"
+						   Text="{Binding MultiSelectTotal, StringFormat='#,##0.00'}"
+						/>
+				<TextBlock Grid.Column="3" Classes="Sum Debet"
 						   Classes.Credit="{Binding Total, Converter={StaticResource isNegativeConverter}}"
 						   Text="{Binding Total, StringFormat='#,##0.00'}"
 						/>

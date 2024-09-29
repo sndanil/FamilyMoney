@@ -24,6 +24,7 @@
     <None Remove="Assets\Svg\copy.svg" />
     <None Remove="Assets\Svg\folder-plus.svg" />
     <None Remove="Assets\Svg\image.svg" />
+    <None Remove="Assets\Svg\multi-select.svg" />
     <None Remove="Assets\Svg\reorder.svg" />
     <None Remove="Assets\Svg\transactions-tree.svg" />
     <None Remove="Assets\Svg\up-down.svg" />

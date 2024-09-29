@@ -144,7 +144,7 @@
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
 
-						<StackPanel Orientation="Horizontal" Grid.Column="2">
+						<StackPanel Orientation="Horizontal" Grid.Column="2" ZIndex="10">
 
 							<ToggleButton IsChecked="{Binding ShowTransactionsTree}" 
 										  Height="30" 
@@ -179,7 +179,14 @@
 								Command="{Binding Transactions.ClearSelectionCommand}" />
 
 						</StackPanel>
-
+						<StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Right">
+							<ToggleButton IsChecked="{Binding Transactions.EnableMultiSelect}"
+										  Height="30"
+										  VerticalAlignment="Center"
+										  Margin="5 0">
+								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/multi-select.svg"/>
+							</ToggleButton >
+						</StackPanel>
 
 						<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
 

@@ -25,6 +25,8 @@ public class TransactionsViewModel : ViewModelBase
     private readonly IStateManager _stateManager;
     private readonly IGlobalConfiguration _configuration;
     private decimal _total = 0m;
+    private bool _enableMultiSelect = false;
+    private decimal _multiSelectTotal = 0;
 
     private DateTime _lastTransactionDate = DateTime.Today;
 
@@ -40,6 +42,7 @@ public class TransactionsViewModel : ViewModelBase
     private ObservableCollection<TransactionsByDatesGroup> _transactionsDyDates = [];
 
     private BaseTransactionsGroupViewModel? _selectedTransactionGroup = null;
+    private readonly ObservableCollection<BaseTransactionsGroupViewModel> _selectedTransactionGroups = [];
 
     public SummaryTransactionsGroup DebetTransactions
     {
@@ -89,11 +92,29 @@ public class TransactionsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _total, value);
     }
 
+    public bool EnableMultiSelect
+    {
+        get => _enableMultiSelect;
+        set => this.RaiseAndSetIfChanged(ref _enableMultiSelect, value);
+    }
+
+    public decimal MultiSelectTotal
+    {
+        get => _multiSelectTotal;
+        set => this.RaiseAndSetIfChanged(ref _multiSelectTotal, value);
+    }
+
     public BaseTransactionsGroupViewModel? SelectedTransactionGroup
     {
         get => _selectedTransactionGroup;
         set => this.RaiseAndSetIfChanged(ref _selectedTransactionGroup, value);
     }
+
+    public ObservableCollection<BaseTransactionsGroupViewModel> SelectedTransactionGroups
+    {
+        get => _selectedTransactionGroups;
+    }
+
 
     public TransactionsViewModel(IRepository repository, IStateManager stateManager, IGlobalConfiguration configuration)
     {
@@ -127,10 +148,23 @@ public class TransactionsViewModel : ViewModelBase
 
         SelectCommand = ReactiveCommand.Create((BaseTransactionsGroupViewModel child) =>
         {
-            ClearSelection();
-            SelectedTransactionGroup = child;
-            SelectedTransactionGroup.IsSelected = true;
+            if (!EnableMultiSelect)
+                ClearSelection();
+
+            child.IsSelected = !child.IsSelected;
+            if (child.IsSelected)
+            {
+                SelectedTransactionGroups.Add(child);
+            }
+            else
+            {
+                SelectedTransactionGroups.Remove(child);
+            }
+
+            SelectedTransactionGroup = SelectedTransactionGroups.LastOrDefault();
         });
+
+        SelectedTransactionGroups.CollectionChanged += (sender, e) => MultiSelectTotal = SelectedTransactionGroups.Sum(g => g.IsDebet ? g.Sum : -g.Sum);
 
         EditCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
         {
@@ -470,6 +504,12 @@ public class TransactionsViewModel : ViewModelBase
             SelectedTransactionGroup.IsSelected = false;
             SelectedTransactionGroup = null;
         }
+
+        foreach (var item in SelectedTransactionGroups)
+        {
+            item.IsSelected = false;
+        }
+        SelectedTransactionGroups.Clear();
     }
 
     private void RefreshTransactions(MainState state)
