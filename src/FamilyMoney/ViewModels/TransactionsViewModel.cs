@@ -148,7 +148,7 @@ public class TransactionsViewModel : ViewModelBase
 
         SelectCommand = ReactiveCommand.Create((BaseTransactionsGroupViewModel child) =>
         {
-            if (!EnableMultiSelect)
+            if (!EnableMultiSelect && (SelectedTransactionGroups.Count > 1 || child != SelectedTransactionGroup))
                 ClearSelection();
 
             child.IsSelected = !child.IsSelected;
@@ -164,7 +164,25 @@ public class TransactionsViewModel : ViewModelBase
             SelectedTransactionGroup = SelectedTransactionGroups.LastOrDefault();
         });
 
-        SelectedTransactionGroups.CollectionChanged += (sender, e) => MultiSelectTotal = SelectedTransactionGroups.Sum(g => g.IsDebet ? g.Sum : -g.Sum);
+        var transactionsFilter = new Func<BaseTransactionsGroupViewModel, bool>((t) => 
+        {
+            if (t is TransactionRowViewModel row)
+            {
+                return !(SelectedTransactionGroups.OfType<CategoryTransactionsGroupViewModel>().Any(ct => ct.Category?.Id == row.Category?.Id)
+                    || SelectedTransactionGroups.OfType<SubCategoryTransactionsGroupViewModel>().Any(ct => ct.SubCategory?.Id == row.SubCategory?.Id));
+            }
+
+            if (t is SubCategoryTransactionsGroupViewModel subCategory)
+            {
+                return !SelectedTransactionGroups.OfType<CategoryTransactionsGroupViewModel>()
+                    .Any(ct => ct.SubCategories.Any(s => s.SubCategory?.Id == subCategory.SubCategory?.Id));
+            }
+
+            return true;
+        });
+        SelectedTransactionGroups.CollectionChanged += (sender, e) => MultiSelectTotal = SelectedTransactionGroups
+                                                                                            .Where(transactionsFilter)
+                                                                                            .Sum(g => g.IsDebet ? g.Sum : -g.Sum);
 
         EditCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
         {
