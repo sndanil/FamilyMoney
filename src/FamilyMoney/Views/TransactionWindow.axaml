@@ -255,6 +255,8 @@
 			  >
 			<TextBlock Text="Комментарий" Classes="Label" VerticalAlignment="Top" />
 			<TextBox Grid.Column="1" 
+					 AcceptsReturn="True"
+					 TextWrapping="Wrap"
 					 Text="{Binding Comment}" 
 					 />
 
