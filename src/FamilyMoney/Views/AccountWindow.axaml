@@ -37,7 +37,7 @@
 		<Svg Grid.Row="2"
 			 VerticalAlignment="Stretch"
 			 HorizontalAlignment="Stretch"
-			 Css="{DynamicResource SvgColor}"
+			 Css="{DynamicResource SvgColorGray}"
 			 IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"			 
 			 Path="/Assets/Svg/image.svg"/>
 

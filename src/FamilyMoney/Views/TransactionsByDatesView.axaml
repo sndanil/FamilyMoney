@@ -77,13 +77,14 @@
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Foreground" Value="Gray" />
 		</Style>
 		<Style Selector="Svg">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
-			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
+			<Setter Property="Css" Value="{DynamicResource SvgColorGray}" />
 		</Style>
 		<Style Selector="Button.Expander">
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
@@ -138,7 +139,7 @@
 													Command="{Binding Parent.CopyCommand}"
 													CommandParameter="{Binding}"
 													ToolTip.Tip="Копировать">
-												<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/copy.svg"/>
+												<Svg Path="/Assets/Svg/copy.svg"/>
 											</Button>
 
 											<Button Margin="40 0 0 0" Classes="Expander" ToolTip.Tip="Удалить">

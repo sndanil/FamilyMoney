@@ -30,6 +30,7 @@
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Foreground" Value="Gray"/>
 		</Style>
 		<Style Selector="Svg">
 			<Setter Property="Height" Value="14" />
@@ -37,6 +38,9 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
+		</Style>
+		<Style Selector="Button.Expander Svg">
+			<Setter Property="Css" Value="{DynamicResource SvgColorGray}" />
 		</Style>
 		<Style Selector="Image">
 			<Setter Property="Height" Value="20" />

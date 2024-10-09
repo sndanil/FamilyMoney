@@ -81,6 +81,10 @@
 		</Style>
 		<Style Selector="PathIcon">
 			<Setter Property="Height" Value="11"/>
+			<Setter Property="Foreground" Value="Gray"/>
+		</Style>
+		<Style Selector="Svg">
+			<Setter Property="Css" Value="{DynamicResource SvgColorGray}"/>
 		</Style>
 		<Style Selector="Button.BottomButton">
 			<Setter Property="Margin" Value="5 0" />
@@ -169,8 +173,7 @@
 								</i:Interaction.Behaviors>
 
 								<Grid ColumnDefinitions="auto auto * auto">
-									<Svg Css="{DynamicResource SvgColor}"
-											Path="/Assets/Svg/reorder.svg"
+									<Svg Path="/Assets/Svg/reorder.svg"
 											PointerPressed="OnPointerPressed"
 											IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 									<Image Grid.Column="1" Stretch="Uniform"
@@ -229,8 +232,7 @@
 											</i:Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="auto auto * auto">
-												<Svg Css="{DynamicResource SvgColor}" 
-														Path="/Assets/Svg/reorder.svg" 
+												<Svg Path="/Assets/Svg/reorder.svg" 
 														PointerPressed="OnPointerPressed"
 														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 												<Image Grid.Column="1" Stretch="Uniform"
@@ -272,8 +274,7 @@
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить группу счетов"
 						>					
-					<Svg Css="{DynamicResource SvgColor}"
-						Path="/Assets/Svg/folder-plus.svg"/>
+					<Svg Path="/Assets/Svg/folder-plus.svg"/>
 				</Button>
 				<Button Command="{Binding AddElementCommand}" 
 						Classes="BottomButton"
@@ -292,8 +293,7 @@
 						Classes.Checked="{Binding ShowHiddenReorder}"
 						ToolTip.Tip="Изменить порядок"
 						>					
-					<Svg Css="{DynamicResource SvgColor}"
-						Path="/Assets/Svg/up-down.svg"/>
+					<Svg Path="/Assets/Svg/up-down.svg"/>
 				</Button>
 				<Button Command="{Binding ShowHiddenCommand}" 						
 						Classes="BottomButton"

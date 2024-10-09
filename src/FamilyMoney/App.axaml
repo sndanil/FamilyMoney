@@ -15,10 +15,12 @@
 			<ResourceDictionary.ThemeDictionaries>
 				<ResourceDictionary x:Key='Light'>
 					<system:String x:Key='SvgColor'>.color { stroke: black; fill: black; }</system:String>
+					<system:String x:Key='SvgColorGray'>.color { stroke: gray; fill: gray; }</system:String>
 					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key='Dark'>
 					<system:String x:Key='SvgColor'>.color { stroke: white; fill: white; }</system:String>
+					<system:String x:Key='SvgColorGray'>.color { stroke: gray; fill: gray; }</system:String>
 					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
 				</ResourceDictionary>
 			</ResourceDictionary.ThemeDictionaries>		</ResourceDictionary>
