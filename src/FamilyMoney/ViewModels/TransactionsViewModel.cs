@@ -186,7 +186,7 @@ public class TransactionsViewModel : ViewModelBase
 
         EditCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
         {
-            await EditTransaction();
+            await EditTransaction(child);
         });
 
         CopyCommand = ReactiveCommand.Create((TransactionRowViewModel child) =>
@@ -390,9 +390,9 @@ public class TransactionsViewModel : ViewModelBase
         return transactionViewModel;
     }
 
-    private async Task EditTransaction()
+    private async Task EditTransaction(TransactionRowViewModel row)
     {
-        if (SelectedTransactionGroup is not TransactionRowViewModel transactionGroupViewModel)
+        if ((SelectedTransactionGroup ?? row) is not TransactionRowViewModel transactionGroupViewModel)
         {
             return;
         }
