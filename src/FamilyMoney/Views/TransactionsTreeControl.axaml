@@ -70,13 +70,13 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
-		<Style Selector="TextBlock.Sum">
+		<Style Selector="SelectableTextBlock.Sum">
 			<Setter Property="FontFamily" Value="Verdana" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
-		<Style Selector="TextBlock.Debet">
+		<Style Selector="SelectableTextBlock.Debet">
 			<Setter Property="Foreground" Value="#3BCE5E" />
 		</Style>
 		<Style Selector="TextBlock.Name">
@@ -125,10 +125,10 @@
 									/>
 									<TextBlock Classes="Name" Text="{Binding Category.Name}" />
 								</StackPanel>
-								<TextBlock Grid.Column="3" Classes="Sum"
+								<SelectableTextBlock Grid.Column="3" Classes="Sum"
 										   Classes.Debet="{Binding IsDebet}"
 										   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-								<TextBlock Grid.Column="4" Classes="Sum"
+								<SelectableTextBlock Grid.Column="4" Classes="Sum"
 										   Classes.Debet="{Binding IsDebet}"
 										   Text="{Binding Percent, StringFormat=P}" />
 							</Grid>
@@ -173,10 +173,10 @@
 														   Classes="Name" 
 														   Text="{Binding SubCategory.Name}">
 												</TextBlock>
-												<TextBlock Grid.Column="3" Classes="Sum"
+												<SelectableTextBlock Grid.Column="3" Classes="Sum"
 														   Classes.Debet="{Binding IsDebet}"
 														   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-												<TextBlock Grid.Column="4" Classes="Sum"
+												<SelectableTextBlock Grid.Column="4" Classes="Sum"
 														   Classes.Debet="{Binding IsDebet}"
 														   Text="{Binding Percent, StringFormat=P}" />
 											</Grid>
@@ -236,10 +236,10 @@
 																		TextTrimming="CharacterEllipsis"
 																/>
 															<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-															<TextBlock Grid.Column="4" Classes="Sum"
+															<SelectableTextBlock Grid.Column="4" Classes="Sum"
 																	   Classes.Debet="{Binding IsDebet}"
 																	   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-															<TextBlock Grid.Column="5" Classes="Sum"
+															<SelectableTextBlock Grid.Column="5" Classes="Sum"
 																	   Classes.Debet="{Binding IsDebet}"
 																	   Text="{Binding Percent, StringFormat=P}" />
 														</Grid>

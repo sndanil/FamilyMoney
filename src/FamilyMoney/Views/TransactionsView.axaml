@@ -80,26 +80,26 @@
 		<Style Selector="Border.Total TextBlock.Title">
 			<Setter Property="Margin" Value="5 0 0 0" />
 		</Style>
-		<Style Selector="Border.Total TextBlock.Sum">
+		<Style Selector="Border.Total SelectableTextBlock.Sum">
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
-		<Style Selector="Border.Total TextBlock.Debet">
+		<Style Selector="Border.Total SelectableTextBlock.Debet">
 			<Setter Property="Foreground" Value="#3BCE5E" />
 		</Style>
-		<Style Selector="Border.Total TextBlock.Credit">
+		<Style Selector="Border.Total SelectableTextBlock.Credit">
 			<Setter Property="Foreground" Value="Red" />
 		</Style>
-		<Style Selector="TextBlock.Sum">
+		<Style Selector="SelectableTextBlock.Sum">
 			<Setter Property="FontFamily" Value="Verdana" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
-		<Style Selector="TextBlock.Debet">
+		<Style Selector="SelectableTextBlock.Debet">
 			<Setter Property="Foreground" Value="#3BCE5E" />
 		</Style>
-		<Style Selector="TextBlock.Credit">
+		<Style Selector="SelectableTextBlock.Credit">
 			<Setter Property="Foreground" Value="Red" />
 		</Style>
 		<Style Selector="TextBlock.Name">
@@ -130,7 +130,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<TextBlock Classes="Title" MinWidth="70">Доходы</TextBlock>
-						<TextBlock Grid.Column="2"
+						<SelectableTextBlock Grid.Column="2"
 								   Classes="Sum Debet"
 								   Text="{Binding DebetTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
@@ -142,7 +142,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<TextBlock Classes="Title" MinWidth="70">Расходы</TextBlock>
-						<TextBlock Grid.Column="2" Classes="Sum Credit"
+						<SelectableTextBlock Grid.Column="2" Classes="Sum Credit"
 								   Text="{Binding CreditTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
 					</Grid>
@@ -153,7 +153,7 @@
 				<Border Classes="Total">
 					<Grid ColumnDefinitions="* 100 150 100">
 						<TextBlock Classes="Title" MinWidth="70">Переводы</TextBlock>
-						<TextBlock Grid.Column="2" Classes="Sum"
+						<SelectableTextBlock Grid.Column="2" Classes="Sum"
 								   Text="{Binding TransferTransactions.Sum, StringFormat='#,##0.00'}"
 						   />
 					</Grid>
@@ -167,12 +167,12 @@
 		<Border Classes="Total" Grid.Row="2" Margin="2">
 			<Grid ColumnDefinitions="* 100 100 150 100">
 				<TextBlock Classes="Title">Итог</TextBlock>
-				<TextBlock Grid.Column="2" Classes="Sum Debet"
+				<SelectableTextBlock Grid.Column="2" Classes="Sum Debet"
 						   IsVisible="{Binding MultiSelectTotal, Converter={StaticResource isNotZeroConverter}}"
 						   Classes.Credit="{Binding MultiSelectTotal, Converter={StaticResource isNegativeConverter}}"
 						   Text="{Binding MultiSelectTotal, StringFormat='#,##0.00'}"
 						/>
-				<TextBlock Grid.Column="3" Classes="Sum Debet"
+				<SelectableTextBlock Grid.Column="3" Classes="Sum Debet"
 						   Classes.Credit="{Binding Total, Converter={StaticResource isNegativeConverter}}"
 						   Text="{Binding Total, StringFormat='#,##0.00'}"
 						/>

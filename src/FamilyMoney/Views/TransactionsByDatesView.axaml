@@ -56,13 +56,13 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
 		</Style>
-		<Style Selector="TextBlock.Sum">
+		<Style Selector="SelectableTextBlock.Sum">
 			<Setter Property="FontFamily" Value="Verdana" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
-		<Style Selector="TextBlock.Debet">
+		<Style Selector="SelectableTextBlock.Debet">
 			<Setter Property="Foreground" Value="#3BCE5E" />
 		</Style>
 		<Style Selector="Image">
@@ -116,7 +116,7 @@
 								<TextBlock Classes="Title"
 										   MinWidth="70"
 										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-								<TextBlock Grid.Column="1"
+								<SelectableTextBlock Grid.Column="1"
 										   Classes="Sum"
 										   Classes.Debet="{Binding IsDebet}"
 										   Classes.Negative="{Binding !IsDebet}"
@@ -174,7 +174,7 @@
 													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
 													<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}" />
-													<TextBlock Grid.Column="6"
+													<SelectableTextBlock Grid.Column="6"
 															   Classes="Sum"
 															   Classes.Debet="{Binding IsDebet}"
 															   Text="{Binding Sum, StringFormat='#,##0.00'}" />

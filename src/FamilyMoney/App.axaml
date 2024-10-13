@@ -48,6 +48,10 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 
+		<Style Selector="SelectableTextBlock.Negative">
+			<Setter Property="Foreground" Value="Red" />
+		</Style>
+
 		<Style Selector="TextBlock.Negative">
 			<Setter Property="Foreground" Value="Red" />
 		</Style>
