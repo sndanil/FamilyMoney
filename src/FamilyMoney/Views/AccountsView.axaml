@@ -71,7 +71,10 @@
 			<Setter Property="Margin" Value="20 5 0 5" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
-		<Style Selector="Border.Account TextBlock#AccountSum">
+		<Style Selector="Border.Account TextBlock.Group">
+			<Setter Property="FontWeight" Value="Bold" />
+		</Style>
+		<Style Selector="Border.Account SelectableTextBlock#AccountSum">
 			<Setter Property="Margin" Value="0 0 15 0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
@@ -130,7 +133,7 @@
 						IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 						/>
 				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
-				<TextBlock Grid.Column="2" 
+				<SelectableTextBlock Grid.Column="2" 
 						   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
 						   FontWeight="Bold"
 						   Text="{Binding Sum, StringFormat='#,##0.00'}" 
@@ -180,10 +183,12 @@
 											Source="{Binding Image}"
 											IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 											/>
-									<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" 
+									<TextBlock Grid.Column="2" 
+											   TextTrimming="CharacterEllipsis" 
+											   Classes.Group="{Binding IsGroup}" 
 											   Text="{Binding Name}" 
 											   Name="AccountName"/>
-									<TextBlock Grid.Column="3" 
+									<SelectableTextBlock Grid.Column="3" 											   
 												Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
 											   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 											   Name="AccountSum">
@@ -193,7 +198,7 @@
 												<Binding Path="!IsGroup" />
 											</MultiBinding>
 										</TextBlock.IsVisible>
-									</TextBlock>
+									</SelectableTextBlock>
 								</Grid>
 							</Border>
 							<ItemsControl ItemsSource="{Binding Children}" Classes="Children">
@@ -240,7 +245,7 @@
 														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
 													/>
 												<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" />
-												<TextBlock Grid.Column="3" 
+												<SelectableTextBlock Grid.Column="3" 
 															Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
 														   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 														   Name="AccountSum"/>
