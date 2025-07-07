@@ -21,6 +21,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        dotnet restore
-        dotnet pack ./src/FamilyMoney.sln --no-restore
+        dotnet restore ./src/FamilyMoney/FamilyMoney.csproj
+        dotnet pack ./src/FamilyMoney/FamilyMoney.csproj --no-restore
         gh release create Release ./src/bin/Release/net8.0/FamilyMoney.exe
