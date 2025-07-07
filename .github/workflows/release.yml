@@ -23,4 +23,5 @@ jobs:
       run: |
         dotnet restore ./src/FamilyMoney/FamilyMoney.csproj
         dotnet pack ./src/FamilyMoney/FamilyMoney.csproj --no-restore
+        ls -r
         gh release create Release ./src/FamilyMoney/bin/Release/net8.0/win-x64/FamilyMoney.exe
