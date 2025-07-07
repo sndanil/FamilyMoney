@@ -26,4 +26,5 @@ jobs:
         dotnet restore ./src/FamilyMoney/FamilyMoney.csproj
         dotnet pack ./src/FamilyMoney/FamilyMoney.csproj --no-restore
         Compress-Archive ./src/FamilyMoney/bin/Release/net8.0/win-x64 ./FamilyMoney.zip 
+        echo $NOW
         gh release create $NOW ./FamilyMoney.zip 
