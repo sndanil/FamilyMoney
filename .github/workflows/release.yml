@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    - name: Restore dependencies
+      run: |
+        dotnet restore
+    - name: Build
+      run: |
+        dotnet build --no-restore
+    - name: Test
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        dotnet pack ./src/FamilyMoney.sln --no-restore | echo
+        gh release create Release ./src/bin/Release/net8.0/FamilyMoney.exe
