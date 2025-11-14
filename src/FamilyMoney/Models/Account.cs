@@ -18,6 +18,8 @@ public sealed class Account
 
     public bool IsHidden { get; set; }
 
+    public bool IsExpanded { get; set; }
+
     public bool IsNotSummable { get; set; }
 }
 

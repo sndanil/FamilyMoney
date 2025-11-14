@@ -179,6 +179,18 @@ public class AccountsViewModel : ViewModelBase
                 this.RaisePropertyChanged(nameof(SelectedAccount));
             });
 
+        MessageBus.Current.Listen<AccountExpandMessage>()
+            .Where(m => m != null)
+            .Subscribe(m =>
+            {
+                var flatAccounts = _stateManager.GetMainState().FlatAccounts;
+                var account = flatAccounts.FirstOrDefault(a => a.Id == m.AccountId);
+                if (account != null)
+                {
+                    Save(null, account);
+                }
+            });
+
         MessageBus.Current.Listen<TransactionChangedMessage>()
             .Where(m => m != null)
             .Subscribe(m =>
@@ -409,6 +421,7 @@ public class AccountsViewModel : ViewModelBase
             Name = other.Name,
             IsGroup = other.IsGroup,
             IsHidden = other.IsHidden,
+            IsExpanded = other.IsExpanded,
             IsNotSummable = other.IsNotSummable,
             Sum = other.IsGroup ? 0 : other.Sum,
             Order = (other.Parent ?? Total).Children

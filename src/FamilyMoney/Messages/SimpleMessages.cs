@@ -6,6 +6,8 @@ namespace FamilyMoney.Messages;
 
 public record AccountSelectMessage(Guid? AccountId);
 
+public record AccountExpandMessage(Guid? AccountId, bool IsExpanded);
+
 public record MainStateChangedMessage(MainState State);
 
 public record CategoryUpdateMessage(Guid? CategoryId);

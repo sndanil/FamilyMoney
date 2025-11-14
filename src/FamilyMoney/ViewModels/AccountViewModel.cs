@@ -31,10 +31,13 @@ public class AccountViewModel : ViewModelBase
     private bool _isSelected = false;
     private bool _isGroup = false;
     private bool _isHidden = false;
+    private bool _isExpanded = true;
     private bool _isNotSummable = false;
     private readonly ObservableCollection<AccountViewModel> _children = [];
 
     public ICommand SelectCommand { get; }
+
+    public ICommand ToggleExpandCommand { get; }
 
     public ReactiveCommand<Unit, AccountViewModel?> OkCommand { get; }
 
@@ -78,6 +81,12 @@ public class AccountViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isGroup, value);
     }
 
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+    }
+
     public bool IsHidden
     {
         get => _isHidden;
@@ -108,6 +117,13 @@ public class AccountViewModel : ViewModelBase
         SelectCommand = ReactiveCommand.CreateFromTask(() =>
         {
             MessageBus.Current.SendMessage(new AccountSelectMessage(Id));
+            return Task.CompletedTask;
+        });
+
+        ToggleExpandCommand = ReactiveCommand.CreateFromTask(() =>
+        {
+            this.IsExpanded = !this.IsExpanded;
+            MessageBus.Current.SendMessage(new AccountExpandMessage(Id, IsExpanded));
             return Task.CompletedTask;
         });
 
@@ -160,6 +176,7 @@ public class AccountViewModel : ViewModelBase
         Sum = account.Sum;
         IsGroup = account.IsGroup;
         IsHidden = account.IsHidden;
+        IsExpanded = account.IsExpanded;
         IsNotSummable = account.IsNotSummable;
         Image = ImageConverter.ToImage(repository.TryGetImage(account.Id));
     }
