@@ -9,7 +9,7 @@ public class CategoryTransactionsGroupViewModel : BaseTransactionsGroupViewModel
 
     public BaseCategoryViewModel? Category { get; init; }
 
-    public List<SubCategoryTransactionsGroupViewModel> SubCategories { get; } = [];
+    public List<SubCategoryTransactionsGroupViewModel> SubCategories { get; set; } = [];
 
     public SubCategoryTransactionsGroupViewModel TryAddSubCategory(Guid subCategoryId, Func<SubCategoryTransactionsGroupViewModel> factory)
     {

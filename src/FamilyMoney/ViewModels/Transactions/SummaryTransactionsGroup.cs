@@ -39,6 +39,8 @@ public sealed class SummaryTransactionsGroup : ViewModelBase
                     transaction.Percent = Math.Round(transaction.Sum / Sum, 4, MidpointRounding.AwayFromZero);
                 }
             }
+
+            category.SubCategories = [.. category.SubCategories.OrderByDescending(sc => sc.Percent)];
         }
 
         Categories = [.. Categories.OrderByDescending(c => c.Percent)];
