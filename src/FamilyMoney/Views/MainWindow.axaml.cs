@@ -27,7 +27,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
     }
 
-    private async Task DoShowCustomPeriodDialogAsync(InteractionContext<CustomPeriodViewModel, CustomPeriodViewModel?> interaction)
+    private async Task DoShowCustomPeriodDialogAsync(IInteractionContext<CustomPeriodViewModel, CustomPeriodViewModel?> interaction)
     {
         var dialog = new CustomPeriodWindow();
         dialog.DataContext = interaction.Input;
@@ -36,7 +36,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowAccountEditDialogAsync(InteractionContext<AccountViewModel, AccountViewModel?> interaction)
+    private async Task DoShowAccountEditDialogAsync(IInteractionContext<AccountViewModel, AccountViewModel?> interaction)
     {
         var dialog = new AccountWindow();
         dialog.DataContext = interaction.Input;
@@ -45,7 +45,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowCategoryEditDialogAsync(InteractionContext<BaseCategoryViewModel, BaseCategoryViewModel?> interaction)
+    private async Task DoShowCategoryEditDialogAsync(IInteractionContext<BaseCategoryViewModel, BaseCategoryViewModel?> interaction)
     {
         var dialog = new CategoryWindow();
         dialog.DataContext = interaction.Input;
@@ -54,7 +54,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowTransactionEditDialogAsync(InteractionContext<BaseTransactionViewModel, BaseTransactionViewModel?> interaction)
+    private async Task DoShowTransactionEditDialogAsync(IInteractionContext<BaseTransactionViewModel, BaseTransactionViewModel?> interaction)
     {
         var dialog = new TransactionWindow();
         dialog.DataContext = interaction.Input;

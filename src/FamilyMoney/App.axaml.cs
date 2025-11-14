@@ -40,6 +40,8 @@ public partial class App : Application
             {
                 GlobalHost.Dispose();
             };
+
+            GlobalHost.RunAsync();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -63,7 +65,7 @@ public partial class App : Application
           })
           .ConfigureLogging((hostingContext, builder) =>
           {
-              builder.AddSplat();
+              //builder.AddSplat();
               builder.AddNLog(hostingContext.Configuration);
           })
           .Build();
