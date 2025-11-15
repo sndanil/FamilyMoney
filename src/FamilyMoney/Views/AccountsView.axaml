@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:cv="using:FamilyMoney.Converters"
@@ -85,9 +86,6 @@
 			<Setter Property="Height" Value="11"/>
 			<Setter Property="Foreground" Value="Gray"/>
 		</Style>
-		<Style Selector="Svg">
-			<Setter Property="Css" Value="{DynamicResource SvgColorGray}"/>
-		</Style>
 		<Style Selector="Button.BottomButton">
 			<Setter Property="Margin" Value="5 0" />
 			<Setter Property="Background" Value="Transparent"/>
@@ -115,7 +113,7 @@
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
-		<Style Selector="PathIcon">
+		<Style Selector="iconPacks|PackIconBootstrapIcons">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -203,17 +201,15 @@
 								</i:Interaction.Behaviors>
 
 								<Grid ColumnDefinitions="auto auto * auto">
-									<Svg Path="/Assets/Svg/reorder.svg"
+									<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" 
 											PointerPressed="OnPointerPressed"
 											IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 									<Button Grid.Column="1" Classes="Expander" 
 											IsVisible="{Binding IsGroup}"
 											Command="{Binding ToggleExpandCommand}">
 										<Grid>
-											<PathIcon Data="{StaticResource ChevronDown}"
-													  IsVisible="{Binding IsExpanded}" />
-											<PathIcon Data="{StaticResource ChevronRight}"
-													  IsVisible="{Binding !IsExpanded}" />
+											<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+											<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 										</Grid>
 									</Button>
 									<StackPanel Orientation="Horizontal" 
@@ -281,7 +277,7 @@
 											</i:Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="auto auto * auto">
-												<Svg Path="/Assets/Svg/reorder.svg" 
+												<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" 
 														PointerPressed="OnPointerPressed"
 														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
 												<Image Grid.Column="1" Stretch="Uniform"
@@ -323,33 +319,33 @@
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить группу счетов"
 						>					
-					<Svg Path="/Assets/Svg/folder-plus.svg"/>
+					<iconPacks:PackIconBootstrapIcons Kind="FolderPlus" />
 				</Button>
 				<Button Command="{Binding AddElementCommand}" 
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить счёт"
 						>					
-					<PathIcon Data="{StaticResource Rectangles}" />
+					<iconPacks:PackIconBootstrapIcons Kind="CreditCard" />
 				</Button>
 				<Button Command="{Binding EditCommand}" CommandParameter="{Binding SelectedAccount}"
 						Classes="BottomButton"
 						ToolTip.Tip="Изменить"
 						>					
-					<PathIcon Data="{StaticResource Edit}" />
+					<iconPacks:PackIconBootstrapIcons Kind="PencilSquare" />
 				</Button>
 				<Button Command="{Binding ReorderCommand}"
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHiddenReorder}"
 						ToolTip.Tip="Изменить порядок"
 						>					
-					<Svg Path="/Assets/Svg/up-down.svg"/>
+					<iconPacks:PackIconBootstrapIcons Kind="ArrowsExpand" />
 				</Button>
 				<Button Command="{Binding ShowHiddenCommand}" 						
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHidden}"
 						ToolTip.Tip="Показать скрытые"
 						>					
-					<PathIcon Data="{StaticResource Hidden}" />
+					<iconPacks:PackIconBootstrapIcons Kind="EyeSlash" />
 				</Button>
 			</StackPanel>
 		</Border>

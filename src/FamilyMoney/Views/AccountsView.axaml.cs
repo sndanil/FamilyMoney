@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Svg.Skia;
 using FamilyMoney.ViewModels;
 
 namespace FamilyMoney.Views;

@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
         xmlns:vm="using:FamilyMoney.ViewModels"
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
@@ -41,7 +42,7 @@
 		<Style Selector="Border.SideBarMenuItem:disabled">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
-		<Style Selector="Border.SideBarMenuItem PathIcon">
+		<Style Selector="Border.SideBarMenuItem iconPacks|PackIconBootstrapIcons">
 			<Setter Property="Width" Value="14"/>
 		</Style>
 		<Style Selector="Button.AddButton">
@@ -69,13 +70,13 @@
 						Margin="7 12"
 						Background="Transparent"
 						Command="{Binding TriggerPaneCommand}">
-					<PathIcon Height="11" Data="{StaticResource LineHorizontal3Regular}" />
+					<iconPacks:PackIconBootstrapIcons Kind="List" />
 				</Button>
 
 				<StackPanel Classes="SideBarMenu">
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<PathIcon Data="{StaticResource HomeRegular}" />
+							<iconPacks:PackIconBootstrapIcons Kind="House" />
 							<TextBlock Text="Главная" />
 						</StackPanel>
 
@@ -96,7 +97,7 @@
 
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<PathIcon Data="{StaticResource Categories}" />
+							<iconPacks:PackIconBootstrapIcons Kind="Bookmark" />
 							<TextBlock Text="Категории" />
 						</StackPanel>
 
@@ -117,7 +118,7 @@
 
 					<Border Classes="SideBarMenuItem" Name="ImportButton">
 						<StackPanel>
-							<PathIcon Data="{StaticResource Import}" />
+							<iconPacks:PackIconBootstrapIcons Kind="DatabaseUp" />
 							<TextBlock Text="Импорт" />
 						</StackPanel>
 						
@@ -150,14 +151,14 @@
 										  Height="30" 
 										  VerticalAlignment="Center" 
 										  Margin="5 0">
-								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/transactions-tree.svg"/>
+								<iconPacks:PackIconBootstrapIcons Kind="ListNested" />
 							</ToggleButton >
 
 							<ToggleButton IsChecked="{Binding !ShowTransactionsTree}"
 										  Height="30" 
 										  VerticalAlignment="Center" 
 										  Margin="10 0">
-								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/calendar-check.svg"/>
+								<iconPacks:PackIconBootstrapIcons Kind="CalendarCheck" />
 							</ToggleButton >
 
 							<views:PeriodView DataContext="{Binding Period}" Margin="10 0 0 0" />
@@ -184,7 +185,7 @@
 										  Height="30"
 										  VerticalAlignment="Center"
 										  Margin="5 0">
-								<Svg Css="{DynamicResource SvgColor}" Path="/Assets/Svg/multi-select.svg"/>
+								<iconPacks:PackIconBootstrapIcons Kind="ListCheck" />
 							</ToggleButton >
 						</StackPanel>
 

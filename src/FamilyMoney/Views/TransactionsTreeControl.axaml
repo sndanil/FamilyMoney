@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
@@ -25,22 +26,12 @@
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
-		<Style Selector="PathIcon">
+		<Style Selector="iconPacks|PackIconBootstrapIcons">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Foreground" Value="Gray"/>
-		</Style>
-		<Style Selector="Svg">
-			<Setter Property="Height" Value="14" />
-			<Setter Property="Width" Value="14" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
-			<Setter Property="Css" Value="{DynamicResource SvgColor}" />
-		</Style>
-		<Style Selector="Button.Expander Svg">
-			<Setter Property="Css" Value="{DynamicResource SvgColorGray}" />
 		</Style>
 		<Style Selector="Image">
 			<Setter Property="Height" Value="20" />
@@ -100,10 +91,8 @@
 								Command="{Binding Parent.ToggleExpand}" 
 								CommandParameter="{Binding}">
 							<Grid>
-								<PathIcon Data="{StaticResource ChevronDown}"
-										  IsVisible="{Binding IsExpanded}" />
-								<PathIcon Data="{StaticResource ChevronRight}"
-										  IsVisible="{Binding !IsExpanded}" />
+								<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+								<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 							</Grid>
 						</Button>
 
@@ -152,10 +141,8 @@
 												Command="{Binding Parent.ToggleExpand}"
 												CommandParameter="{Binding}">
 											<Grid>
-												<PathIcon Data="{StaticResource ChevronDown}"
-														  IsVisible="{Binding IsExpanded}" />
-												<PathIcon Data="{StaticResource ChevronRight}"
-														  IsVisible="{Binding !IsExpanded}" />
+												<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+												<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 											</Grid>
 										</Button>
 										<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
@@ -199,8 +186,7 @@
 															Command="{Binding Parent.CopyCommand}"
 															CommandParameter="{Binding}"
 															ToolTip.Tip="Копировать">
-														<Svg Css="{DynamicResource SvgColor}"
-															Path="/Assets/Svg/copy.svg"/>
+														<iconPacks:PackIconBootstrapIcons Kind="Copy" />
 													</Button>
 													<Button Margin="45 0 0 0" 
 															Classes="Expander"
@@ -214,7 +200,7 @@
 															</MenuFlyout>
 														</Button.Flyout>
 
-														<PathIcon Data="{StaticResource Trash}" />
+														<iconPacks:PackIconBootstrapIcons Kind="Trash" />
 													</Button>
 
 													<Border Classes="Category" Classes.Selected="{Binding IsSelected}">

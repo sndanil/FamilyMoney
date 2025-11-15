@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="550"
 		Width="600" Height="550"
 		WindowStartupLocation="CenterOwner"
@@ -137,11 +138,7 @@
 						CornerRadius="12 0 0 12"
 						HotKey="Ctrl+Left"
 						Height="28">
-					<PathIcon Data="{StaticResource ChevronRight}">
-						<PathIcon.RenderTransform>
-							<RotateTransform Angle="180" />
-						</PathIcon.RenderTransform>
-					</PathIcon>
+					<iconPacks:PackIconBootstrapIcons Kind="ArrowLeftShort" />
 				</Button>
 				<DatePicker Grid.Column="1" SelectedDate="{Binding Date}"
 						HorizontalAlignment="Stretch"
@@ -151,7 +148,7 @@
 						HotKey="Ctrl+Right"
 						CornerRadius="0 12 12 0"
 						Height="28">
-					<PathIcon Data="{StaticResource ChevronRight}" />
+					<iconPacks:PackIconBootstrapIcons Kind="ArrowRightShort" />
 				</Button>
 			</Grid>
 
@@ -174,14 +171,14 @@
 						Click="ClearSubCategoryButtonClick"
 						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
 						>
-					<PathIcon Margin="4" Height="12" Width="12" Data="{StaticResource Cross}"/>
+					<iconPacks:PackIconBootstrapIcons Kind="X" />
 				</Button>
 				<Button DockPanel.Dock="Right" 
 						Margin="2"
 						Click="ShowDropDownButtonClick"
 						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
 						>
-					<PathIcon Margin="4" Height="12" Width="12" Data="{StaticResource ChevronDown}"/>
+					<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" />
 				</Button>
 				<AutoCompleteBox DockPanel.Dock="Left"
 							SelectedItem="{Binding SubCategory}"

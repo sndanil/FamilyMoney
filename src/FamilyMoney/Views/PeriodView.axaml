@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:PeriodViewModel"
@@ -18,12 +19,7 @@
 				HotKey="Ctrl+Left"
 				Height="30"
 				>
-			<PathIcon Data="{StaticResource ChevronRight}">
-				<PathIcon.RenderTransform>
-					<RotateTransform Angle="180" />
-				</PathIcon.RenderTransform>
-			</PathIcon>
-
+			<iconPacks:PackIconBootstrapIcons Kind="ChevronLeft" />
 		</Button>
 		<Button Grid.Column="1" MinWidth="200"
 				Height="30"
@@ -47,7 +43,7 @@
 				HotKey="Ctrl+Right"
 				CornerRadius="0 12 12 0"
 				>
-			<PathIcon Data="{StaticResource ChevronRight}" />
+			<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" />
 		</Button>
 	</Grid>
 </UserControl>
