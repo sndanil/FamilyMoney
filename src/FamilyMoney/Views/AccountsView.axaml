@@ -113,6 +113,17 @@
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
+		<Style Selector="Grid.Mover">
+			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Margin" Value="10 0 0 0" />
+			<Setter Property="Width" Value="25" />
+		</Style>
+		<Style Selector="Grid.Mover.Group">
+			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+		</Style>
+		<Style Selector="StackPanel.ShiftForMove">
+			<Setter Property="Margin" Value="35 0 0 0" />
+		</Style>
 		<Style Selector="iconPacks|PackIconBootstrapIcons">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
@@ -201,9 +212,14 @@
 								</i:Interaction.Behaviors>
 
 								<Grid ColumnDefinitions="auto auto * auto">
-									<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" 
-											PointerPressed="OnPointerPressed"
-											IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
+									<Grid
+										Classes="Mover"
+										Classes.Group="{Binding IsGroup}" 
+										PointerPressed="OnPointerPressed"
+										IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
+										>
+										<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" />
+									</Grid>
 									<Button Grid.Column="1" Classes="Expander" 
 											IsVisible="{Binding IsGroup}"
 											Command="{Binding ToggleExpandCommand}">
@@ -215,6 +231,7 @@
 									<StackPanel Orientation="Horizontal" 
 											Grid.Column="0" 
 											Grid.ColumnSpan="4"
+											Classes.ShiftForMove="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
 											Classes.Group="{Binding IsGroup}">
 										<Image Stretch="Uniform"
 												Source="{Binding Image}"
@@ -277,9 +294,14 @@
 											</i:Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="auto auto * auto">
-												<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" 
+												<Grid
+													    Classes="Mover"
+														Classes.Group="{Binding IsGroup}" 
 														PointerPressed="OnPointerPressed"
-														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"/>
+														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
+													>
+													<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" />
+												</Grid>
 												<Image Grid.Column="1" Stretch="Uniform"
 														Source="{Binding Image}"
 														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
