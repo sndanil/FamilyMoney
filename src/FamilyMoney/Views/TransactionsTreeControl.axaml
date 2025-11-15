@@ -5,8 +5,6 @@
 			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:cv="using:FamilyMoney.Converters"
-			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:SummaryTransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
@@ -97,14 +95,14 @@
 						</Button>
 
 						<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-							<i:Interaction.Behaviors>
-								<ia:EventTriggerBehavior EventName="Tapped" >
+							<Interaction.Behaviors>
+								<EventTriggerBehavior EventName="Tapped" >
 									<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-								</ia:EventTriggerBehavior>
-								<ia:EventTriggerBehavior EventName="DoubleTapped">
+								</EventTriggerBehavior>
+								<EventTriggerBehavior EventName="DoubleTapped">
 									<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
-								</ia:EventTriggerBehavior>
-							</i:Interaction.Behaviors>
+								</EventTriggerBehavior>
+							</Interaction.Behaviors>
 
 							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 								<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -146,14 +144,14 @@
 											</Grid>
 										</Button>
 										<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-											<i:Interaction.Behaviors>
-												<ia:EventTriggerBehavior EventName="Tapped" >
+											<Interaction.Behaviors>
+												<EventTriggerBehavior EventName="Tapped" >
 													<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-												</ia:EventTriggerBehavior>
-												<ia:EventTriggerBehavior EventName="DoubleTapped">
+												</EventTriggerBehavior>
+												<EventTriggerBehavior EventName="DoubleTapped">
 													<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
-												</ia:EventTriggerBehavior>
-											</i:Interaction.Behaviors>
+												</EventTriggerBehavior>
+											</Interaction.Behaviors>
 
 											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 												<TextBlock Grid.Column="1" Grid.ColumnSpan="2" 
@@ -204,16 +202,16 @@
 													</Button>
 
 													<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
-														<i:Interaction.Behaviors>
-															<ia:EventTriggerBehavior EventName="Tapped" >
+														<Interaction.Behaviors>
+															<EventTriggerBehavior EventName="Tapped" >
 																<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-															</ia:EventTriggerBehavior>
-														</i:Interaction.Behaviors>
-														<i:Interaction.Behaviors>
-															<ia:EventTriggerBehavior EventName="DoubleTapped">
+															</EventTriggerBehavior>
+														</Interaction.Behaviors>
+														<Interaction.Behaviors>
+															<EventTriggerBehavior EventName="DoubleTapped">
 																<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-															</ia:EventTriggerBehavior>
-														</i:Interaction.Behaviors>
+															</EventTriggerBehavior>
+														</Interaction.Behaviors>
 
 														<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
 															<TextBlock Grid.Column="2"

@@ -150,14 +150,14 @@
 											</Button>
 
 											<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
-												<i:Interaction.Behaviors>
-													<ia:EventTriggerBehavior EventName="Tapped">
+												<Interaction.Behaviors>
+													<EventTriggerBehavior EventName="Tapped">
 														<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-													</ia:EventTriggerBehavior>
-													<ia:EventTriggerBehavior EventName="DoubleTapped">
+													</EventTriggerBehavior>
+													<EventTriggerBehavior EventName="DoubleTapped">
 														<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-													</ia:EventTriggerBehavior>
-												</i:Interaction.Behaviors>
+													</EventTriggerBehavior>
+												</Interaction.Behaviors>
 
 												<Grid ColumnDefinitions="25 25 20 130 200 200 100">
 

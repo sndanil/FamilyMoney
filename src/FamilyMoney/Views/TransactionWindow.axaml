@@ -8,7 +8,6 @@
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
-		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
         xmlns:s="using:System"
         xmlns:bh="using:FamilyMoney.Behaviours"
 		xmlns:cv="using:FamilyMoney.Converters"
@@ -189,9 +188,9 @@
 							Margin="0 10"
 							ItemsSource="{Binding SubCategories}"								
 							Watermark="Стрелка вниз или F4 откроет список">
-					<i:Interaction.Behaviors>
+					<Interaction.Behaviors>
 						<bh:AutoCompleteForceDropdownBehaviour/>
-					</i:Interaction.Behaviors>
+					</Interaction.Behaviors>
 				
 					<AutoCompleteBox.ItemTemplate>
 						<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">

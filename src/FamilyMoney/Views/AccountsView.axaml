@@ -3,8 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
-			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
@@ -146,11 +144,11 @@
 				Classes.Selected="{Binding IsSelected}"
 				DataContext="{Binding Total}"
 				>
-			<i:Interaction.Behaviors>
-				<ia:EventTriggerBehavior EventName="Tapped">
+			<Interaction.Behaviors>
+				<EventTriggerBehavior EventName="Tapped">
 					<InvokeCommandAction Command="{Binding SelectCommand}" />
-				</ia:EventTriggerBehavior>
-			</i:Interaction.Behaviors>
+				</EventTriggerBehavior>
+			</Interaction.Behaviors>
 			
 			<Grid>
 				<Grid.ColumnDefinitions>
@@ -201,16 +199,15 @@
 										<Binding Path="!IsHidden" />
 									</MultiBinding>
 								</Border.IsVisible>
-								<i:Interaction.Behaviors>
-									<ia:EventTriggerBehavior EventName="Tapped">
+								<Interaction.Behaviors>
+									<EventTriggerBehavior EventName="Tapped">
 										<InvokeCommandAction Command="{Binding SelectCommand}" />
-									</ia:EventTriggerBehavior>
-									<ia:EventTriggerBehavior EventName="DoubleTapped">
+									</EventTriggerBehavior>
+									<EventTriggerBehavior EventName="DoubleTapped">
 										<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"
 															 CommandParameter="{Binding}"/>
-									</ia:EventTriggerBehavior>
-								</i:Interaction.Behaviors>
-
+									</EventTriggerBehavior>
+								</Interaction.Behaviors>
 								<Grid ColumnDefinitions="auto auto * auto">
 									<Grid
 										Classes="Mover"
@@ -283,15 +280,15 @@
 													<Binding Path="!IsHidden" />
 												</MultiBinding>
 											</Border.IsVisible>
-											<i:Interaction.Behaviors>
-												<ia:EventTriggerBehavior EventName="Tapped">
+											<Interaction.Behaviors>
+												<EventTriggerBehavior EventName="Tapped">
 													<InvokeCommandAction Command="{Binding SelectCommand}" />
-												</ia:EventTriggerBehavior>
-												<ia:EventTriggerBehavior EventName="DoubleTapped">
+												</EventTriggerBehavior>
+												<EventTriggerBehavior EventName="DoubleTapped">
 													<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"
 																		 CommandParameter="{Binding}"/>
-												</ia:EventTriggerBehavior>
-											</i:Interaction.Behaviors>
+												</EventTriggerBehavior>
+											</Interaction.Behaviors>
 
 											<Grid ColumnDefinitions="auto auto * auto">
 												<Grid

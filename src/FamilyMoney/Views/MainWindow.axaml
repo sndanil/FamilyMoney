@@ -80,12 +80,12 @@
 							<TextBlock Text="Главная" />
 						</StackPanel>
 
-						<i:Interaction.Behaviors>
-							<ia:EventTriggerBehavior EventName="Tapped">
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding SwitchToCommand}"
 													 CommandParameter="{Binding #TransactionsPanel}"/>
-							</ia:EventTriggerBehavior>
-						</i:Interaction.Behaviors>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
 
 						<Border.IsEnabled>
 							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
@@ -101,12 +101,12 @@
 							<TextBlock Text="Категории" />
 						</StackPanel>
 
-						<i:Interaction.Behaviors>
-							<ia:EventTriggerBehavior EventName="Tapped">
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding SwitchToCommand}"
 													 CommandParameter="{Binding #CategoriesPanel}"/>
-							</ia:EventTriggerBehavior>
-						</i:Interaction.Behaviors>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
 
 						<Border.IsEnabled>
 							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
@@ -122,12 +122,12 @@
 							<TextBlock Text="Импорт" />
 						</StackPanel>
 						
-						<i:Interaction.Behaviors>
-							<ia:EventTriggerBehavior EventName="Tapped">
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding ImportCommand}"
 													 CommandParameter="{Binding #ImportButton}"/>
-							</ia:EventTriggerBehavior>
-						</i:Interaction.Behaviors>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
 					</Border>
 				</StackPanel>
 			</StackPanel>
