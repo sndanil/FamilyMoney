@@ -217,7 +217,8 @@
 										</Grid>
 									</Button>
 									<StackPanel Orientation="Horizontal" 
-											Grid.Column="2" 
+											Grid.Column="0" 
+											Grid.ColumnSpan="4"
 											Classes.Group="{Binding IsGroup}">
 										<Image Stretch="Uniform"
 												Source="{Binding Image}"
