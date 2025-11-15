@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Set current date as env variable
+      run: |
+        $NOW=& Get-Date -format yyMMdd
+        echo "NOW=v0.$NOW" >> $env:GITHUB_ENV
+    - name: Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        dotnet restore ./src/FamilyMoney/FamilyMoney.csproj
+        dotnet pack ./src/FamilyMoney/FamilyMoney.csproj --no-restore
+        Compress-Archive ./src/FamilyMoney/bin/Release/net8.0/win-x64/ ./FamilyMoney.zip 
+        echo ${{ env.NOW }}
+        gh release create ${{ env.NOW }} ./FamilyMoney.zip 
