@@ -1,4 +1,4 @@
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
 using System.Threading.Tasks;

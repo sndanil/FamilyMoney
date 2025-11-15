@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using ReactiveUI;

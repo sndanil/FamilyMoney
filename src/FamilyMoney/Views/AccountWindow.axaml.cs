@@ -1,10 +1,9 @@
 using Avalonia.Input;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Avalonia.ReactiveUI;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using ReactiveUI;
+using ReactiveUI.Avalonia;
 using System;
 using System.IO;
 using System.Linq;
