@@ -206,8 +206,6 @@
 															<EventTriggerBehavior EventName="Tapped" >
 																<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 															</EventTriggerBehavior>
-														</Interaction.Behaviors>
-														<Interaction.Behaviors>
 															<EventTriggerBehavior EventName="DoubleTapped">
 																<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
 															</EventTriggerBehavior>

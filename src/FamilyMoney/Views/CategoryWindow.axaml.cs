@@ -24,7 +24,7 @@ public partial class CategoryWindow : ReactiveWindow<BaseCategoryViewModel>
 
     private void DropImage(object? sender, DragEventArgs e)
     {
-        var file = e.Data.GetFiles()?.FirstOrDefault();
+        var file = e.DataTransfer.TryGetFiles()?.FirstOrDefault();
 
         if (file == null || DataContext is not BaseCategoryViewModel category)
             return;

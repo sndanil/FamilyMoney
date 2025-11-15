@@ -101,7 +101,7 @@
 			  >
 			
 			<TextBlock Text="Счёт" Classes="Label" />
-			<Border Grid.Column="1" IsVisible="{Binding Account.IsHidden}">
+			<Border Grid.Column="1">
 				<Border.IsVisible>
 					<MultiBinding Converter="{x:Static BoolConverters.Or}">
 						<Binding Path="Account.Parent.IsHidden"/>
