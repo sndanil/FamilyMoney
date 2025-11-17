@@ -34,12 +34,12 @@
 		<Style Selector="Border.Group">
 			<Setter Property="Margin" Value="1 2 1 0" />
 			<Setter Property="CornerRadius" Value="12 12 0 0"/>
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.Element">
 			<Setter Property="Margin" Value="1 0 1 0" />
 			<Setter Property="BorderThickness" Value="1 1 1 0" />
-			<Setter Property="BorderBrush" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 		</Style>
 		<Style Selector="Border.AloneElement">

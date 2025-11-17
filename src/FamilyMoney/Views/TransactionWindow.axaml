@@ -15,6 +15,7 @@
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
 		x:DataType="vm:BaseTransactionViewModel"		
         x:Class="FamilyMoney.Views.TransactionWindow"
+		Classes="Dialog"
         Title="">
 	<Window.Styles>
 		<Style Selector="Border.Account">
@@ -35,7 +36,7 @@
 			<Setter Property="HorizontalAlignment" Value="Right" />
 		</Style>
 		<Style Selector="Border.IsGroup">
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="TextBlock.Label">
 			<Setter Property="VerticalAlignment" Value="Center"/>

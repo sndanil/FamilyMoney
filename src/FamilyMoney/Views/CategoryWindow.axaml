@@ -12,6 +12,7 @@
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
 		x:DataType="vm:BaseCategoryViewModel"		
         x:Class="FamilyMoney.Views.CategoryWindow"
+		Classes="Dialog"
         Title="">
 	<Window.Styles>
 		<Style Selector="CheckBox">

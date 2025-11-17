@@ -11,6 +11,7 @@
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
 		x:DataType="vm:CustomPeriodViewModel"
         x:Class="FamilyMoney.Views.CustomPeriodWindow"
+		Classes="Dialog"
         Title="Выберите период">
 	<Grid ColumnDefinitions="auto auto" RowDefinitions="auto auto">
 		<Calendar SelectedDate="{Binding From}" DisplayDate="{Binding From}" Margin="4" SelectionMode="SingleDate" />

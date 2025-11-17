@@ -42,7 +42,7 @@
 		<Style Selector="Border.Header">
 			<Setter Property="Margin" Value="0 10 10 0" />
 			<Setter Property="CornerRadius" Value="12 12 0 0" />
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.Header Button">
 			<Setter Property="Margin" Value="20 0" />
@@ -56,7 +56,7 @@
 			<Setter Property="Margin" Value="0 0 10 20" />
 			<Setter Property="CornerRadius" Value="0 0 12 12" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="BorderBrush" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
 		</Style>
 	</UserControl.Styles>
 	<Grid ColumnDefinitions="* * *" RowDefinitions="50 *">

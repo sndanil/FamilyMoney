@@ -36,7 +36,7 @@
 			<Setter Property="Margin" Value="2" />
 			<Setter Property="Height" Value="30" />
 			<Setter Property="CornerRadius" Value="5" />
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 		</Style>
@@ -47,7 +47,7 @@
 			<Setter Property="Margin" Value="2 2 2 0" />
 			<Setter Property="Height" Value="40" />
 			<Setter Property="CornerRadius" Value="5" />
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 		</Style>

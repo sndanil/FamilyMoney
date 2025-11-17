@@ -12,6 +12,7 @@
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
 		x:DataType="vm:AccountViewModel"		
         x:Class="FamilyMoney.Views.AccountWindow"
+		Classes="Dialog"
         Title="Счёт">
 	<Window.Styles>
 		<Style Selector="CheckBox">
