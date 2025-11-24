@@ -59,24 +59,21 @@
 	<Window.DataTemplates>
 		<DataTemplate DataType="vm:AccountViewModel">
 			<Border Classes="Account" Classes.IsGroup="{Binding IsGroup}">
-				<Grid ColumnDefinitions="auto auto * auto">
-					<Image Grid.Column="1" Stretch="Uniform"
-							Source="{Binding Image}"
-							IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
-						/>
-					<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis"
-							   Text="{Binding Name}"
-							   Name="AccountName"/>
-					<TextBlock Grid.Column="3"
-							   Text="{Binding Sum, StringFormat='#,##0.00'}"
-							   Name="AccountSum">
-						<TextBlock.IsVisible>
-							<MultiBinding Converter="{x:Static BoolConverters.Or}">
-								<Binding Path="Sum" Converter="{StaticResource isNotZeroConverter}"/>
-								<Binding Path="!IsGroup" />
-							</MultiBinding>
-						</TextBlock.IsVisible>
-					</TextBlock>
+				<Grid>
+					<Grid ColumnDefinitions="auto auto * auto">
+						<Image Grid.Column="1" Stretch="Uniform"
+								Source="{Binding Image}"
+								IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+							/>
+						<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis"
+								   Text="{Binding Name}"
+								   Name="AccountName"/>
+						<TextBlock Grid.Column="3"
+								   Text="{Binding Sum, StringFormat='#,##0.00'}"
+								   Name="AccountSum"
+								   IsVisible="{Binding !IsGroup}" >
+						</TextBlock>
+					</Grid>
 				</Grid>
 			</Border>
 		</DataTemplate>
