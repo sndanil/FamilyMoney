@@ -35,7 +35,7 @@
 			</FluentTheme.Palettes>
 		</FluentTheme>
 
-		<StyleInclude Source="avares://IconPacks.Avalonia/Icons.axaml" />
+		<StyleInclude Source="avares://IconPacks.Avalonia.BootstrapIcons/BootstrapIcons.axaml" />
 
 		<Style Selector="Window.Dialog">
 			<Setter Property="Background" Value="{DynamicResource DialogBackBrush}"	 />
