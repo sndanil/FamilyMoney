@@ -24,7 +24,7 @@ public abstract class BaseTransactionViewModel : ViewModelBase
     private BaseCategoryViewModel? _category;
     private BaseSubCategoryViewModel? _subCategory;
     private string? _subCategoryText;
-    private DateTimeOffset? _date = DateTime.Today;
+    private DateTime? _date = DateTime.Today;
     private DateTime? _lastChange = DateTime.Now;
 
     public ReactiveCommand<Unit, BaseTransactionViewModel?> OkCommand { get; }
@@ -123,7 +123,7 @@ public abstract class BaseTransactionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _subCategory, value);
     }
 
-    public DateTimeOffset? Date
+    public DateTime? Date
     {
         get => _date;
         set => this.RaiseAndSetIfChanged(ref _date, value);

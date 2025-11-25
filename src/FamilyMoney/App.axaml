@@ -15,13 +15,13 @@
 			<ResourceDictionary.ThemeDictionaries>
 				<ResourceDictionary x:Key='Light'>
 					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-					<SolidColorBrush x:Key="GroupBackBrush" Opacity="0.8" Color="#CFEAFF" />
+					<SolidColorBrush x:Key="GroupBackBrush" Color="#CFEAFF" />
 					<SolidColorBrush x:Key="MainBackBrush" Color="#EFF4F9" />
 					<SolidColorBrush x:Key="DialogBackBrush" Color="#FAFCFD" />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key='Dark'>
 					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-					<SolidColorBrush x:Key="GroupBackBrush" Opacity="0.8" Color="#0D2644" />
+					<SolidColorBrush x:Key="GroupBackBrush" Color="#0D2644" />
 					<SolidColorBrush x:Key="MainBackBrush" Color="#1A202F" />
 					<SolidColorBrush x:Key="DialogBackBrush" Color="#262B3E" />
 				</ResourceDictionary>

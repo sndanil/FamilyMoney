@@ -117,7 +117,7 @@
 			<Setter Property="Width" Value="25" />
 		</Style>
 		<Style Selector="Grid.Mover.Group">
-			<Setter Property="Background" Value="{DynamicResource SystemRegionBrush}" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="StackPanel.ShiftForMove">
 			<Setter Property="Margin" Value="35 0 0 0" />
@@ -129,6 +129,15 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Foreground" Value="Gray"/>
 		</Style>
+		<Style Selector="Border.AllTotal">
+			<Setter Property="CornerRadius" Value="12" />
+		</Style>
+		<Style Selector="Border.AllTotal TextBlock">
+			<Setter Property="FontWeight" Value="Bold" />
+		</Style>
+		<Style Selector="Border.AllTotal SelectableTextBlock">
+			<Setter Property="FontWeight" Value="Bold" />
+		</Style>
 	</UserControl.Styles>
 	
 	<Grid Name="MainContainer" 
@@ -138,8 +147,7 @@
 		<Button HotKey="Ctrl+Up" Command="{Binding PrevAccount}" IsVisible="False" />
 		<Button HotKey="Ctrl+Down" Command="{Binding NextAccount}" IsVisible="False" />
 		
-		<Border Classes="Account Group LeftTop" 
-				CornerRadius="12"
+		<Border Classes="Account Group LeftTop AllTotal" 
 				Classes.Selected="{Binding IsSelected}"
 				DataContext="{Binding Total}"
 				>
@@ -162,7 +170,6 @@
 				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
 				<SelectableTextBlock Grid.Column="2" 
 						   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
-						   FontWeight="Bold"
 						   Text="{Binding Sum, StringFormat='#,##0.00'}" 
 						   Name="AccountSum"/>
 			</Grid>

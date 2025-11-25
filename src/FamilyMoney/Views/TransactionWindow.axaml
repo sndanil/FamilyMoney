@@ -18,6 +18,12 @@
 		Classes="Dialog"
         Title="">
 	<Window.Styles>
+		<Style Selector="Button.CalendarButton">
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Width" Value="30" />
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
 		<Style Selector="Border.Account">
 			<Setter Property="Height" Value="35" />
 		</Style>
@@ -131,20 +137,17 @@
 
 			<TextBlock Grid.Row="1" Text="Дата" Classes="Label" />
 			<Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="30 * 30">
-				<Button Command="{Binding PrevDayCommand}"
-						CornerRadius="12 0 0 12"
-						HotKey="Ctrl+Left"
-						Height="28">
+				<Button Command="{Binding PrevDayCommand}" Classes="CalendarButton"
+						HotKey="Ctrl+Alt+Left">
 					<iconPacks:PackIconBootstrapIcons Kind="ArrowLeftShort" />
 				</Button>
-				<DatePicker Grid.Column="1" SelectedDate="{Binding Date}"
+				<CalendarDatePicker Grid.Column="1" SelectedDate="{Binding Date}"
+						CustomDateFormatString="dd.MM.YYYY"
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Center"
 						/>
-				<Button Grid.Column="2" Command="{Binding NextDayCommand}"
-						HotKey="Ctrl+Right"
-						CornerRadius="0 12 12 0"
-						Height="28">
+				<Button Grid.Column="2" Command="{Binding NextDayCommand}" Classes="CalendarButton"
+						HotKey="Ctrl+Alt+Right">
 					<iconPacks:PackIconBootstrapIcons Kind="ArrowRightShort" />
 				</Button>
 			</Grid>
