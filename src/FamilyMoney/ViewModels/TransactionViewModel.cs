@@ -1,168 +1,112 @@
-﻿using FamilyMoney.DataAccess;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
 using FamilyMoney.Models;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Reactive;
-using System.Windows.Input;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
-public abstract class BaseTransactionViewModel : ViewModelBase
+public partial class BaseTransactionViewModel : ViewModelBase
 {
-    private Guid _id;
-    private AccountViewModel? _account;
-    private AccountViewModel? _toAccount;
-    private bool _isTransfer = false;
-    private decimal _sum = 0;
-    private decimal _toSum = 0;
-    private IList<AccountViewModel>? _flatAccounts;
-    private IList<BaseCategoryViewModel>? _categories;
-    private IList<BaseSubCategoryViewModel>? _subCategories;
-    private string? _comment;
-    private IList<string> _comments = [];
-    private BaseCategoryViewModel? _category;
-    private BaseSubCategoryViewModel? _subCategory;
-    private string? _subCategoryText;
-    private DateTime? _date = DateTime.Today;
-    private DateTime? _lastChange = DateTime.Now;
+    [ObservableProperty]
+    public partial Guid Id { get; set; }
 
-    public ReactiveCommand<Unit, BaseTransactionViewModel?> OkCommand { get; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial AccountViewModel? Account { get; set; }
 
-    public ReactiveCommand<Unit, BaseTransactionViewModel?> CancelCommand { get; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial AccountViewModel? ToAccount { get; set; }
 
-    public ICommand CommentCommand { get; }
+    [ObservableProperty]
+    public partial bool IsTransfer { get; set; }
 
-    public ICommand PrevDayCommand { get; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial decimal Sum { get; set; }
 
-    public ICommand NextDayCommand { get; }
+    [ObservableProperty]
+    public partial decimal ToSum { get; set; }
 
-    public static Interaction<BaseTransactionViewModel, BaseTransactionViewModel?> ShowDialog { get; } = new();
+    [ObservableProperty]
+    public partial IList<AccountViewModel>? FlatAccounts { get; set; }
 
-    public Guid Id
+    [ObservableProperty]
+    public partial IList<BaseCategoryViewModel>? Categories { get; set; }
+
+    [ObservableProperty]
+    public partial IList<BaseSubCategoryViewModel>? SubCategories { get; set; }
+
+    [ObservableProperty]
+    public partial BaseCategoryViewModel? Category { get; set; }
+
+    [ObservableProperty]
+    public partial string? Comment { get; set; }
+
+    [ObservableProperty]
+    public partial IList<string> Comments { get; set; }
+
+    [ObservableProperty]
+    public partial string? SubCategoryText { get; set; }
+
+    [ObservableProperty]
+    public partial BaseSubCategoryViewModel? SubCategory { get; set; }
+
+    [ObservableProperty]
+    public partial DateTime? Date { get; set; }
+
+    [ObservableProperty]
+    public partial DateTime? LastChange { get; set; }
+
+    private bool CanOkCommand()
     {
-        get => _id;
-        set => this.RaiseAndSetIfChanged(ref _id, value);
+        return Sum != 0 && Account != null && (!IsTransfer || ToAccount != null);
     }
 
-    public AccountViewModel? Account
+    [RelayCommand(CanExecute = nameof(CanOkCommand))]
+    public async Task OkAsync()
     {
-        get => _account;
-        set => this.RaiseAndSetIfChanged(ref _account, value);
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<BaseTransactionViewModel>(this));
     }
 
-    public AccountViewModel? ToAccount
+    [RelayCommand]
+    public async Task CancelAsync()
     {
-        get => _toAccount;
-        set => this.RaiseAndSetIfChanged(ref _toAccount, value);
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<BaseTransactionViewModel>(null));
     }
 
-    public bool IsTransfer
+    [RelayCommand]
+    public async Task CommentAsync(string comment)
     {
-        get => _isTransfer;
-        set => this.RaiseAndSetIfChanged(ref _isTransfer, value);
+        this.Comment += comment;
     }
 
-    public decimal Sum
+    [RelayCommand]
+    public async Task PrevDayAsync()
     {
-        get => _sum;
-        set => this.RaiseAndSetIfChanged(ref _sum, value);
+        Date = Date!.Value.AddDays(-1);
     }
 
-    public decimal ToSum
+    [RelayCommand]
+    public async Task NextDayAsync()
     {
-        get => _toSum;
-        set => this.RaiseAndSetIfChanged(ref _toSum, value);
+        Date = Date!.Value.AddDays(1);
     }
 
-    public IList<AccountViewModel>? FlatAccounts
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
-        get => _flatAccounts;
-        set => this.RaiseAndSetIfChanged(ref _flatAccounts, value);
-    }
+        base.OnPropertyChanged(e);
 
-    public IList<BaseCategoryViewModel>? Categories
-    {
-        get => _categories;
-        set => this.RaiseAndSetIfChanged(ref _categories, value);
-    }
-
-    public IList<BaseSubCategoryViewModel>? SubCategories
-    {
-        get => _subCategories;
-        set => this.RaiseAndSetIfChanged(ref _subCategories, value);
-    }
-
-    public BaseCategoryViewModel? Category
-    {
-        get => _category;
-        set => this.RaiseAndSetIfChanged(ref _category, value);
-    }
-
-    public string? Comment
-    {
-        get => _comment;
-        set => this.RaiseAndSetIfChanged(ref _comment, value);
-    }
-
-    public IList<string> Comments
-    {
-        get => _comments;
-        set => this.RaiseAndSetIfChanged(ref _comments, value);
-    }
-
-    public string? SubCategoryText
-    {
-        get => _subCategoryText;
-        set => this.RaiseAndSetIfChanged(ref _subCategoryText, value);
-    }
-
-    public BaseSubCategoryViewModel? SubCategory
-    {
-        get => _subCategory;
-        set => this.RaiseAndSetIfChanged(ref _subCategory, value);
-    }
-
-    public DateTime? Date
-    {
-        get => _date;
-        set => this.RaiseAndSetIfChanged(ref _date, value);
-    }
-
-    public DateTime? LastChange
-    {
-        get => _lastChange;
-        set => this.RaiseAndSetIfChanged(ref _lastChange, value);
-    }
-
-    public BaseTransactionViewModel()
-    {
-        var canExecute = this.WhenAnyValue(x => x.Sum, x => x.Account, (sum, account) => sum != 0 && account != null);
-        OkCommand = ReactiveCommand.Create(() =>
+        if (e.PropertyName == nameof(Sum) && IsTransfer)
         {
-            return (BaseTransactionViewModel?)this;
-        },
-        canExecute);
-
-        CancelCommand = ReactiveCommand.Create(() =>
-        {
-            return (BaseTransactionViewModel?)null;
-        });
-
-        CommentCommand = ReactiveCommand.Create((string comment) =>
-        {
-            this.Comment += comment;
-        });
-
-        PrevDayCommand = ReactiveCommand.Create(() =>
-        {
-            Date = Date!.Value.AddDays(-1);
-        });
-
-        NextDayCommand = ReactiveCommand.Create(() =>
-        {
-            Date = Date!.Value.AddDays(1);
-        });
+            ToSum = Sum;
+        }
     }
 
     public virtual void FillFrom(Transaction transaction, IRepository repository)

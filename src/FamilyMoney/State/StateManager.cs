@@ -1,6 +1,5 @@
-﻿using FamilyMoney.Messages;
-using FamilyMoney.ViewModels;
-using ReactiveUI;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Messages;
 using System;
 
 namespace FamilyMoney.State;
@@ -17,6 +16,6 @@ public sealed class StateManager : IStateManager
     public void SetMainState(MainState state)
     {
         _mainState = state;
-        MessageBus.Current.SendMessage(new MainStateChangedMessage(state));
+        WeakReferenceMessenger.Default.Send(new MainStateChangedMessage(state));
     }
 }

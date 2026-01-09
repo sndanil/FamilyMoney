@@ -1,32 +1,26 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Styling;
-using DynamicData;
+﻿using Avalonia.Styling;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.State;
-using ReactiveUI;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
-public class TransactionsViewModel : ViewModelBase
+public partial class TransactionsViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
     private readonly IGlobalConfiguration _configuration;
-    private decimal _total = 0m;
-    private bool _enableMultiSelect = false;
-    private decimal _multiSelectTotal = 0;
 
     private DateTime _lastTransactionDate = DateTime.Today;
 
@@ -35,134 +29,44 @@ public class TransactionsViewModel : ViewModelBase
     private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = [];
     private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = [];
 
-    private SummaryTransactionsGroup _debetTransactions = new();
-    private SummaryTransactionsGroup _creditTransactions = new();
-    private SummaryTransactionsGroup _transferTransactions = new();
-
-    private ObservableCollection<TransactionsByDatesGroup> _transactionsDyDates = [];
-
-    private BaseTransactionsGroupViewModel? _selectedTransactionGroup = null;
     private readonly ObservableCollection<BaseTransactionsGroupViewModel> _selectedTransactionGroups = [];
 
-    public SummaryTransactionsGroup DebetTransactions
-    {
-        get => _debetTransactions;
-        set => this.RaiseAndSetIfChanged(ref _debetTransactions, value);
-    }
+    [ObservableProperty]
+    public partial SummaryTransactionsGroup DebetTransactions { get; set; } = new SummaryTransactionsGroup();
 
-    public SummaryTransactionsGroup CreditTransactions
-    {
-        get => _creditTransactions;
-        set => this.RaiseAndSetIfChanged(ref _creditTransactions, value);
-    }
+    [ObservableProperty]
+    public partial SummaryTransactionsGroup CreditTransactions { get; set; } = new SummaryTransactionsGroup();
 
-    public SummaryTransactionsGroup TransferTransactions
-    {
-        get => _transferTransactions;
-        set => this.RaiseAndSetIfChanged(ref _transferTransactions, value);
-    }
+    [ObservableProperty]
+    public partial SummaryTransactionsGroup TransferTransactions { get; set; } = new SummaryTransactionsGroup();
 
-    public ObservableCollection<TransactionsByDatesGroup> TransactionsDyDates
-    {
-        get => _transactionsDyDates;
-        set => this.RaiseAndSetIfChanged(ref _transactionsDyDates, value);
-    }
+    [ObservableProperty]
+    public partial ObservableCollection<TransactionsByDatesGroup> TransactionsDyDates { get; set; } = [];
 
-    public ICommand AddDebetCommand { get; }
+    [ObservableProperty]
+    public partial decimal Total { get; set; }
 
-    public ICommand AddCreditCommand { get; }
+    [ObservableProperty]
+    public partial bool EnableMultiSelect { get; set; }
 
-    public ICommand AddTransferCommand { get; }
+    [ObservableProperty]
+    public partial decimal MultiSelectTotal { get; set; }
 
-    public ICommand ClearSelectionCommand { get; }
-
-    public ICommand ToggleExpand { get; }
-
-    public ICommand SelectCommand { get; }
-
-    public ICommand EditCommand { get; }
-
-    public ICommand CopyCommand { get; }
-
-    public ICommand DeleteCommand { get; }
-
-    public decimal Total
-    {
-        get => _total;
-        set => this.RaiseAndSetIfChanged(ref _total, value);
-    }
-
-    public bool EnableMultiSelect
-    {
-        get => _enableMultiSelect;
-        set => this.RaiseAndSetIfChanged(ref _enableMultiSelect, value);
-    }
-
-    public decimal MultiSelectTotal
-    {
-        get => _multiSelectTotal;
-        set => this.RaiseAndSetIfChanged(ref _multiSelectTotal, value);
-    }
-
-    public BaseTransactionsGroupViewModel? SelectedTransactionGroup
-    {
-        get => _selectedTransactionGroup;
-        set => this.RaiseAndSetIfChanged(ref _selectedTransactionGroup, value);
-    }
+    [ObservableProperty]
+    public partial BaseTransactionsGroupViewModel? SelectedTransactionGroup { get; set; }
 
     public ObservableCollection<BaseTransactionsGroupViewModel> SelectedTransactionGroups
     {
         get => _selectedTransactionGroups;
     }
 
-
     public TransactionsViewModel(IRepository repository, IStateManager stateManager, IGlobalConfiguration configuration)
     {
-        _repository = repository;
-        _stateManager = stateManager;
-        _configuration = configuration;
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _stateManager = stateManager ?? throw new ArgumentNullException(nameof(stateManager));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
         SubscribeMessages();
-
-        AddDebetCommand = ReactiveCommand.CreateFromTask(AddDebetTransaction);
-        AddCreditCommand = ReactiveCommand.CreateFromTask(AddCreditTransaction);
-        AddTransferCommand = ReactiveCommand.CreateFromTask(AddTransferTransaction);
-
-        ClearSelectionCommand = ReactiveCommand.Create(ClearSelection);
-        
-        ToggleExpand = ReactiveCommand.Create((BaseTransactionsGroupViewModel child) =>
-        {
-            child.IsExpanded = !child.IsExpanded;
-            var id = ((child as CategoryTransactionsGroupViewModel)?.Category?.Id
-                    ?? (child as SubCategoryTransactionsGroupViewModel)?.SubCategory?.Id)
-                    ?? Guid.Empty;
-            if (child.IsExpanded)
-            {
-                _openedNodes.Add(id);
-            }
-            else
-            {
-                _openedNodes.Remove(id);
-            }
-        });
-
-        SelectCommand = ReactiveCommand.Create((BaseTransactionsGroupViewModel child) =>
-        {
-            if (!EnableMultiSelect && (SelectedTransactionGroups.Count > 1 || child != SelectedTransactionGroup))
-                ClearSelection();
-
-            child.IsSelected = !child.IsSelected;
-            if (child.IsSelected)
-            {
-                SelectedTransactionGroups.Add(child);
-            }
-            else
-            {
-                SelectedTransactionGroups.Remove(child);
-            }
-
-            SelectedTransactionGroup = SelectedTransactionGroups.LastOrDefault();
-        });
 
         var transactionsFilter = new Func<BaseTransactionsGroupViewModel, bool>((t) => 
         {
@@ -183,41 +87,77 @@ public class TransactionsViewModel : ViewModelBase
         SelectedTransactionGroups.CollectionChanged += (sender, e) => MultiSelectTotal = SelectedTransactionGroups
                                                                                             .Where(transactionsFilter)
                                                                                             .Sum(g => g.IsDebet ? g.Sum : -g.Sum);
+    }
 
-        EditCommand = ReactiveCommand.CreateFromTask(async (TransactionRowViewModel child) =>
+    [RelayCommand]
+    public async Task ToggleExpandAsync(BaseTransactionsGroupViewModel child)
+    {
+        child.IsExpanded = !child.IsExpanded;
+        var id = ((child as CategoryTransactionsGroupViewModel)?.Category?.Id
+                ?? (child as SubCategoryTransactionsGroupViewModel)?.SubCategory?.Id)
+                ?? Guid.Empty;
+        if (child.IsExpanded)
         {
-            await EditTransaction(child);
-        });
+            _openedNodes.Add(id);
+        }
+        else
+        {
+            _openedNodes.Remove(id);
+        }
+    }
 
-        CopyCommand = ReactiveCommand.Create((TransactionRowViewModel child) =>
-        {
-            RxApp.MainThreadScheduler.Schedule(async () =>
-            {
-                await CopyTransaction(child);
-            });
-        });
+    [RelayCommand]
+    public async Task SelectAsync(BaseTransactionsGroupViewModel child)
+    {
+        if (!EnableMultiSelect && (SelectedTransactionGroups.Count > 1 || child != SelectedTransactionGroup))
+            await ClearSelectionAsync();
 
-        DeleteCommand = ReactiveCommand.Create((TransactionRowViewModel child) =>
+        child.IsSelected = !child.IsSelected;
+        if (child.IsSelected)
         {
-            DeleteTransaction(child);
-        });
+            SelectedTransactionGroups.Add(child);
+        }
+        else
+        {
+            SelectedTransactionGroups.Remove(child);
+        }
+
+        SelectedTransactionGroup = SelectedTransactionGroups.LastOrDefault();
+    }
+
+    [RelayCommand]
+    public async Task EditAsync(TransactionRowViewModel child)
+    {
+        await EditTransaction(child);
+    }
+
+    [RelayCommand]
+    public async Task CopyAsync(TransactionRowViewModel child)
+    {
+        await CopyTransaction(child);
     }
 
     private void SubscribeMessages()
     {
-        MessageBus.Current.Listen<MainStateChangedMessage>()
-            .Where(m => m.State != null)
-            .Subscribe(m => RefreshTransactions(m.State));
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, MainStateChangedMessage>(this, async (t, m) =>
+        {
+            if (m?.State != null)
+            {
+                await RefreshTransactions(m.State);
+            }
+        });
 
-        MessageBus.Current.Listen<CategoryUpdateMessage>()
-            .Where(m => m.CategoryId != null)
-            .Subscribe(m =>
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, CategoryUpdateMessage>(this, async (t, m) =>
+        {
+            if (m?.CategoryId != null)
             {
                 _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
-            });
+            }
+        });
     }
 
-    private async Task AddTransferTransaction()
+    [RelayCommand]
+    public async Task AddTransferAsync()
     {
         var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
             GetCategories<TransferCategory, TransferCategoryViewModel>(),
@@ -226,14 +166,15 @@ public class TransactionsViewModel : ViewModelBase
             );
         transactionViewModel.IsTransfer = true;
 
-        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
         {
-            SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
+            await SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
         }
     }
 
-    private async Task AddCreditTransaction()
+    [RelayCommand]
+    public async Task AddCreditAsync()
     {
         var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
             GetCategories<CreditCategory, CreditCategoryViewModel>(),
@@ -241,14 +182,15 @@ public class TransactionsViewModel : ViewModelBase
             null
             );
 
-        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
         {
-            SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
+            await SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
         }
     }
 
-    private async Task AddDebetTransaction()
+    [RelayCommand]
+    public async Task AddDebetAsync()
     {
         var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
             GetCategories<DebetCategory, DebetCategoryViewModel>(),
@@ -256,19 +198,20 @@ public class TransactionsViewModel : ViewModelBase
             null
             );
 
-        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
         {
-            SaveTransaction(new DebetTransaction { Id = Guid.NewGuid() }, result);
+            await SaveTransaction(new DebetTransaction { Id = Guid.NewGuid() }, result);
         }
     }
 
-    private void DeleteTransaction(TransactionRowViewModel transactionGroupViewModel)
+    [RelayCommand]
+    public async Task DeleteAsync(TransactionRowViewModel transactionGroupViewModel)
     {
         var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
         _repository.DeleteTransaction(transactionGroupViewModel.Id);
-        SendTransactionChanged(transaction, null);
-        RefreshTransactions(_stateManager.GetMainState());
+        await SendTransactionChanged(transaction, null);
+        await RefreshTransactions(_stateManager.GetMainState());
     }
 
     private async Task CopyTransaction(TransactionRowViewModel transactionGroupViewModel)
@@ -309,17 +252,17 @@ public class TransactionsViewModel : ViewModelBase
         transactionViewModel.Sum = transaction.Sum;
         transactionViewModel.Comment = transaction.Comment;
 
-        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
         {
             transaction.Id = Guid.NewGuid();
-            SaveTransaction(transaction, result);
+            await SaveTransaction(transaction, result);
         }
     }
 
-    private static void SendTransactionChanged(Transaction? before, Transaction? after)
+    private static async Task SendTransactionChanged(Transaction? before, Transaction? after)
     {
-        MessageBus.Current.SendMessage(new TransactionChangedMessage(before, after));
+        WeakReferenceMessenger.Default.Send(new TransactionChangedMessage(before, after));
     }
 
     private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, 
@@ -451,14 +394,14 @@ public class TransactionsViewModel : ViewModelBase
             return;
         }
 
-        var result = await BaseTransactionViewModel.ShowDialog.Handle(transactionViewModel);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
         {
-            SaveTransaction(transaction, result);
+            await SaveTransaction(transaction, result);
         }
     }
 
-    private void SaveTransaction(Transaction transaction, BaseTransactionViewModel transactionViewModel)
+    private async Task SaveTransaction(Transaction transaction, BaseTransactionViewModel transactionViewModel)
     {
         transaction.AccountId = transactionViewModel.Account?.Id;
         transaction.CategoryId = transactionViewModel.Category?.Id;
@@ -511,11 +454,12 @@ public class TransactionsViewModel : ViewModelBase
 
         var before = _repository.GetTransaction(transaction.Id);
         _repository.UpdateTransaction(transaction);
-        SendTransactionChanged(before, transaction);
-        RefreshTransactions(_stateManager.GetMainState());
+        await SendTransactionChanged(before, transaction);
+        await RefreshTransactions(_stateManager.GetMainState());
     }
 
-    private void ClearSelection()
+    [RelayCommand]
+    public async Task ClearSelectionAsync()
     {
         if (SelectedTransactionGroup != null)
         {
@@ -530,10 +474,10 @@ public class TransactionsViewModel : ViewModelBase
         SelectedTransactionGroups.Clear();
     }
 
-    private void RefreshTransactions(MainState state)
+    private async Task RefreshTransactions(MainState state)
     {
         var selected = SelectedTransactionGroup;
-        ClearSelection();
+        await ClearSelectionAsync();
 
         var transactions = _repository.GetTransactions(new TransactionsFilter
         {

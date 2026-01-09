@@ -144,8 +144,8 @@
 				DragDrop.AllowDrop="True" 
 				RowDefinitions="auto auto * auto"
 				>
-		<Button HotKey="Ctrl+Up" Command="{Binding PrevAccount}" IsVisible="False" />
-		<Button HotKey="Ctrl+Down" Command="{Binding NextAccount}" IsVisible="False" />
+		<Button HotKey="Ctrl+Up" Command="{Binding PrevAccountCommand}" IsVisible="False" />
+		<Button HotKey="Ctrl+Down" Command="{Binding NextAccountCommand}" IsVisible="False" />
 		
 		<Border Classes="Account Group LeftTop AllTotal" 
 				Classes.Selected="{Binding IsSelected}"

@@ -1,18 +1,16 @@
-using System;
-using ReactiveUI.Avalonia;
+using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Messages;
 using FamilyMoney.ViewModels;
-using ReactiveUI;
-
 
 namespace FamilyMoney.Views;
 
-public partial class CustomPeriodWindow : ReactiveWindow<CustomPeriodViewModel>
+public partial class CustomPeriodWindow : Window
 {
     public CustomPeriodWindow()
     {
         InitializeComponent();
 
-        this.WhenActivated(action => action(ViewModel!.OkCommand.Subscribe(Close)));
-        this.WhenActivated(action => action(ViewModel!.CancelCommand.Subscribe(Close)));
+        WeakReferenceMessenger.Default.Register<CustomPeriodWindow, ModelCloseMessage<CustomPeriodViewModel>>(this, static (w, m) => w.Close(m.Result));
     }
 }

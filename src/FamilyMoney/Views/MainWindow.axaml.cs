@@ -1,65 +1,52 @@
-using ReactiveUI.Avalonia;
+using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Messages;
 using FamilyMoney.ViewModels;
-using ReactiveUI;
-using System.Threading.Tasks;
 
 namespace FamilyMoney.Views;
 
-public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+public partial class MainWindow : Window
 {
     public MainWindow()
     {
         InitializeComponent();
 
-        this.WhenActivated(action => action(ViewModel!.Period.ShowDialog.RegisterHandler(DoShowCustomPeriodDialogAsync)));
-        this.WhenActivated(action => action(AccountViewModel.ShowDialog.RegisterHandler(DoShowAccountEditDialogAsync)));
-        this.WhenActivated(action => action(BaseCategoryViewModel.ShowDialog.RegisterHandler(DoShowCategoryEditDialogAsync)));
-        this.WhenActivated(action => action(BaseTransactionViewModel.ShowDialog.RegisterHandler(DoShowTransactionEditDialogAsync)));
+        if (Design.IsDesignMode)
+            return;
+
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<AccountViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new AccountWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<AccountViewModel?>(w));
+        });
+
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<CustomPeriodViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new CustomPeriodWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<CustomPeriodViewModel?>(w));
+        });
+
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<BaseCategoryViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new CategoryWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<BaseCategoryViewModel?>(w));
+        });
+
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<BaseTransactionViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new TransactionWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<BaseTransactionViewModel?>(w));
+        });
 
         this.Activated += MainWindowActivated;
     }
 
     private void MainWindowActivated(object? sender, System.EventArgs e)
     {
-        if (ViewModel is not null && ViewModel.CurrentPanel == null)
+        var viewModel = DataContext as MainWindowViewModel;
+        if (viewModel is not null && viewModel.CurrentPanel == null)
         {
-            ViewModel.CurrentPanel = TransactionsPanel;
+            viewModel.CurrentPanel = TransactionsPanel;
         }
-    }
-
-    private async Task DoShowCustomPeriodDialogAsync(IInteractionContext<CustomPeriodViewModel, CustomPeriodViewModel?> interaction)
-    {
-        var dialog = new CustomPeriodWindow();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<CustomPeriodViewModel?>(this);
-        interaction.SetOutput(result);
-    }
-
-    private async Task DoShowAccountEditDialogAsync(IInteractionContext<AccountViewModel, AccountViewModel?> interaction)
-    {
-        var dialog = new AccountWindow();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<AccountViewModel?>(this);
-        interaction.SetOutput(result);
-    }
-
-    private async Task DoShowCategoryEditDialogAsync(IInteractionContext<BaseCategoryViewModel, BaseCategoryViewModel?> interaction)
-    {
-        var dialog = new CategoryWindow();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<BaseCategoryViewModel?>(this);
-        interaction.SetOutput(result);
-    }
-
-    private async Task DoShowTransactionEditDialogAsync(IInteractionContext<BaseTransactionViewModel, BaseTransactionViewModel?> interaction)
-    {
-        var dialog = new TransactionWindow();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<BaseTransactionViewModel?>(this);
-        interaction.SetOutput(result);
     }
 }

@@ -1,96 +1,111 @@
 using Avalonia.Controls;
-using ReactiveUI.Avalonia;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Messages;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
-using ReactiveUI;
 using System;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 
 namespace FamilyMoney.Views;
 
-public partial class TransactionWindow : ReactiveWindow<BaseTransactionViewModel>
+public partial class TransactionWindow :Window
 {
     private bool _skipCategoryChange = false;
+
+    public BaseTransactionViewModel? ViewModel { get => DataContext as BaseTransactionViewModel; }
 
     public TransactionWindow()
     {
         InitializeComponent();
 
-        this.WhenActivated(action => action(ViewModel!.OkCommand.Subscribe(Close)));
-        this.WhenActivated(action => action(ViewModel!.CancelCommand.Subscribe(Close)));
-
-        this.WhenActivated(disposables =>
+        WeakReferenceMessenger.Default.Register<TransactionWindow, ModelCloseMessage<BaseTransactionViewModel>>(this, static (w, m) => w.Close(m.Result));
+        WeakReferenceMessenger.Default.Register<TransactionWindow, SetFocusOnMessage>(this, (w, m) =>
         {
-            this.WhenAnyValue(v => v.ViewModel!.Sum)
-                .Skip(1)
-                .Do(v =>
-                {
-                    this.ViewModel!.ToSum = this.ViewModel!.Sum;
-                })
-                .Subscribe();
+            switch (m.PropertyName)
+            {
+                case nameof(ViewModel.Sum):
+                    Dispatcher.UIThread.Post(() => SumPicker.Focus());
+                    break;
+                default:
+                    break;
+            }
+        });
 
-            this.WhenAnyValue(v => v.ViewModel!.Category)
-                .Skip(1)
-                .Where(v => !_skipCategoryChange)
-                .Do(v =>
-                {
-                    this.ViewModel!.SubCategoryText = null;
-                    this.ViewModel!.SubCategory = null;
-                    RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => SubCategoryCompleteBox.Focus());
-                })
-                .Subscribe();
+        this.Activated += (s, e) =>
+        {
+            var viewModel = DataContext as BaseTransactionViewModel;
+            if (viewModel == null)
+            {
+                return;
+            }
 
-            this.WhenAnyValue(v => v.ViewModel!.SubCategory)
-                .Do(v =>
+            viewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(viewModel.Category) && !_skipCategoryChange)
                 {
-                    if (this.ViewModel!.SubCategory != null)
+                    viewModel!.SubCategoryText = null;
+                    viewModel!.SubCategory = null;
+                    SubCategoryCompleteBox.Focus();
+                }
+
+                if (e.PropertyName == nameof(viewModel.SubCategory))
+                {
+                    if (viewModel!.SubCategory != null)
                     {
-                        this.ViewModel.Comments = this.ViewModel!.SubCategory.Comments;
+                        viewModel.Comments = viewModel!.SubCategory.Comments;
                     }
                     else
                     {
-                        this.ViewModel.Comments = [];
+                        viewModel.Comments = [];
                     }
-                })
-                .Subscribe();
-        });
+                }
+            };
+        };
 
         this.Activated += TransactionWindowActivated;
 
         SubCategoryCompleteBox.ItemSelector = ItemSelector;
         SubCategoryCompleteBox.ItemFilter = ItemFilter;
 
-        bool sumFocused = false;
+        var sumFocused = false;
         SubCategoryCompleteBox.DropDownClosed += (s, e) =>
         {
-            if (!sumFocused)
+            var viewModel = DataContext as BaseTransactionViewModel;
+            if (viewModel == null)
             {
-                sumFocused = true;
-                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () => 
-                {
-                    if (this.ViewModel!.SubCategory != null)
-                    {
-                        if (this.ViewModel!.Sum == 0)
-                        {
-                            this.ViewModel!.Sum = this.ViewModel!.SubCategory.LastSum;
-                        }
-
-                        if (this.ViewModel!.Category == null)
-                        {
-                            _skipCategoryChange = true;
-                            this.ViewModel!.Category = this.ViewModel!.Categories?.FirstOrDefault(c => c.Id == this.ViewModel!.SubCategory.CategoryId);
-                            _skipCategoryChange = false;
-                        }
-
-                        SumPicker.Focus();
-                    }
-                });
-
-                RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () => sumFocused = false);
+                return;
             }
+
+            if (viewModel!.SubCategory != null)
+            {
+                if (viewModel!.Sum == 0)
+                {
+                    viewModel!.Sum = viewModel!.SubCategory.LastSum;
+                }
+
+                if (viewModel!.Category == null)
+                {
+                    _skipCategoryChange = true;
+                    viewModel!.Category = viewModel!.Categories?.FirstOrDefault(c => c.Id == viewModel!.SubCategory.CategoryId);
+                    _skipCategoryChange = false;
+                }
+
+            }
+
+            Task.Run(async () =>
+            {
+                if (!sumFocused)
+                {
+                    sumFocused = true;
+                    WeakReferenceMessenger.Default.Send(new SetFocusOnMessage(nameof(viewModel.Sum)));
+                }
+
+                await Task.Delay(1000);
+                sumFocused = false;
+            });
         };
     }
 

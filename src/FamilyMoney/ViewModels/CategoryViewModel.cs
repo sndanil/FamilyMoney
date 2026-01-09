@@ -1,62 +1,45 @@
 ﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.Utils;
-using ReactiveUI;
 using System;
-using System.Reactive;
+using System.Threading.Tasks;
 namespace FamilyMoney.ViewModels;
 
-public abstract class BaseCategoryViewModel : ViewModelBase
+public abstract partial class BaseCategoryViewModel : ViewModelBase
 {
-    private Guid _id;
-    private string _name = string.Empty;
-    private IImage? _image = null;
-    private bool _isHidden = false;
+    [ObservableProperty]
+    public partial Guid Id { get; set; }
 
-    public Guid Id
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial string Name { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsHidden { get; set; }
+
+    [ObservableProperty]
+    public partial IImage? Image { get; set; }
+
+    private bool CanOkCommand()
     {
-        get => _id;
-        set => this.RaiseAndSetIfChanged(ref _id, value);
+        return !string.IsNullOrEmpty(Name);
     }
 
-    public string Name
+    [RelayCommand(CanExecute = nameof(CanOkCommand))]
+    public async Task OkAsync()
     {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<BaseCategoryViewModel>(this));
     }
 
-    public bool IsHidden
+    [RelayCommand]
+    public async Task CancelAsync()
     {
-        get => _isHidden;
-        set => this.RaiseAndSetIfChanged(ref _isHidden, value);
-    }
-
-    public IImage? Image
-    {
-        get => _image;
-        set => this.RaiseAndSetIfChanged(ref _image, value);
-    }
-
-    public ReactiveCommand<BaseCategoryViewModel, BaseCategoryViewModel?> OkCommand { get; }
-
-    public ReactiveCommand<Unit, BaseCategoryViewModel?> CancelCommand { get; }
-
-    public static Interaction<BaseCategoryViewModel, BaseCategoryViewModel?> ShowDialog { get; } = new();
-
-    protected BaseCategoryViewModel()
-    {
-        var canExecute = this.WhenAnyValue(x => x.Name, (name) => !string.IsNullOrEmpty(name));
-        OkCommand = ReactiveCommand.Create((BaseCategoryViewModel self) =>
-        {
-            return (BaseCategoryViewModel?)self;
-        },
-        canExecute);
-
-        CancelCommand = ReactiveCommand.Create(() =>
-        {
-            return (BaseCategoryViewModel?)null;
-        });
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<BaseCategoryViewModel>(null));
     }
 
     public void FillFrom(Guid id, IRepository repository)

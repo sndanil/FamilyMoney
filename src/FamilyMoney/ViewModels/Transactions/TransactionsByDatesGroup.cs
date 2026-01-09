@@ -1,5 +1,5 @@
-﻿using DynamicData;
-using ReactiveUI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,40 +7,24 @@ using System.Linq;
 
 namespace FamilyMoney.ViewModels;
 
-public sealed class TransactionsByDatesGroup : ViewModelBase
+public partial class TransactionsByDatesGroup : ViewModelBase
 {
-    private DateTime _date;
-    private decimal _sum = 0;
-    private ObservableCollection<TransactionRowViewModel> _transactions = [];
-    private TransactionsViewModel? _parent;
-
     public bool IsDebet
     {
         get => Sum >= 0;
     }
 
-    public DateTime Date
-    {
-        get => _date;
-        set => this.RaiseAndSetIfChanged(ref _date, value);
-    }
+    [ObservableProperty]
+    public partial DateTime Date { get; set; }
 
-    public decimal Sum
-    {
-        get => _sum;
-        set => this.RaiseAndSetIfChanged(ref _sum, value);
-    }
+    [ObservableProperty]
+    public partial decimal Sum { get; set; }
 
-    public ObservableCollection<TransactionRowViewModel> Transactions
-    {
-        get => _transactions;
-        set => this.RaiseAndSetIfChanged(ref _transactions, value);
-    }
-    public TransactionsViewModel? Parent
-    {
-        get => _parent;
-        set => this.RaiseAndSetIfChanged(ref _parent, value);
-    }
+    [ObservableProperty]
+    public partial ObservableCollection<TransactionRowViewModel> Transactions { get; set; } = [];
+
+    [ObservableProperty]
+    public partial TransactionsViewModel? Parent { get; set; }
 
     public void SortByLastChange()
     {

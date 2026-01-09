@@ -1,40 +1,27 @@
-﻿using ReactiveUI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
-using System.Reactive;
+using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
-public sealed class CustomPeriodViewModel: ViewModelBase
+public partial class CustomPeriodViewModel: ViewModelBase
 {
-    private DateTime _from;
-    private DateTime _to;
+    [ObservableProperty]
+    public partial DateTime From { get; set;  }
 
-    public ReactiveCommand<Unit, CustomPeriodViewModel?> OkCommand { get; }
+    [ObservableProperty]
+    public partial DateTime To { get; set; }
 
-    public ReactiveCommand<Unit, CustomPeriodViewModel?> CancelCommand { get; }
-
-    public DateTime From
+    [RelayCommand]
+    public async Task OkAsync()
     {
-        get => _from;
-        set => this.RaiseAndSetIfChanged(ref _from, value);
+
     }
 
-    public DateTime To
+    [RelayCommand]
+    public async Task CancelAsync()
     {
-        get => _to;
-        set => this.RaiseAndSetIfChanged(ref _to, value);
-    }
 
-    public CustomPeriodViewModel()
-    {
-        OkCommand = ReactiveCommand.Create(() =>
-        {
-            return (CustomPeriodViewModel?)this;
-        });
-
-        CancelCommand = ReactiveCommand.Create(() =>
-        {
-            return (CustomPeriodViewModel?)null;
-        });
     }
 }

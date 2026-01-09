@@ -1,21 +1,20 @@
 ﻿using Avalonia.Media.Imaging;
-using DynamicData;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
-using ReactiveUI;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
-public class CategoriesViewModel : ViewModelBase
+public partial class CategoriesViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
 
@@ -27,11 +26,6 @@ public class CategoriesViewModel : ViewModelBase
     public ObservableCollection<CreditCategoryViewModel> CreditCategories { get => _creditCategories; set => _creditCategories = value; }
     public ObservableCollection<TransferCategoryViewModel> TransferCategories { get => _transferCategories; set => _transferCategories = value; }
 
-    public ICommand CreateDebetCommand { get; }
-    public ICommand CreateCreditCommand { get; }
-    public ICommand CreateTransferCommand { get; }
-    public ICommand EditCommand { get; }
-
     public CategoriesViewModel(IRepository repository)
     {
         _repository = repository;
@@ -41,11 +35,24 @@ public class CategoriesViewModel : ViewModelBase
         DebetCategories.AddRange(GetByTypes<DebetCategory, DebetCategoryViewModel>(categories));
         CreditCategories.AddRange(GetByTypes<CreditCategory, CreditCategoryViewModel>(categories));
         TransferCategories.AddRange(GetByTypes<TransferCategory, TransferCategoryViewModel>(categories));
+    }
 
-        EditCommand = ReactiveCommand.CreateFromTask<BaseCategoryViewModel>(EditCategory);
-        CreateDebetCommand = ReactiveCommand.CreateFromTask(async () => await CreateCategory(DebetCategories));
-        CreateCreditCommand = ReactiveCommand.CreateFromTask(async () => await CreateCategory(CreditCategories));
-        CreateTransferCommand = ReactiveCommand.CreateFromTask(async () => await CreateCategory(TransferCategories));
+    [RelayCommand]
+    public async Task CreateDebetAsync()
+    {
+        await CreateCategory(DebetCategories);
+    }
+
+    [RelayCommand]
+    public async Task CreateCreditAsync()
+    {
+        await CreateCategory(CreditCategories);
+    }
+
+    [RelayCommand]
+    public async Task CreateTransferAsync()
+    {
+        await CreateCategory(TransferCategories);
     }
 
     private async Task CreateCategory<C>(ObservableCollection<C> categories) where C: BaseCategoryViewModel, new()
@@ -55,7 +62,7 @@ public class CategoriesViewModel : ViewModelBase
             Id = Guid.NewGuid()
         };
 
-        var result = await BaseCategoryViewModel.ShowDialog.Handle(category);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseCategoryViewModel>(category));
         if (result != null)
         {
             SaveCategory(result, null);
@@ -63,7 +70,8 @@ public class CategoriesViewModel : ViewModelBase
         }
     }
 
-    private async Task EditCategory(BaseCategoryViewModel editCategory)
+    [RelayCommand]
+    public async Task EditAsync(BaseCategoryViewModel editCategory)
     {
         if (editCategory == null)
         {
@@ -85,7 +93,7 @@ public class CategoriesViewModel : ViewModelBase
         category.Image = editCategory.Image;
         category.IsHidden = editCategory.IsHidden;
 
-        var result = await BaseCategoryViewModel.ShowDialog.Handle(category);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseCategoryViewModel>(category));
         if (result != null)
         {
             SaveCategory(result, editCategory);
@@ -132,7 +140,7 @@ public class CategoriesViewModel : ViewModelBase
         category.IsHidden = categoryForSave.IsHidden;
         _repository.UpdateCategroty(category);
 
-        MessageBus.Current.SendMessage(new CategoryUpdateMessage(category.Id));
+        WeakReferenceMessenger.Default.Send(new CategoryUpdateMessage(category.Id));
 
         if (categoryForUpdate is not null)
         {

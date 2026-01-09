@@ -13,3 +13,5 @@ public record MainStateChangedMessage(MainState State);
 public record CategoryUpdateMessage(Guid? CategoryId);
 
 public record TransactionChangedMessage(Transaction? Before, Transaction? After);
+
+public record SetFocusOnMessage(string PropertyName);

@@ -1,12 +1,9 @@
-﻿using ReactiveUI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FamilyMoney.ViewModels;
 
-public class BaseTransactionsGroupViewModel : ViewModelBase
+public partial class BaseTransactionsGroupViewModel : ViewModelBase
 {
-    private bool _isExpanded = false;
-    private bool _isSelected = false;
-
     public bool IsDebet { get; set; }
 
     public decimal Sum { get; set; }
@@ -15,16 +12,10 @@ public class BaseTransactionsGroupViewModel : ViewModelBase
 
     public TransactionsViewModel? Parent { get; init; }
 
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
-    }
+    [ObservableProperty]
+    public partial bool IsExpanded { get; set; }
 
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
-    }
+    [ObservableProperty]
+    public partial bool IsSelected {  get; set; }
 }
 

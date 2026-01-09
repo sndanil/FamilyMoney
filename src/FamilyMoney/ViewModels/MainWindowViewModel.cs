@@ -1,60 +1,37 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.State;
-using FamilyMoney.Views;
-using ReactiveUI;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
     private readonly IImporter _importer;
-
-    private int _leftSideWidth = 400;
-    private bool _isPaneOpen = false;
-    private bool _showTransactionsTree = true;
-    private Control? _currentPanel;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
     private readonly AccountsViewModel _accountsViewModel;
     private readonly TransactionsViewModel _transactionsViewModel;
 
-    public ICommand TriggerPaneCommand { get; }
-    public ICommand ImportCommand { get; }
-    public ICommand SwitchToCommand { get; }
+    [ObservableProperty]
+    public partial int LeftSideWidth { get; set; } = 500;
 
-    public int LeftSideWidth
-    {
-        get => _leftSideWidth;
-        set => this.RaiseAndSetIfChanged(ref _leftSideWidth, value);
-    }
+    [ObservableProperty]
+    public partial bool IsPaneOpen { get; set; }
 
-    public bool IsPaneOpen
-    {
-        get => _isPaneOpen;
-        set => this.RaiseAndSetIfChanged(ref _isPaneOpen, value);
-    }
+    [ObservableProperty]
+    public partial bool ShowTransactionsTree { get; set; }
 
-    public bool ShowTransactionsTree
-    {
-        get => _showTransactionsTree;
-        set => this.RaiseAndSetIfChanged(ref _showTransactionsTree, value);
-    }
-
-    public Control? CurrentPanel
-    {
-        get => _currentPanel;
-        set => this.RaiseAndSetIfChanged(ref _currentPanel, value);
-    }
+    [ObservableProperty]
+    public partial Control? CurrentPanel { get; set; }
 
     public PeriodViewModel Period
     {
@@ -93,33 +70,8 @@ public class MainWindowViewModel : ViewModelBase
         _transactionsViewModel = transactionsViewModel;
         _period = period;
 
-        TriggerPaneCommand = ReactiveCommand.Create(() => IsPaneOpen = !IsPaneOpen);
-
-        ImportCommand = ReactiveCommand.Create(async (Avalonia.Visual visual) =>
-        {
-            var topLevel = TopLevel.GetTopLevel(visual);
-            var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = "Выбор файла для импорта",
-                AllowMultiple = false,
-                FileTypeFilter = [new("Файл CSV") { Patterns = ["*.csv"], MimeTypes = ["*/*"] }, FilePickerFileTypes.All]
-            });
-
-            if (files.Any())
-            {
-                await using var stream = await files.Single().OpenReadAsync();
-                _importer.DoImport(stream);
-                MainInit();
-            }
-        });
-
-        SwitchToCommand = ReactiveCommand.Create((Control control) =>
-        {
-            CurrentPanel = control;
-        });
-
         PropertyChanged += MainWindowViewModel_PropertyChanged;
-        RxApp.MainThreadScheduler.Schedule(() =>
+        Task.Run(() => 
         {
             _repository.DoBackup();
             _repository.UpdateDbSchema();
@@ -145,5 +97,44 @@ public class MainWindowViewModel : ViewModelBase
             PeriodTo = _period.To,
         };
         _stateManager.SetMainState(newState);
+    }
+
+    [RelayCommand]
+    public async Task ImportAsync(Avalonia.Visual visual)
+    {
+        var topLevel = TopLevel.GetTopLevel(visual);
+        var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Выбор файла для импорта",
+            AllowMultiple = false,
+            FileTypeFilter = [new("Файл CSV") { Patterns = ["*.csv"], MimeTypes = ["*/*"] }, FilePickerFileTypes.All]
+        });
+
+        if (files.Any())
+        {
+            await using var stream = await files.Single().OpenReadAsync();
+            _importer.DoImport(stream);
+            MainInit();
+        }
+    }
+
+    [RelayCommand]
+    public async Task TriggerPaneAsync()
+    {         
+        IsPaneOpen = !IsPaneOpen;
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task ImportAsync()
+    {
+        // Implementation of import logic can be added here
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task SwitchToAsync(Control control)
+    {
+        CurrentPanel = control;
     }
 }

@@ -1,23 +1,22 @@
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Messages;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
-using ReactiveUI;
-using ReactiveUI.Avalonia;
-using System;
 using System.IO;
 using System.Linq;
 
 namespace FamilyMoney.Views;
 
-public partial class AccountWindow : ReactiveWindow<AccountViewModel>
+public partial class AccountWindow : Window
 {
     public AccountWindow()
     {
         InitializeComponent();
 
-        this.WhenActivated(action => action(ViewModel!.OkCommand.Subscribe(Close)));
-        this.WhenActivated(action => action(ViewModel!.CancelCommand.Subscribe(Close)));
+        WeakReferenceMessenger.Default.Register<AccountWindow, ModelCloseMessage<AccountViewModel>>(this, static (w, m) => w.Close(m.Result));
 
         ImageControl.AddHandler(DragDrop.DropEvent, DropImage);
     }

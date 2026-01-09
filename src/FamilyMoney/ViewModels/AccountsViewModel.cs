@@ -1,71 +1,38 @@
 ﻿using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.State;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
-public class AccountsViewModel : ViewModelBase
+public partial class AccountsViewModel : ViewModelBase
 {
-    private readonly AccountViewModel _total = new() 
+    private readonly AccountViewModel _total = new()
     {
         Name = "Всего",
         IsGroup = true,
     };
 
-    private AccountViewModel? _draggingAccount = null;
-
-    private bool _showHidden = false;
-    private bool _showHiddenReorder = false;
-
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
 
-    public ICommand AddGroupCommand { get; }
+    [ObservableProperty]
+    public partial AccountViewModel? DraggingAccount { get; set; }
 
-    public ICommand AddElementCommand { get; }
+    [ObservableProperty]
+    public partial bool ShowHidden { get; set; }
 
-    public ICommand EditCommand { get; }
-
-    public ICommand ReorderCommand { get; }
-
-    public ICommand ShowHiddenCommand { get; }
-
-    public ICommand PrevAccount { get; }
-
-    public ICommand NextAccount { get; }
-
-    public AccountViewModel Total
-    {
-        get => _total;
-    }
-
-    public AccountViewModel? DraggingAccount
-    {
-        get => _draggingAccount;
-        set => this.RaiseAndSetIfChanged(ref _draggingAccount, value);
-    }
-
-    public bool ShowHidden
-    {
-        get => _showHidden;
-        set => this.RaiseAndSetIfChanged(ref _showHidden, value);
-    }
-
-    public bool ShowHiddenReorder
-    {
-        get => _showHiddenReorder;
-        set => this.RaiseAndSetIfChanged(ref _showHiddenReorder, value);
-    }
+    [ObservableProperty]
+    public partial bool ShowHiddenReorder { get; set; }
 
     public AccountViewModel? SelectedAccount
     {
@@ -82,7 +49,7 @@ public class AccountsViewModel : ViewModelBase
         }
         set
         {
-            MessageBus.Current.SendMessage(new AccountSelectMessage(value?.Id));
+            WeakReferenceMessenger.Default.Send(new AccountSelectMessage(value?.Id));
         }
     }
 
@@ -91,57 +58,62 @@ public class AccountsViewModel : ViewModelBase
         _repository = repository;
         _stateManager = stateManager;
 
-        AddGroupCommand = ReactiveCommand.CreateFromTask(AddGroupAccount);
-        AddElementCommand = ReactiveCommand.CreateFromTask(AddElementAccount);
-        EditCommand = ReactiveCommand.CreateFromTask<AccountViewModel>(EditAccount);
-
-        ShowHiddenCommand = ReactiveCommand.Create(() =>
-        {
-            ShowHidden = !ShowHidden;
-        });
-
-        ReorderCommand = ReactiveCommand.Create(() =>
-        {
-            ShowHiddenReorder = !ShowHiddenReorder;
-        });
-
-        NextAccount = ReactiveCommand.Create(() =>
-        {
-            SelectedAccount ??= Total;
-
-            var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
-            var index = flatAccounts.IndexOf(SelectedAccount);
-            if (index < flatAccounts.Count - 1)
-            {
-                SelectedAccount = flatAccounts[index + 1];
-            }
-            else
-            {
-                SelectedAccount = Total;
-            }
-        });
-
-        PrevAccount = ReactiveCommand.Create(() =>
-        {
-            SelectedAccount ??= Total;
-
-            var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
-            var index = flatAccounts.IndexOf(SelectedAccount);
-            if (index == 0)
-            {
-                SelectedAccount = Total;
-            }
-            else if (index > 0)
-            {
-                SelectedAccount = flatAccounts[index - 1];
-            }
-            else
-            {
-                SelectedAccount = flatAccounts[^1];
-            }
-        });
-
         SubscribeMessages();
+    }
+
+    public AccountViewModel Total
+    {
+        get => _total;
+    }
+
+    [RelayCommand]
+    public async Task ShowHiddenAsync()
+    {
+        ShowHidden = !ShowHidden;
+    }
+
+    [RelayCommand]
+    public async Task ReorderAsync()
+    {
+        ShowHiddenReorder = !ShowHiddenReorder;
+    }
+
+    [RelayCommand]
+    public async Task NextAccountAsync()
+    {
+        SelectedAccount ??= Total;
+
+        var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
+        var index = flatAccounts.IndexOf(SelectedAccount);
+        if (index < flatAccounts.Count - 1)
+        {
+            SelectedAccount = flatAccounts[index + 1];
+        }
+        else
+        {
+            SelectedAccount = Total;
+        }
+    }
+
+    [RelayCommand]
+    public async Task PrevAccountAsync()
+    {
+        SelectedAccount ??= Total;
+
+        var flatAccounts = _stateManager.GetMainState().FlatAccounts.Where(a => ShowHidden || !a.IsHidden).ToList();
+        var index = flatAccounts.IndexOf(SelectedAccount);
+        if (index == 0)
+        {
+            SelectedAccount = Total;
+        }
+        else if (index > 0)
+        {
+            SelectedAccount = flatAccounts[index - 1];
+        }
+        else
+        {
+            SelectedAccount = flatAccounts[^1];
+        }
     }
 
     public IReadOnlyList<AccountViewModel> LoadAccounts()
@@ -165,23 +137,26 @@ public class AccountsViewModel : ViewModelBase
 
     private void SubscribeMessages()
     {
-        MessageBus.Current.Listen<MainStateChangedMessage>()
-            .Where(m => m.State != null)
-            .Subscribe(m => RefreshSelectedAccount(m.State.SelectedAccountId));
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, MainStateChangedMessage>(this, (a, m) =>
+        {
+            if (m?.State != null)
+            {
+                RefreshSelectedAccount(m.State.SelectedAccountId);
+            }
+        });
 
-        MessageBus.Current.Listen<AccountSelectMessage>()
-            .Where(m => m != null)
-            .Subscribe(m =>
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, AccountSelectMessage>(this, (a, m) =>
+        {
+            if (m != null)
             {
                 var state = _stateManager.GetMainState();
                 _stateManager.SetMainState(state with { SelectedAccountId = m.AccountId });
+            }
+        });
 
-                this.RaisePropertyChanged(nameof(SelectedAccount));
-            });
-
-        MessageBus.Current.Listen<AccountExpandMessage>()
-            .Where(m => m != null)
-            .Subscribe(m =>
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, AccountExpandMessage>(this, (a, m) =>
+        {
+            if (m != null)
             {
                 var flatAccounts = _stateManager.GetMainState().FlatAccounts;
                 var account = flatAccounts.FirstOrDefault(a => a.Id == m.AccountId);
@@ -189,11 +164,12 @@ public class AccountsViewModel : ViewModelBase
                 {
                     Save(null, account);
                 }
-            });
+            }
+        });
 
-        MessageBus.Current.Listen<TransactionChangedMessage>()
-            .Where(m => m != null)
-            .Subscribe(m =>
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, TransactionChangedMessage>(this, (a, m) =>
+        {
+            if (m != null)
             {
                 if (m.Before != null)
                 {
@@ -203,7 +179,8 @@ public class AccountsViewModel : ViewModelBase
                 {
                     ProcessAccounts(m.After, 1);
                 }
-            });
+            }
+        });
     }
 
     private void ProcessAccounts(Transaction transaction, int direction)
@@ -241,10 +218,11 @@ public class AccountsViewModel : ViewModelBase
         }
     }
 
-    private async Task AddGroupAccount()
+    [RelayCommand]
+    public async Task AddGroupAsync()
     {
         var account = new AccountViewModel { IsGroup = true };
-        var result = await AccountViewModel.ShowDialog.Handle(account);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account)); ;
         if (result != null)
         {
             Total.Children.Add(result);
@@ -254,10 +232,11 @@ public class AccountsViewModel : ViewModelBase
         }
     }
 
-    private async Task AddElementAccount()
+    [RelayCommand]
+    public async Task AddElementAsync()
     {
         var account = new AccountViewModel();
-        var result = await AccountViewModel.ShowDialog.Handle(account);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
         if (result != null)
         {
             var parent = SelectedAccount?.IsGroup == true ? SelectedAccount : (SelectedAccount?.Parent ?? Total);
@@ -268,7 +247,8 @@ public class AccountsViewModel : ViewModelBase
         }
     }
 
-    private async Task EditAccount(AccountViewModel editAccount)
+    [RelayCommand]
+    public async Task EditAsync(AccountViewModel editAccount)
     {
         if (editAccount == Total || editAccount == null)
         {
@@ -286,7 +266,7 @@ public class AccountsViewModel : ViewModelBase
             IsHidden = editAccount.IsHidden,
             IsNotSummable = editAccount.IsNotSummable,
         };
-        var result = await AccountViewModel.ShowDialog.Handle(account);
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
         if (result != null)
         {
             Save(editAccount, result);

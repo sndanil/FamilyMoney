@@ -1,109 +1,53 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform.Storage;
-using DynamicData;
+﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.Utils;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace FamilyMoney.ViewModels;
 
-public class AccountViewModel : ViewModelBase
+public partial class AccountViewModel : ViewModelBase
 {
-    private decimal _sum = 0;
-    private Guid? _id = null;
-    private AccountViewModel? _parent = null;
-    private string _name = string.Empty;
-    private IImage? _image = null;
-    private bool _isSelected = false;
-    private bool _isGroup = false;
-    private bool _isHidden = false;
-    private bool _isExpanded = true;
-    private bool _isNotSummable = false;
     private readonly ObservableCollection<AccountViewModel> _children = [];
 
-    public ICommand SelectCommand { get; }
+    [ObservableProperty]
+    public partial decimal Sum { get; set; }
 
-    public ICommand ToggleExpandCommand { get; }
+    [ObservableProperty]
+    public partial Guid? Id { get; set; }
 
-    public ReactiveCommand<Unit, AccountViewModel?> OkCommand { get; }
+    [ObservableProperty]
+    public partial AccountViewModel? Parent { get; set; }
 
-    public ReactiveCommand<Unit, AccountViewModel?> CancelCommand { get; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial string Name { get; set; } = string.Empty;
 
-    public static Interaction<AccountViewModel, AccountViewModel?> ShowDialog { get; } = new();
+    [ObservableProperty]
+    public partial IImage? Image { get; set; }
 
-    public decimal Sum
-    {
-        get => _sum;
-        set => this.RaiseAndSetIfChanged(ref _sum, value);
-    }
+    [ObservableProperty]
+    public partial bool IsGroup { get; set; }
 
-    public Guid? Id
-    {
-        get => _id;
-        set => this.RaiseAndSetIfChanged(ref _id, value);
-    }
+    [ObservableProperty]
+    public partial bool IsExpanded { get; set; }
 
-    public AccountViewModel? Parent
-    {
-        get => _parent;
-        set => this.RaiseAndSetIfChanged(ref _parent, value);
-    }
+    [ObservableProperty]
+    public partial bool IsHidden { get; set; }
 
-    public string Name
-    {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
-    }
+    [ObservableProperty]
+    public partial bool IsNotSummable { get; set; }
 
-    public IImage? Image
-    {
-        get => _image;
-        set => this.RaiseAndSetIfChanged(ref _image, value);
-    }
-
-    public bool IsGroup
-    {
-        get => _isGroup;
-        set => this.RaiseAndSetIfChanged(ref _isGroup, value);
-    }
-
-    public bool IsExpanded
-    {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
-    }
-
-    public bool IsHidden
-    {
-        get => _isHidden;
-        set => this.RaiseAndSetIfChanged(ref _isHidden, value);
-    }
-
-    public bool IsNotSummable
-    {
-        get => _isNotSummable;
-        set => this.RaiseAndSetIfChanged(ref _isNotSummable, value);
-    }
-
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
-    }
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
 
     public bool IsAloneGroup
     {
@@ -112,32 +56,34 @@ public class AccountViewModel : ViewModelBase
 
     public ObservableCollection<AccountViewModel> Children { get => _children; }
 
-    public AccountViewModel()
+    [RelayCommand]
+    public void SelectCommand()
     {
-        SelectCommand = ReactiveCommand.CreateFromTask(() =>
-        {
-            MessageBus.Current.SendMessage(new AccountSelectMessage(Id));
-            return Task.CompletedTask;
-        });
+        WeakReferenceMessenger.Default.Send(new AccountSelectMessage(Id));
+    }
 
-        ToggleExpandCommand = ReactiveCommand.CreateFromTask(() =>
-        {
-            this.IsExpanded = !this.IsExpanded;
-            MessageBus.Current.SendMessage(new AccountExpandMessage(Id, IsExpanded));
-            return Task.CompletedTask;
-        });
+    [RelayCommand]
+    public void ToggleExpandCommand()
+    {
+        this.IsExpanded = !this.IsExpanded;
+        WeakReferenceMessenger.Default.Send(new AccountExpandMessage(Id, IsExpanded));
+    }
 
-        var canExecute = this.WhenAnyValue(x => x.Name, (name) => !string.IsNullOrEmpty(name));
-        OkCommand = ReactiveCommand.Create(() =>
-        {
-            return (AccountViewModel?)this;
-        },
-        canExecute);
+    private bool CanOkCommand()
+    {
+        return !string.IsNullOrEmpty(Name);
+    }
 
-        CancelCommand = ReactiveCommand.Create(() =>
-        {
-            return (AccountViewModel?)null;
-        });
+    [RelayCommand(CanExecute = nameof(CanOkCommand))]
+    public async Task OkAsync()
+    {
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(this));
+    }
+
+    [RelayCommand]
+    public async Task CancelAsync()
+    {
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(null));
     }
 
     public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
@@ -151,7 +97,10 @@ public class AccountViewModel : ViewModelBase
             return account;
         });
 
-        Children.AddRange(viewModels);
+        foreach (var item in viewModels)
+        {
+            Children.Add(item);
+        }
 
         foreach (var account in Children)
         {

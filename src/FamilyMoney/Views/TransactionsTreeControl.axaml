@@ -86,7 +86,7 @@
 				<StackPanel>
 					<Grid>
 						<Button Classes="Expander" 
-								Command="{Binding Parent.ToggleExpand}" 
+								Command="{Binding Parent.ToggleExpandCommand}" 
 								CommandParameter="{Binding}">
 							<Grid>
 								<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
@@ -100,7 +100,7 @@
 									<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 								</EventTriggerBehavior>
 								<EventTriggerBehavior EventName="DoubleTapped">
-									<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
+									<InvokeCommandAction Command="{Binding Parent.ToggleExpandCommand}" CommandParameter="{Binding}" />
 								</EventTriggerBehavior>
 							</Interaction.Behaviors>
 
@@ -136,7 +136,7 @@
 								<StackPanel>
 									<Grid>
 										<Button Classes="Expander" 
-												Command="{Binding Parent.ToggleExpand}"
+												Command="{Binding Parent.ToggleExpandCommand}"
 												CommandParameter="{Binding}">
 											<Grid>
 												<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
@@ -149,7 +149,7 @@
 													<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
 												</EventTriggerBehavior>
 												<EventTriggerBehavior EventName="DoubleTapped">
-													<InvokeCommandAction Command="{Binding Parent.ToggleExpand}" CommandParameter="{Binding}" />
+													<InvokeCommandAction Command="{Binding Parent.ToggleExpandCommand}" CommandParameter="{Binding}" />
 												</EventTriggerBehavior>
 											</Interaction.Behaviors>
 

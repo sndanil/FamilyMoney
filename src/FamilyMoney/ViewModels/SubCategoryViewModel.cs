@@ -1,57 +1,30 @@
-﻿using Avalonia.Media;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Models;
-using FamilyMoney.Utils;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 
 namespace FamilyMoney.ViewModels;
 
-public abstract class BaseSubCategoryViewModel : ViewModelBase
+public partial class BaseSubCategoryViewModel : ViewModelBase
 {
-    private Guid _id;
-    private Guid? _categoryId;
-    private BaseCategoryViewModel? _category;
-    private string _name = string.Empty;
-    private decimal _lastSum = 0;
-    private IList<string> _commments = [];
+    [ObservableProperty]
+    public partial Guid Id { get; set; }
 
-    public Guid Id
-    {
-        get => _id;
-        set => this.RaiseAndSetIfChanged(ref _id, value);
-    }
+    [ObservableProperty]
+    public partial Guid? CategoryId {  get; set; }
 
-    public Guid? CategoryId
-    {
-        get => _categoryId;
-        set => this.RaiseAndSetIfChanged(ref _categoryId, value);
-    }
+    [ObservableProperty]
+    public partial BaseCategoryViewModel? Category {  get; set; }
 
-    public BaseCategoryViewModel? Category
-    {
-        get => _category;
-        set => this.RaiseAndSetIfChanged(ref _category, value);
-    }
+    [ObservableProperty]
+    public partial string Name {  get; set; }
 
-    public string Name
-    {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
-    }
+    [ObservableProperty]
+    public partial decimal LastSum {  get; set; }
 
-    public decimal LastSum
-    {
-        get => _lastSum;
-        set => this.RaiseAndSetIfChanged(ref _lastSum, value);
-    }
-
-    public IList<string> Comments
-    {
-        get => _commments;
-        set => this.RaiseAndSetIfChanged(ref _commments, value);
-    }
+    [ObservableProperty]
+    public partial IList<string> Comments {  get; set; }
 
     public void FillFrom(Guid id, IRepository repository)
     {
