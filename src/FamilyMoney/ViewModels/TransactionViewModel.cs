@@ -50,7 +50,7 @@ public partial class BaseTransactionViewModel : ViewModelBase
     public partial string? Comment { get; set; }
 
     [ObservableProperty]
-    public partial IList<string> Comments { get; set; }
+    public partial IList<string> Comments { get; set; } = [];
 
     [ObservableProperty]
     public partial string? SubCategoryText { get; set; }

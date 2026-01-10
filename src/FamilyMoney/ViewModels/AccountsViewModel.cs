@@ -369,6 +369,8 @@ public partial class AccountsViewModel : ViewModelBase
                 account.IsSelected = account.Id == accountId;
             }
         }
+
+        OnPropertyChanged(nameof(SelectedAccount));
     }
 
     private void Save(AccountViewModel? one, AccountViewModel other)

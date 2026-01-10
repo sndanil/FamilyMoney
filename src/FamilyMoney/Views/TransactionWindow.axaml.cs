@@ -93,19 +93,19 @@ public partial class TransactionWindow :Window
                     _skipCategoryChange = false;
                 }
 
-            }
 
-            Task.Run(async () =>
-            {
-                if (!sumFocused)
+                Task.Run(async () =>
                 {
-                    sumFocused = true;
-                    WeakReferenceMessenger.Default.Send(new SetFocusOnMessage(nameof(viewModel.Sum)));
-                }
+                    if (!sumFocused)
+                    {
+                        sumFocused = true;
+                        WeakReferenceMessenger.Default.Send(new SetFocusOnMessage(nameof(viewModel.Sum)));
+                    }
 
-                await Task.Delay(1000);
-                sumFocused = false;
-            });
+                    await Task.Delay(1000);
+                    sumFocused = false;
+                });
+            }
         };
     }
 

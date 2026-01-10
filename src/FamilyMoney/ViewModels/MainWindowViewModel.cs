@@ -28,7 +28,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public partial bool IsPaneOpen { get; set; }
 
     [ObservableProperty]
-    public partial bool ShowTransactionsTree { get; set; }
+    public partial bool ShowTransactionsTree { get; set; } = true;
 
     [ObservableProperty]
     public partial Control? CurrentPanel { get; set; }
@@ -122,13 +122,6 @@ public partial class MainWindowViewModel : ViewModelBase
     public async Task TriggerPaneAsync()
     {         
         IsPaneOpen = !IsPaneOpen;
-        await Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    public async Task ImportAsync()
-    {
-        // Implementation of import logic can be added here
         await Task.CompletedTask;
     }
 
