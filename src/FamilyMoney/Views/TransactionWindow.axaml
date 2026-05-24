@@ -252,28 +252,33 @@
 			  Margin="15 0"
 			  >
 			<TextBlock Text="Комментарий" Classes="Label" VerticalAlignment="Top" />
-			<TextBox Grid.Column="1" 
-					 AcceptsReturn="True"
-					 TextWrapping="Wrap"
-					 Text="{Binding Comment}" 
-					 />
+			<DockPanel Grid.Column="1">
+				<Button DockPanel.Dock="Right" 
+						VerticalAlignment="Top"
+						Margin="5"
+						IsVisible="{Binding Comments.Count}"
+						>
+					<Button.Content>
+						<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" />
+					</Button.Content>
+					<Button.Flyout>
+						<MenuFlyout ItemsSource="{Binding Comments}">
+							<MenuFlyout.ItemTemplate>
+								<DataTemplate x:DataType="s:String">
+									<MenuItem Header="{Binding .}" 
+											  Click="CommentClick" />
+								</DataTemplate>
+							</MenuFlyout.ItemTemplate>
+						</MenuFlyout>				
+					</Button.Flyout>
+				</Button>
 
-			<Button Grid.Column="1" Grid.Row="1" 
-					Content="Предыдущие"
-					Margin="5"
-					IsVisible="{Binding Comments.Count}"
-					>
-				<Button.Flyout>
-					<MenuFlyout ItemsSource="{Binding Comments}">
-						<MenuFlyout.ItemTemplate>
-							<DataTemplate x:DataType="s:String">
-								<MenuItem Header="{Binding .}" 
-										  Click="CommentClick" />
-							</DataTemplate>
-						</MenuFlyout.ItemTemplate>
-					</MenuFlyout>				
-				</Button.Flyout>
-			</Button>
+				<TextBox AcceptsReturn="True"
+						 TextWrapping="Wrap"
+						 Text="{Binding Comment}" 
+						 />
+
+			</DockPanel>
 		</Grid>
 
 		<Grid Grid.Row="4" ColumnDefinitions="150 *" Margin="15 5 15 10">
@@ -281,15 +286,39 @@
 			<StackPanel Grid.Column="1" Spacing="6">
 				<DockPanel>
 					<Button DockPanel.Dock="Right"
-							Content="Добавить"
 							Margin="8 0 0 0"
 							Classes="DialogButton"
-							Width="100"
-							Command="{Binding AddTagCommand}" />
-					<TextBox Name="TagInputBox"
-							 Text="{Binding TagInput}"
-							 Watermark="Новый тег"
-							 KeyDown="TagInputKeyDown" />
+							Width="30"
+							IsVisible="{Binding HasSelectableSuggestedTags}">
+						<Button.Content>
+							<iconPacks:PackIconBootstrapIcons Kind="TagsFill" />
+						</Button.Content>
+						<Button.Flyout>
+							<MenuFlyout ItemsSource="{Binding SelectableSuggestedTags}">
+								<MenuFlyout.ItemTemplate>
+									<DataTemplate x:DataType="x:String">
+										<MenuItem Header="{Binding .}"
+												  Click="TagSuggestionClick" />
+									</DataTemplate>
+								</MenuFlyout.ItemTemplate>
+							</MenuFlyout>
+						</Button.Flyout>
+					</Button>
+					<Button DockPanel.Dock="Right"
+							Margin="8 0 0 0"
+							Classes="DialogButton"
+							Width="30"
+							Command="{Binding AddTagCommand}">
+						<iconPacks:PackIconBootstrapIcons Kind="Plus" />
+					</Button>
+					<AutoCompleteBox Name="TagCompleteBox"
+									 Text="{Binding TagInput, Mode=TwoWay}"
+									 ItemsSource="{Binding SelectableSuggestedTags}"
+									 FilterMode="Contains"
+									 IsTextCompletionEnabled="True"
+									 Watermark="Новый тег"
+									 SelectionChanged="TagCompleteBoxSelectionChanged"
+									 KeyDown="TagInputKeyDown" />
 				</DockPanel>
 				<ItemsControl ItemsSource="{Binding Tags}">
 					<ItemsControl.ItemsPanel>

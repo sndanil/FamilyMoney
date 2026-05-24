@@ -43,6 +43,8 @@ public partial class TransactionWindow :Window
                 return;
             }
 
+            viewModel.RefreshSuggestedTags();
+
             viewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(viewModel.Category) && !_skipCategoryChange)
@@ -50,6 +52,11 @@ public partial class TransactionWindow :Window
                     viewModel!.SubCategoryText = null;
                     viewModel!.SubCategory = null;
                     SubCategoryCompleteBox.Focus();
+                }
+
+                if (e.PropertyName is nameof(viewModel.SubCategory) or nameof(viewModel.Category))
+                {
+                    viewModel.RefreshSuggestedTags();
                 }
 
                 if (e.PropertyName == nameof(viewModel.SubCategory))
@@ -180,6 +187,25 @@ public partial class TransactionWindow :Window
             ViewModel.AddTagCommand.Execute(null);
             e.Handled = true;
         }
+    }
+
+    private void TagSuggestionClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.Header is string tag)
+        {
+            ViewModel?.SelectTagCommand.Execute(tag);
+        }
+    }
+
+    private void TagCompleteBoxSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ViewModel == null || TagCompleteBox.SelectedItem is not string tag)
+        {
+            return;
+        }
+
+        ViewModel.SelectTagCommand.Execute(tag);
+        TagCompleteBox.SelectedItem = null;
     }
 
 }

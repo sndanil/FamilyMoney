@@ -241,6 +241,28 @@ public class LiteDbRepository : IRepository
         return result;
     }
 
+    public IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from)
+    {
+        using var db = new LiteDatabase(DatabasePath);
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+
+        return collection.Query()
+            .Where(t => t.Date >= from && t.SubCategoryId != null && t.CategoryId != null)
+            .ToList()
+            .Where(t => t.Tags is { Length: > 0 })
+            .GroupBy(t => (CategoryId: t.CategoryId!.Value, SubCategoryId: t.SubCategoryId!.Value))
+            .Select(g => new SubCategoryTags(
+                g.Key.SubCategoryId,
+                g.Key.CategoryId,
+                g.SelectMany(t => t.Tags!)
+                    .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                    .Select(tag => tag.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(tag => tag)
+                    .ToList()))
+            .ToList();
+    }
+
     public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
     {
         using var db = new LiteDatabase(DatabasePath);

@@ -71,6 +71,25 @@ public partial class BaseTransactionViewModel : ViewModelBase
     [ObservableProperty]
     public partial string TagInput { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial IList<string> SuggestedTags { get; private set; } = [];
+
+    partial void OnSuggestedTagsChanged(IList<string> value)
+    {
+        NotifySuggestedTagsChanged();
+    }
+
+    public IList<string> SelectableSuggestedTags => SuggestedTags
+        .Where(t => !Tags.Any(x => string.Equals(x, t, StringComparison.OrdinalIgnoreCase)))
+        .ToList();
+
+    public bool HasSelectableSuggestedTags => SelectableSuggestedTags.Count > 0;
+
+    public BaseTransactionViewModel()
+    {
+        Tags.CollectionChanged += (_, _) => NotifySuggestedTagsChanged();
+    }
+
     private bool CanOkCommand()
     {
         return Sum != 0 && Account != null && (!IsTransfer || ToAccount != null);
@@ -121,6 +140,26 @@ public partial class BaseTransactionViewModel : ViewModelBase
         }
 
         TagInput = string.Empty;
+        NotifySuggestedTagsChanged();
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task SelectTagAsync(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return;
+        }
+
+        var trimmed = tag.Trim();
+        if (!Tags.Any(t => string.Equals(t, trimmed, StringComparison.OrdinalIgnoreCase)))
+        {
+            Tags.Add(trimmed);
+        }
+
+        TagInput = string.Empty;
+        NotifySuggestedTagsChanged();
         await Task.CompletedTask;
     }
 
@@ -138,7 +177,30 @@ public partial class BaseTransactionViewModel : ViewModelBase
             Tags.Remove(existing);
         }
 
+        NotifySuggestedTagsChanged();
         await Task.CompletedTask;
+    }
+
+    public void RefreshSuggestedTags()
+    {
+        if (SubCategory != null
+            && Category != null
+            && SubCategory.CategoryId == Category.Id)
+        {
+            SuggestedTags = SubCategory.Tags;
+        }
+        else
+        {
+            SuggestedTags = [];
+        }
+
+        NotifySuggestedTagsChanged();
+    }
+
+    private void NotifySuggestedTagsChanged()
+    {
+        OnPropertyChanged(nameof(SelectableSuggestedTags));
+        OnPropertyChanged(nameof(HasSelectableSuggestedTags));
     }
 
     public string[]? GetTagsForSave()

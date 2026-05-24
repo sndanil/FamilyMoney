@@ -51,6 +51,11 @@ internal class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
+    public IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from)
+    {
+        return [];
+    }
+
     public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
     {
         throw new NotImplementedException();

@@ -24,7 +24,10 @@ public partial class BaseSubCategoryViewModel : ViewModelBase
     public partial decimal LastSum {  get; set; }
 
     [ObservableProperty]
-    public partial IList<string> Comments {  get; set; }
+    public partial IList<string> Comments { get; set; } = [];
+
+    [ObservableProperty]
+    public partial IList<string> Tags { get; set; } = [];
 
     public void FillFrom(Guid id, IRepository repository)
     {

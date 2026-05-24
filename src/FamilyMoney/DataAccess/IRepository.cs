@@ -10,6 +10,8 @@ public record SubCategoryLastSum(Guid SubCategoryId, decimal Sum);
 
 public record SubCategoryLastComments(Guid SubCategoryId, IList<string> Comments);
 
+public record SubCategoryTags(Guid SubCategoryId, Guid CategoryId, IList<string> Tags);
+
 public interface IRepository
 {
     void UpdateDbSchema();
@@ -36,6 +38,8 @@ public interface IRepository
     void UpdateSubCategory(SubCategory subCategory);
     IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds);
     IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from);
+
+    IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from);
 
     IEnumerable<Transaction> GetTransactions(TransactionsFilter filter);
     Transaction? GetTransaction(Guid id);

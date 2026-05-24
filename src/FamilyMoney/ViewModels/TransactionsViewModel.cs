@@ -338,6 +338,8 @@ public partial class TransactionsViewModel : ViewModelBase
             transactionViewModel.Date = _lastTransactionDate;
         }
 
+        transactionViewModel.RefreshSuggestedTags();
+
         return transactionViewModel;
     }
 
@@ -394,6 +396,7 @@ public partial class TransactionsViewModel : ViewModelBase
         transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId);
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
         transactionViewModel.Comments = transactionViewModel.SubCategory?.Comments ?? [];
+        transactionViewModel.RefreshSuggestedTags();
 
         transactionViewModel.Categories = transactionViewModel.Categories.Where(c => !c.IsHidden).ToList();
         transactionViewModel.SubCategories = transactionViewModel.SubCategories.Where(c => c.Category?.IsHidden == false).ToList();
@@ -678,6 +681,7 @@ public partial class TransactionsViewModel : ViewModelBase
         var typedSubCategories = _repository.GetSubCategories().OfType<T>();
         var subCategoriesBySums = _repository.GetLastSumsBySubCategories(DateTime.Today.AddYears(-1), typedSubCategories.Select(c => c.Id));
         var subCategoriesByComments = _repository.GetCommentsBySubCategories(DateTime.Today.AddYears(-1));
+        var subCategoriesByTags = _repository.GetTagsBySubCategories(DateTime.Today.AddYears(-1));
 
         var subCategories = typedSubCategories.OrderBy(c => c.Name).Select(c => new N
         {
@@ -687,6 +691,7 @@ public partial class TransactionsViewModel : ViewModelBase
             Category = GetCategory<C>(c.CategoryId.GetValueOrDefault()),
             LastSum = subCategoriesBySums.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Sum ?? 0m,
             Comments = subCategoriesByComments.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Comments ?? [],
+            Tags = subCategoriesByTags.FirstOrDefault(s => s.SubCategoryId == c.Id && s.CategoryId == c.CategoryId.GetValueOrDefault())?.Tags ?? [],
         });
 
         return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
