@@ -6,6 +6,7 @@ using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
+using FamilyMoney.ViewModels.Settings;
 using FamilyMoney.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,15 +57,13 @@ public partial class App : Application
           })
           .ConfigureAppConfiguration((hostingContext, config) =>
           {
-              var userSettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FamilyMoney");
-              var userSettingsPath = Path.Combine(userSettingsDirectory, "appsettings.json");
+              var userSettingsPath = Path.Combine(GlobalConfiguration.HomeFolder, "appsettings.json");
               config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
               config.AddCommandLine(System.Environment.GetCommandLineArgs());
           })
           .ConfigureLogging((hostingContext, builder) =>
           {
-              //builder.AddSplat();
               builder.AddNLog(hostingContext.Configuration);
           })
           .Build();
@@ -88,6 +87,7 @@ public partial class App : Application
 
         services.AddTransient<PeriodViewModel>();
         services.AddTransient<CategoriesViewModel>();
+        services.AddTransient<SettingsViewModel>();
         services.AddTransient<IImporter, CsvImporter>();
         services.AddTransient<IStateManager, StateManager>();
 

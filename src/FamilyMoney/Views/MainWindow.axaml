@@ -119,7 +119,36 @@
 						</Border.IsEnabled>
 					</Border>
 
-					<Border Classes="SideBarMenuItem" Name="ImportButton">
+					<Border Classes="SideBarMenuItem">
+						<StackPanel>
+							<iconPacks:PackIconBootstrapIcons Kind="Gear" />
+							<TextBlock Text="Параметры" />
+						</StackPanel>
+
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SwitchToCommand}"
+													 CommandParameter="{Binding #SettingsPanel}"/>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
+
+						<Border.IsEnabled>
+							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
+								<Binding Path="CurrentPanel"/>
+								<Binding Path="#SettingsPanel"/>
+							</MultiBinding>
+						</Border.IsEnabled>
+					</Border>
+
+					<Border Classes="SideBarMenuItem">
+						<StackPanel>
+							<iconPacks:PackIconBootstrapIcons Kind="Database" />
+							<TextBlock Text="База данных" />
+						</StackPanel>
+						
+					</Border>
+
+<!--					<Border Classes="SideBarMenuItem" Name="ImportButton">
 						<StackPanel>
 							<iconPacks:PackIconBootstrapIcons Kind="DatabaseUp" />
 							<TextBlock Text="Импорт" />
@@ -132,7 +161,7 @@
 							</EventTriggerBehavior>
 						</Interaction.Behaviors>
 					</Border>
-				</StackPanel>
+-->				</StackPanel>
 			</StackPanel>
 		</SplitView.Pane>
 
@@ -221,6 +250,15 @@
 						</MultiBinding>
 					</views:CategoriesView.IsVisible>
 				</views:CategoriesView>
+
+				<views:SettingsView Name="SettingsPanel" DataContext="{Binding Settings}">
+					<views:SettingsView.IsVisible>
+						<MultiBinding Converter="{StaticResource isEqualConverter}">
+							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
+							<Binding Path="$self"/>
+						</MultiBinding>
+					</views:SettingsView.IsVisible>
+				</views:SettingsView>
 			</Grid>
 		</SplitView.Content>
 	</SplitView>

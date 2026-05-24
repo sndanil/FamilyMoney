@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace FamilyMoney.Configuration;
 public sealed class RootConfiguration
 {
-    public required DatabaseConfiguration Database { get; init; }
+    public required DatabaseConfiguration[] Databases { get; init; }
 
     public required TransactionsViewConfiguration Transactions { get; init; }
 }

@@ -1,7 +1,8 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
 using FamilyMoney.ViewModels;
+using FamilyMoney.ViewModels.Settings;
 
 namespace FamilyMoney.Views;
 
@@ -36,6 +37,12 @@ public partial class MainWindow : Window
         {
             var dialog = new TransactionWindow { DataContext = m?.From };
             m?.Reply(dialog.ShowDialog<BaseTransactionViewModel?>(w));
+        });
+
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<DatabaseViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new DatabaseWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<DatabaseViewModel?>(w));
         });
 
         this.Activated += MainWindowActivated;

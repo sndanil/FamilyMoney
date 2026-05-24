@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.State;
+using FamilyMoney.ViewModels.Settings;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,6 +39,8 @@ public partial class MainWindowViewModel : ViewModelBase
         get => _period;
     }
 
+    public SettingsViewModel Settings { get; init; }
+
     public CategoriesViewModel Categories
     {
         get => _categoriesViewModel;
@@ -59,11 +62,14 @@ public partial class MainWindowViewModel : ViewModelBase
         PeriodViewModel period, 
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts, 
-        TransactionsViewModel transactionsViewModel)
+        TransactionsViewModel transactionsViewModel,
+        SettingsViewModel settingsViewModel)
     {
         _repository = repository;
         _importer = importer;
         _stateManager = stateManager;        
+
+        Settings = settingsViewModel;
 
         _categoriesViewModel = categoriesViewModel;
         _accountsViewModel = accounts;

@@ -1,0 +1,34 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:FamilyMoney.ViewModels.Settings"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SettingsViewModel"
+             x:Class="FamilyMoney.Views.SettingsView">
+	<UserControl.DataTemplates>
+		<DataTemplate DataType="vm:DatabaseViewModel">
+			<Border Classes="Item">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
+				</StackPanel>
+			</Border>
+		</DataTemplate>
+	</UserControl.DataTemplates>  	<Design.DataContext>
+		<vm:SettingsViewModel/>
+	</Design.DataContext>
+
+    <Grid ColumnDefinitions="*" RowDefinitions="50 200" Margin="20">
+		<Border Classes="Header">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Базы данных" />
+				<Button Command="{Binding AddDatabaseCommand}" Content="Добавить" />
+			</StackPanel>
+		</Border>
+
+		<Border Grid.Row="1" Classes="Content">
+			<ListBox ItemsSource="{Binding Databases}" >
+			</ListBox>
+		</Border>
+    </Grid>
+</UserControl>

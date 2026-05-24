@@ -17,7 +17,7 @@ public class LiteDbRepository : IRepository
 
     public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
     {
-        _databaseConfiguration = configuration.Get().Database;
+        _databaseConfiguration = configuration.Get().Databases.First();
         _logger = logger;
     }
 
