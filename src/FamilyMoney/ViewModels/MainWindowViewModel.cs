@@ -92,16 +92,13 @@ public partial class MainWindowViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Register<MainWindowViewModel, DatabaseChangedMessage>(this, (_, _) =>
         {
             UpdateWindowTitle();
-            MainInit(resetAccountSelection: true, reloadCategories: true);
+            MainInit(resetAccountSelection: true);
         });
 
         UpdateWindowTitle();
 
-        Task.Run(() => 
-        {
-            _repository.DoBackup();
-            _repository.UpdateDbSchema();
-        });
+        _repository.DoBackup();
+        _repository.UpdateDbSchema();
     }
 
     private void UpdateWindowTitle()
@@ -120,12 +117,9 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void MainInit(bool resetAccountSelection = false, bool reloadCategories = false)
+    private void MainInit(bool resetAccountSelection = false)
     {
-        if (reloadCategories)
-        {
-            _categoriesViewModel.Reload();
-        }
+        _categoriesViewModel.Reload();
 
         var accounts = _accountsViewModel.LoadAccounts();
         var state = _stateManager.GetMainState();
