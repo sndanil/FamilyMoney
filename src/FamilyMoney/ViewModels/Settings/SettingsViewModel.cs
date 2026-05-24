@@ -113,14 +113,31 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
-        foreach (var database in Databases)
+        await SwitchToDatabaseAsync(SelectedDatabase);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSwitchToDatabase))]
+    public async Task SwitchToDatabaseAsync(DatabaseViewModel? database)
+    {
+        if (database == null || database.IsSelected)
         {
-            database.IsSelected = false;
+            return;
         }
 
-        SelectedDatabase.IsSelected = true;
+        foreach (var item in Databases)
+        {
+            item.IsSelected = false;
+        }
+
+        database.IsSelected = true;
+        SelectedDatabase = database;
         Save();
         await Task.CompletedTask;
+    }
+
+    private bool CanSwitchToDatabase(DatabaseViewModel? database)
+    {
+        return database != null && !database.IsSelected;
     }
 
     private bool CanEditOrDelete()
