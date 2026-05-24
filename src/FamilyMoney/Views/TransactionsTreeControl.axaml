@@ -78,7 +78,7 @@
 		<Style Selector="Border.TransactionTag">
 			<Setter Property="CornerRadius" Value="6" />
 			<Setter Property="Padding" Value="6 2" />
-			<Setter Property="Margin" Value="0 0 4 2" />
+			<Setter Property="Margin" Value="0 2 4 2" />
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.TransactionTag TextBlock">
@@ -224,17 +224,19 @@
 															</EventTriggerBehavior>
 														</Interaction.Behaviors>
 
-														<Grid RowDefinitions="auto" ColumnDefinitions="30 30 * 100 150 100">
-															<StackPanel Grid.Column="2" Spacing="2" Margin="10 4 0 4" Orientation="Horizontal">
+														<Grid ColumnDefinitions="30 30 * 100 150 100">
+															<Grid Grid.Column="2" Margin="10 4 0 4" ColumnDefinitions="* auto">
 																<TextBlock Classes="Name"
 																		   Margin="0"
 																		   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
 																		   TextTrimming="CharacterEllipsis" />
 																<ItemsControl ItemsSource="{Binding Tags}"
-																				IsVisible="{Binding HasTags}">
+																				IsVisible="{Binding HasTags}"
+																				Grid.Column="1"
+																				>
 																	<ItemsControl.ItemsPanel>
 																		<ItemsPanelTemplate>
-																			<WrapPanel />
+																			<StackPanel Orientation="Horizontal" />
 																		</ItemsPanelTemplate>
 																	</ItemsControl.ItemsPanel>
 																	<ItemsControl.ItemTemplate>
@@ -245,7 +247,7 @@
 																		</DataTemplate>
 																	</ItemsControl.ItemTemplate>
 																</ItemsControl>
-															</StackPanel>
+															</Grid>
 															<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
 															<SelectableTextBlock Grid.Column="4" Classes="Sum"
 																	   Classes.Debet="{Binding IsDebet}"

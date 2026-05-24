@@ -53,7 +53,7 @@
 		<Style Selector="Border.TransactionTag">
 			<Setter Property="CornerRadius" Value="6" />
 			<Setter Property="Padding" Value="6 2" />
-			<Setter Property="Margin" Value="0 0 4 2" />
+			<Setter Property="Margin" Value="0 2 4 2" />
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.TransactionTag TextBlock">
@@ -180,16 +180,19 @@
 														/>
 													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
-													<StackPanel Grid.Column="5" Spacing="2" Margin="10 4 0 4" Orientation="Horizontal">
+													<Grid Grid.Column="5" Margin="10 4 0 4" ColumnDefinitions="* auto">
 														<TextBlock Classes="Name"
 																   Margin="0"
+																   DockPanel.Dock="Left"
 																   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
 																   TextTrimming="CharacterEllipsis" />
 														<ItemsControl ItemsSource="{Binding Tags}"
-																		IsVisible="{Binding HasTags}">
+																		IsVisible="{Binding HasTags}"
+																		Grid.Column="1"
+																		>
 															<ItemsControl.ItemsPanel>
 																<ItemsPanelTemplate>
-																	<WrapPanel />
+																	<StackPanel Orientation="Horizontal" />
 																</ItemsPanelTemplate>
 															</ItemsControl.ItemsPanel>
 															<ItemsControl.ItemTemplate>
@@ -200,7 +203,7 @@
 																</DataTemplate>
 															</ItemsControl.ItemTemplate>
 														</ItemsControl>
-													</StackPanel>
+													</Grid>
 													<SelectableTextBlock Grid.Column="6"
 															   Classes="Sum"
 															   Classes.Debet="{Binding IsDebet}"
