@@ -1,12 +1,28 @@
-﻿namespace FamilyMoney.Configuration;
+﻿using System.IO;
+
+namespace FamilyMoney.Configuration;
 
 public sealed class DatabaseConfiguration
 {
-    public required string Name { get; init; }
+    public string Name { get; set; } = string.Empty;
 
-    public required string Path { get;  init; }
+    public string Path { get; set; } = string.Empty;
 
-    public required string BackupsFolder { get; init; }
+    public string BackupsFolder { get; set; } = string.Empty;
 
-    public required int MaxBackups { get; init;}
+    public int MaxBackups { get; set; } = 10;
+
+    public string GetResolvedPath()
+    {
+        return System.IO.Path.IsPathRooted(Path)
+            ? Path
+            : System.IO.Path.Combine(GlobalConfiguration.HomeFolder, Path);
+    }
+
+    public string GetResolvedBackupsFolder()
+    {
+        return System.IO.Path.IsPathRooted(BackupsFolder)
+            ? BackupsFolder
+            : System.IO.Path.Combine(GlobalConfiguration.HomeFolder, BackupsFolder);
+    }
 }

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace FamilyMoney.Configuration;
 
-namespace FamilyMoney.Configuration;
 public sealed class RootConfiguration
 {
-    public required DatabaseConfiguration[] Databases { get; init; }
+    public DatabaseConfiguration[] Databases { get; set; } = [];
 
-    public required TransactionsViewConfiguration Transactions { get; init; }
+    public int SelectedDatabaseIndex { get; set; }
+
+    public TransactionsViewConfiguration Transactions { get; set; } = new();
 }

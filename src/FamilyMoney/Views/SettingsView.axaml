@@ -3,32 +3,59 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:FamilyMoney.ViewModels.Settings"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:SettingsViewModel"
              x:Class="FamilyMoney.Views.SettingsView">
 	<UserControl.DataTemplates>
 		<DataTemplate DataType="vm:DatabaseViewModel">
 			<Border Classes="Item">
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
-				</StackPanel>
+				<Grid ColumnDefinitions="* auto" Margin="10 6">
+					<StackPanel Spacing="2">
+						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+						<TextBlock Text="{Binding Path}"
+								   Opacity="0.7"
+								   FontSize="11"
+								   TextTrimming="CharacterEllipsis" />
+					</StackPanel>
+					<iconPacks:PackIconBootstrapIcons Grid.Column="1"
+													  Kind="CheckCircleFill"
+													  IsVisible="{Binding IsSelected}"
+													  VerticalAlignment="Center"
+													  Margin="10 0 0 0" />
+				</Grid>
 			</Border>
 		</DataTemplate>
-	</UserControl.DataTemplates>  	<Design.DataContext>
-		<vm:SettingsViewModel/>
-	</Design.DataContext>
+	</UserControl.DataTemplates>
+	<UserControl.Styles>
+		<Style Selector="Border.Header StackPanel">
+			<Setter Property="Width" Value="500" />
+		</Style>
+	</UserControl.Styles>
 
-    <Grid ColumnDefinitions="*" RowDefinitions="50 200" Margin="20">
+	<Grid ColumnDefinitions="*" RowDefinitions="50 *" Margin="20">
 		<Border Classes="Header">
-			<StackPanel Orientation="Horizontal">
+			<StackPanel Orientation="Horizontal" Spacing="10">
 				<TextBlock Text="Базы данных" />
 				<Button Command="{Binding AddDatabaseCommand}" Content="Добавить" />
+				<Button Command="{Binding EditDatabaseCommand}" Content="Изменить" />
+				<Button Command="{Binding DeleteDatabaseCommand}" Content="Удалить" />
+				<Button Command="{Binding SetActiveDatabaseCommand}" Content="Использовать" />
 			</StackPanel>
 		</Border>
 
 		<Border Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding Databases}" >
+			<ListBox ItemsSource="{Binding Databases}"
+					 SelectedItem="{Binding SelectedDatabase}"
+					 Name="DatabasesList">
+				<Interaction.Behaviors>
+					<EventTriggerBehavior EventName="DoubleTapped">
+						<InvokeCommandAction Command="{Binding EditDatabaseCommand}" />
+					</EventTriggerBehavior>
+				</Interaction.Behaviors>
 			</ListBox>
 		</Border>
-    </Grid>
+	</Grid>
 </UserControl>

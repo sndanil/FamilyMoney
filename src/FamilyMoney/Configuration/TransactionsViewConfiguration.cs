@@ -1,5 +1,6 @@
 ﻿namespace FamilyMoney.Configuration;
+
 public sealed class TransactionsViewConfiguration
 {
-    public required int MaxTransactionsByDate { get; init; }
+    public int MaxTransactionsByDate { get; set; } = 100;
 }

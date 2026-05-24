@@ -145,7 +145,20 @@
 							<iconPacks:PackIconBootstrapIcons Kind="Database" />
 							<TextBlock Text="База данных" />
 						</StackPanel>
-						
+
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SwitchToCommand}"
+													 CommandParameter="{Binding #SettingsPanel}"/>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
+
+						<Border.IsEnabled>
+							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
+								<Binding Path="CurrentPanel"/>
+								<Binding Path="#SettingsPanel"/>
+							</MultiBinding>
+						</Border.IsEnabled>
 					</Border>
 
 <!--					<Border Classes="SideBarMenuItem" Name="ImportButton">

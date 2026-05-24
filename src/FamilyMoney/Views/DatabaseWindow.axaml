@@ -2,45 +2,63 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="260"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="300"
         x:Class="FamilyMoney.DatabaseWindow"
-        Width="600" Height="260"
+        Width="800" Height="300"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
-		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels.Settings"
-		x:DataType="vm:DatabaseViewModel"		
+		x:DataType="vm:DatabaseViewModel"
 		Classes="Dialog"
-        Title="">
+        Title="База данных">
 	<Window.Styles>
 		<Style Selector="TextBox">
 			<Setter Property="Margin" Value="4" />
 			<Setter Property="HorizontalAlignment" Value="Stretch" />
 		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
 		<Style Selector="NumericUpDown">
 			<Setter Property="Margin" Value="4" />
 		</Style>
 	</Window.Styles>
-	<Grid RowDefinitions="auto auto auto auto auto" ColumnDefinitions="* 20" Margin="5 50 5 5">
-		<TextBox Text="{Binding Name}" Watermark="Наименование"/>
-		<TextBox Grid.Row="1" Text="{Binding Path}" Watermark="Путь"/>
-		<Button Grid.Row="1" Grid.Column="1"
+	<Grid RowDefinitions="auto auto auto auto auto" 
+			ColumnDefinitions="200 * 20" Margin="5 50 5 5">
+		<TextBlock Text="{Binding Watermark, ElementName=Name}"/>
+		<TextBox Grid.Column="1" x:Name="Name" Text="{Binding Name}" 
+		   Watermark="Наименование"/>
+		
+		<TextBlock Grid.Row="1" Text="{Binding Watermark, ElementName=Path}"/>
+		<TextBox Grid.Column="1" Grid.Row="1" 
+		   Name="Path"
+		   Text="{Binding Path}" 
+		   Watermark="Путь"/>
+		<Button Grid.Row="1" Grid.Column="2"
 				Classes="DialogToolButton"
 				Content="..."
-				/>
+				Click="BrowseDatabasePath" />
 
-		<TextBox Grid.Row="2" Text="{Binding BackupsFolder}" Watermark="Папка для резервных копий"/>
-		<Button Grid.Row="2" Grid.Column="1"
+		<TextBlock Grid.Row="2" Text="{Binding Watermark, ElementName=BackupsFolder}"/>
+		<TextBox Grid.Column="1" Grid.Row="2" Text="{Binding BackupsFolder}" 
+		   x:Name="BackupsFolder"
+		   Watermark="Папка для резервных копий"/>
+		<Button Grid.Row="2" Grid.Column="2"
 				Classes="DialogToolButton"
 				Content="..."
-				/>
+				Click="BrowseBackupsFolder" />
 
-		<NumericUpDown Grid.Row="3"
-						Watermark="Максимум резервных копий"
-						FormatString="#,##0"
-						Value="{Binding MaxBackups}"
-						/>
+		<TextBlock Grid.Row="3" Text="{Binding Watermark, ElementName=MaxBackups}"/>
+		<NumericUpDown Grid.Row="3" Grid.Column="1"
+				 Name="MaxBackups"
+				Watermark="Максимум резервных копий"
+				FormatString="#,##0"
+				Minimum="0"
+				Value="{Binding MaxBackups}"
+				/>
 		<StackPanel
 			Grid.Row="4"
 			Grid.ColumnSpan="2"
@@ -48,7 +66,7 @@
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"
 			>
-			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding}" />
+			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
 			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
 		</StackPanel>
 	</Grid>

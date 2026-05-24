@@ -74,7 +74,7 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         services.AddTransient<MainWindowViewModel>();
-        services.AddTransient<IGlobalConfiguration, GlobalConfiguration>();
+        services.AddSingleton<IGlobalConfiguration, GlobalConfiguration>();
 
         if (Avalonia.Controls.Design.IsDesignMode)
         {
