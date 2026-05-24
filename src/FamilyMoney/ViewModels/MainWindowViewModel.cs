@@ -4,7 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
+using FamilyMoney.Messages;
 using FamilyMoney.State;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.ViewModels.Settings;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,6 +79,12 @@ public partial class MainWindowViewModel : ViewModelBase
         _period = period;
 
         PropertyChanged += MainWindowViewModel_PropertyChanged;
+
+        WeakReferenceMessenger.Default.Register<MainWindowViewModel, DatabaseChangedMessage>(this, (_, _) =>
+        {
+            MainInit(resetAccountSelection: true, reloadCategories: true);
+        });
+
         Task.Run(() => 
         {
             _repository.DoBackup();
@@ -92,8 +100,13 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void MainInit()
+    private void MainInit(bool resetAccountSelection = false, bool reloadCategories = false)
     {
+        if (reloadCategories)
+        {
+            _categoriesViewModel.Reload();
+        }
+
         var accounts = _accountsViewModel.LoadAccounts();
         var state = _stateManager.GetMainState();
         var newState = state with
@@ -101,6 +114,7 @@ public partial class MainWindowViewModel : ViewModelBase
             Accounts = accounts,
             PeriodFrom = _period.From,
             PeriodTo = _period.To,
+            SelectedAccountId = resetAccountSelection ? null : state.SelectedAccountId,
         };
         _stateManager.SetMainState(newState);
     }

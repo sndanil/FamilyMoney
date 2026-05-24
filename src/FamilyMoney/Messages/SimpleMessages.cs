@@ -10,6 +10,8 @@ public record AccountExpandMessage(Guid? AccountId, bool IsExpanded);
 
 public record MainStateChangedMessage(MainState State);
 
+public record DatabaseChangedMessage;
+
 public record CategoryUpdateMessage(Guid? CategoryId);
 
 public record TransactionChangedMessage(Transaction? Before, Transaction? After);

@@ -46,26 +46,34 @@ public class LiteDbRepository : IRepository
 
     public void DoBackup()
     {
-        if (File.Exists(DatabasePath))
+        DoBackup(DatabaseConfiguration);
+    }
+
+    public void DoBackup(DatabaseConfiguration configuration)
+    {
+        var databasePath = configuration.GetResolvedPath();
+        if (!File.Exists(databasePath))
         {
-            var backupsFolder = BackupsFolder;
-            if (!Directory.Exists(backupsFolder))
-            {
-                Directory.CreateDirectory(backupsFolder);
-            }
+            return;
+        }
 
-            var backupPath = Path.Combine(backupsFolder, "Backup_" + DateTime.Now.ToString("yyyy_MM_dd", CultureInfo.InvariantCulture) + ".db");
-            if (!File.Exists(backupPath))
-            {
-                File.Copy(DatabasePath, backupPath);
-            }
+        var backupsFolder = configuration.GetResolvedBackupsFolder();
+        if (!Directory.Exists(backupsFolder))
+        {
+            Directory.CreateDirectory(backupsFolder);
+        }
 
-            foreach (var file in Directory.GetFiles(backupsFolder).OrderByDescending(b => b).Skip(DatabaseConfiguration.MaxBackups))
+        var backupPath = Path.Combine(backupsFolder, "Backup_" + DateTime.Now.ToString("yyyy_MM_dd", CultureInfo.InvariantCulture) + ".db");
+        if (!File.Exists(backupPath))
+        {
+            File.Copy(databasePath, backupPath);
+        }
+
+        foreach (var file in Directory.GetFiles(backupsFolder).OrderByDescending(b => b).Skip(configuration.MaxBackups))
+        {
+            if (File.Exists(file))
             {
-                if (File.Exists(file))
-                {
-                    File.Delete(file);
-                }
+                File.Delete(file);
             }
         }
     }

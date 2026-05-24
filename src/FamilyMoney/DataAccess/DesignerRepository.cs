@@ -1,4 +1,5 @@
-﻿using FamilyMoney.Models;
+﻿using FamilyMoney.Configuration;
+using FamilyMoney.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,10 @@ internal class DesignerRepository : IRepository
 
     public void DoBackup()
     {
-        throw new NotImplementedException();
+    }
+
+    public void DoBackup(DatabaseConfiguration configuration)
+    {
     }
 
     public Account GetAccount(Guid id)

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
+using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace FamilyMoney.ViewModels.Settings;
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IGlobalConfiguration _configuration;
+    private readonly IRepository _repository;
 
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
 
@@ -19,9 +21,10 @@ public partial class SettingsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(EditDatabaseCommand), nameof(DeleteDatabaseCommand), nameof(SetActiveDatabaseCommand))]
     public partial DatabaseViewModel? SelectedDatabase { get; set; }
 
-    public SettingsViewModel(IGlobalConfiguration configuration)
+    public SettingsViewModel(IGlobalConfiguration configuration, IRepository repository)
     {
         _configuration = configuration;
+        _repository = repository;
         Load();
     }
 
@@ -132,6 +135,7 @@ public partial class SettingsViewModel : ViewModelBase
     private void Save()
     {
         var root = _configuration.Get();
+        var previousIndex = root.SelectedDatabaseIndex;
         var selectedIndex = 0;
         for (var i = 0; i < Databases.Count; i++)
         {
@@ -142,6 +146,13 @@ public partial class SettingsViewModel : ViewModelBase
             }
         }
 
+        if (selectedIndex != previousIndex
+            && previousIndex >= 0
+            && previousIndex < root.Databases.Length)
+        {
+            _repository.DoBackup(root.Databases[previousIndex]);
+        }
+
         var newRoot = new RootConfiguration
         {
             Databases = Databases.Select(d => d.ToConfiguration()).ToArray(),
@@ -150,5 +161,10 @@ public partial class SettingsViewModel : ViewModelBase
         };
 
         _configuration.Save(newRoot);
+
+        if (selectedIndex != previousIndex)
+        {
+            WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+        }
     }
 }

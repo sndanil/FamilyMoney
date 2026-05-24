@@ -1,4 +1,5 @@
-﻿using FamilyMoney.Models;
+﻿using FamilyMoney.Configuration;
+using FamilyMoney.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,8 @@ public interface IRepository
     void UpdateDbSchema();
 
     void DoBackup();
+
+    void DoBackup(DatabaseConfiguration configuration);
     void UpdateImage(Guid id, string fileName, Stream stream);
 
     Stream? TryGetImage(Guid id);

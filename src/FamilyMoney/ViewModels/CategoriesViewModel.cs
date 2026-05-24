@@ -29,6 +29,14 @@ public partial class CategoriesViewModel : ViewModelBase
     public CategoriesViewModel(IRepository repository)
     {
         _repository = repository;
+        Reload();
+    }
+
+    public void Reload()
+    {
+        DebetCategories.Clear();
+        CreditCategories.Clear();
+        TransferCategories.Clear();
 
         var categories = _repository.GetCategories();
 

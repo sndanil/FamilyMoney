@@ -154,6 +154,14 @@ public partial class TransactionsViewModel : ViewModelBase
                 _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
             }
         });
+
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, DatabaseChangedMessage>(this, async (_, _) =>
+        {
+            _categoriesCache.Clear();
+            _subCategoriesCache.Clear();
+            _openedNodes.Clear();
+            await Task.CompletedTask;
+        });
     }
 
     [RelayCommand]
