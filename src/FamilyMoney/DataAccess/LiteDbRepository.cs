@@ -31,6 +31,12 @@ public class LiteDbRepository : IRepository
     {
         _logger.LogInformation("Start update schema");
 
+        var directory = Path.GetDirectoryName(DatabasePath);
+        if (!string.IsNullOrEmpty(directory)) 
+        {
+            Directory.CreateDirectory(directory);
+        }
+
         using var db = new LiteDatabase(DatabasePath);
 
         var subcategories = db.GetCollection<SubCategory>(nameof(SubCategory));
