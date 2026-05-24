@@ -2,6 +2,7 @@
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.Messages;
@@ -15,9 +16,12 @@ namespace FamilyMoney.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private const string AppTitle = "Семейные деньги";
+
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
     private readonly IImporter _importer;
+    private readonly IGlobalConfiguration _configuration;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
@@ -35,6 +39,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial Control? CurrentPanel { get; set; }
+
+    [ObservableProperty]
+    public partial string WindowTitle { get; private set; } = AppTitle;
 
     public PeriodViewModel Period
     {
@@ -61,6 +68,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(IRepository repository, 
         IStateManager stateManager,
         IImporter importer,
+        IGlobalConfiguration configuration,
         PeriodViewModel period, 
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts, 
@@ -69,7 +77,8 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _repository = repository;
         _importer = importer;
-        _stateManager = stateManager;        
+        _stateManager = stateManager;
+        _configuration = configuration;
 
         Settings = settingsViewModel;
 
@@ -82,14 +91,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
         WeakReferenceMessenger.Default.Register<MainWindowViewModel, DatabaseChangedMessage>(this, (_, _) =>
         {
+            UpdateWindowTitle();
             MainInit(resetAccountSelection: true, reloadCategories: true);
         });
+
+        UpdateWindowTitle();
 
         Task.Run(() => 
         {
             _repository.DoBackup();
             _repository.UpdateDbSchema();
         });
+    }
+
+    private void UpdateWindowTitle()
+    {
+        var databaseName = _configuration.GetSelectedDatabase().Name;
+        WindowTitle = string.IsNullOrWhiteSpace(databaseName)
+            ? AppTitle
+            : $"{AppTitle} — {databaseName}";
     }
 
     private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

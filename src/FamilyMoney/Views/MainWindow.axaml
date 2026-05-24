@@ -13,7 +13,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/wallet.ico"
 		WindowState="Maximized"
-        Title="Семейные деньги">
+        Title="{Binding WindowTitle}">
 
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
