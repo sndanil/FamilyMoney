@@ -12,24 +12,26 @@ namespace FamilyMoney.DataAccess;
 
 public class LiteDbRepository : IRepository
 {
-    private readonly DatabaseConfiguration _databaseConfiguration;
-    private readonly string _databasePath;
-    private readonly string _backupsFolder;
+    private readonly IGlobalConfiguration _configuration;
     private readonly ILogger<LiteDbRepository> _logger;
 
     public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
     {
-        _databaseConfiguration = configuration.GetSelectedDatabase();
-        _databasePath = _databaseConfiguration.GetResolvedPath();
-        _backupsFolder = _databaseConfiguration.GetResolvedBackupsFolder();
+        _configuration = configuration;
         _logger = logger;
     }
+
+    private DatabaseConfiguration DatabaseConfiguration => _configuration.GetSelectedDatabase();
+
+    private string DatabasePath => DatabaseConfiguration.GetResolvedPath();
+
+    private string BackupsFolder => DatabaseConfiguration.GetResolvedBackupsFolder();
 
     public void UpdateDbSchema()
     {
         _logger.LogInformation("Start update schema");
 
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
 
         var subcategories = db.GetCollection<SubCategory>(nameof(SubCategory));
         subcategories.EnsureIndex(s => s.Name);
@@ -44,9 +46,9 @@ public class LiteDbRepository : IRepository
 
     public void DoBackup()
     {
-        if (File.Exists(_databasePath))
+        if (File.Exists(DatabasePath))
         {
-            var backupsFolder = _backupsFolder;
+            var backupsFolder = BackupsFolder;
             if (!Directory.Exists(backupsFolder))
             {
                 Directory.CreateDirectory(backupsFolder);
@@ -55,10 +57,10 @@ public class LiteDbRepository : IRepository
             var backupPath = Path.Combine(backupsFolder, "Backup_" + DateTime.Now.ToString("yyyy_MM_dd", CultureInfo.InvariantCulture) + ".db");
             if (!File.Exists(backupPath))
             {
-                File.Copy(_databasePath, backupPath);
+                File.Copy(DatabasePath, backupPath);
             }
 
-            foreach (var file in Directory.GetFiles(backupsFolder).OrderByDescending(b => b).Skip(_databaseConfiguration.MaxBackups))
+            foreach (var file in Directory.GetFiles(backupsFolder).OrderByDescending(b => b).Skip(DatabaseConfiguration.MaxBackups))
             {
                 if (File.Exists(file))
                 {
@@ -71,14 +73,14 @@ public class LiteDbRepository : IRepository
     public void UpdateImage(Guid id, string fileName, Stream stream)
     {
         var strId = id.ToString();
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         db.FileStorage.Upload(strId, fileName, stream);
     }
 
     public Stream? TryGetImage(Guid id)
     {
         var strId = id.ToString();
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var file = db.FileStorage.FindById(strId);
         if (file != null)
         {
@@ -94,28 +96,28 @@ public class LiteDbRepository : IRepository
 
     public Account GetAccount(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Account>(nameof(Account));
         return collection.FindOne(c => c.Id == id);
     }
 
     public IEnumerable<Account> GetAccounts()
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Account>(nameof(Account));
         return collection.FindAll().ToList();
     }
 
     public void UpdateAccount(Account account)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Account>(nameof(Account));
         collection.Upsert(account);
     }
 
     public void DeleteAccount(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Account>(nameof(Account));
         collection.Delete(id);
         db.FileStorage.Delete(id.ToString());
@@ -123,35 +125,35 @@ public class LiteDbRepository : IRepository
 
     public void UpdateCategroty(Category category)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Category>(nameof(Category));
         collection.Upsert(category);
     }
 
     public Category GetCategory(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Category>(nameof(Category));
         return collection.FindOne(c => c.Id == id);
     }
 
     public IEnumerable<Category> GetCategories()
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Category>(nameof(Category));
         return collection.FindAll().ToList();
     }
 
     public SubCategory GetSubCategory(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         return collection.FindOne(c => c.Id == id);
     }
 
     public SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         var result = collection.Query()
                         .Where(s => s.CategoryId == categoryId && s.Name == name)
@@ -174,21 +176,21 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<SubCategory> GetSubCategories()
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         return collection.FindAll().ToList();
     }
 
     public void UpdateSubCategory(SubCategory subCategory)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         collection.Upsert(subCategory);
     }
 
     public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
         var result = new List<SubCategoryLastSum>();
@@ -209,7 +211,7 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
         var query = collection.Query().Where(t => t.Date >= from && !string.IsNullOrEmpty(t.Comment))
@@ -227,7 +229,7 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
         var query = collection.Query().Where(t => t.Date >= filter.PeriodFrom && t.Date <= filter.PeriodTo);
@@ -252,28 +254,28 @@ public class LiteDbRepository : IRepository
 
     public Transaction? GetTransaction(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         return collection.FindById(id);
     }
 
     public void DeleteTransaction(Guid id)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         collection.Delete(id);
     }
 
     public void UpdateTransaction(Transaction transaction)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         collection.Upsert(transaction);
     }
 
     public void InsertTransactions(IEnumerable<Transaction> transactions)
     {
-        using var db = new LiteDatabase(_databasePath);
+        using var db = new LiteDatabase(DatabasePath);
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         collection.InsertBulk(transactions);
     }
