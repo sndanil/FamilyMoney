@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -46,6 +46,19 @@
 		<Style Selector="Border.Trsansaction > Grid">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="5 0" />
+		</Style>
+		<Style Selector="Border.Trsansaction.TransactionRow">
+			<Setter Property="MinHeight" Value="30" />
+		</Style>
+		<Style Selector="Border.TransactionTag">
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Padding" Value="6 2" />
+			<Setter Property="Margin" Value="0 0 4 2" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+		</Style>
+		<Style Selector="Border.TransactionTag TextBlock">
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="Opacity" Value="0.85" />
 		</Style>
 		<Style Selector="TextBlock.Name">
 			<Setter Property="Margin" Value="15 0 0 0" />
@@ -106,7 +119,7 @@
 				<DataTemplate>
 					<StackPanel>
 						<Border Classes="Total">
-							<Grid ColumnDefinitions="600 115">
+							<Grid ColumnDefinitions="* 115">
 								<TextBlock Classes="Title"
 										   MinWidth="70"
 										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
@@ -149,7 +162,7 @@
 												<iconPacks:PackIconBootstrapIcons Kind="Trash" />
 											</Button>
 
-											<Border Classes="Trsansaction" Classes.Selected="{Binding IsSelected}">
+											<Border Classes="Trsansaction TransactionRow" Classes.Selected="{Binding IsSelected}">
 												<Interaction.Behaviors>
 													<EventTriggerBehavior EventName="Tapped">
 														<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
@@ -159,7 +172,7 @@
 													</EventTriggerBehavior>
 												</Interaction.Behaviors>
 
-												<Grid ColumnDefinitions="25 25 20 130 200 200 100">
+												<Grid ColumnDefinitions="25 25 20 130 200 * 100">
 
 													<Image Stretch="Uniform" Grid.Column="2"
 															Source="{Binding Category.Image}"
@@ -167,7 +180,27 @@
 														/>
 													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
-													<TextBlock Grid.Column="5" Classes="Name" Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}" />
+													<StackPanel Grid.Column="5" Spacing="2" Margin="10 4 0 4" Orientation="Horizontal">
+														<TextBlock Classes="Name"
+																   Margin="0"
+																   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+																   TextTrimming="CharacterEllipsis" />
+														<ItemsControl ItemsSource="{Binding Tags}"
+																		IsVisible="{Binding HasTags}">
+															<ItemsControl.ItemsPanel>
+																<ItemsPanelTemplate>
+																	<WrapPanel />
+																</ItemsPanelTemplate>
+															</ItemsControl.ItemsPanel>
+															<ItemsControl.ItemTemplate>
+																<DataTemplate>
+																	<Border Classes="TransactionTag">
+																		<TextBlock Text="{Binding}" />
+																	</Border>
+																</DataTemplate>
+															</ItemsControl.ItemTemplate>
+														</ItemsControl>
+													</StackPanel>
 													<SelectableTextBlock Grid.Column="6"
 															   Classes="Sum"
 															   Classes.Debet="{Binding IsDebet}"

@@ -620,6 +620,10 @@ public partial class TransactionsViewModel : ViewModelBase
             Date = transaction.Date,
             LastChange = transaction.LastChange,
             Comment = transaction.Comment,
+            Tags = transaction.Tags?
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim())
+                .ToArray() ?? [],
             Sum = transaction.Sum,
             Category = category.Category,
             SubCategory = subCategory.SubCategory,
