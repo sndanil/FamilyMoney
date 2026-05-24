@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
@@ -170,6 +171,15 @@ public partial class TransactionWindow :Window
     private void CommentClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         this.ViewModel!.Comment += (sender as MenuItem)?.Header;
+    }
+
+    private void TagInputKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && ViewModel?.AddTagCommand.CanExecute(null) == true)
+        {
+            ViewModel.AddTagCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
 }

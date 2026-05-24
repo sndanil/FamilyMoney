@@ -1,10 +1,10 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="550"
-		Width="600" Height="550"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="620"
+		Width="600" Height="620"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaChromeHints="NoChrome"
@@ -96,7 +96,7 @@
 		</DataTemplate>
 	</Window.DataTemplates>
 	
-	<Grid RowDefinitions="auto auto auto * auto">
+	<Grid RowDefinitions="auto auto auto * auto auto">
 		<TextBlock  Margin="0 10 0 20" HorizontalAlignment="Center" 
 					Text="{Binding ., Converter={StaticResource transactionTypeConverter}}"
 					/>
@@ -276,8 +276,53 @@
 			</Button>
 		</Grid>
 
+		<Grid Grid.Row="4" ColumnDefinitions="150 *" Margin="15 5 15 10">
+			<TextBlock Text="Теги" Classes="Label" VerticalAlignment="Top" />
+			<StackPanel Grid.Column="1" Spacing="6">
+				<DockPanel>
+					<Button DockPanel.Dock="Right"
+							Content="Добавить"
+							Margin="8 0 0 0"
+							Classes="DialogButton"
+							Width="100"
+							Command="{Binding AddTagCommand}" />
+					<TextBox Name="TagInputBox"
+							 Text="{Binding TagInput}"
+							 Watermark="Новый тег"
+							 KeyDown="TagInputKeyDown" />
+				</DockPanel>
+				<ItemsControl ItemsSource="{Binding Tags}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="x:String">
+							<Border CornerRadius="8"
+									Padding="8 4"
+									Margin="0 0 6 6"
+									Background="{DynamicResource GroupBackBrush}">
+								<StackPanel Orientation="Horizontal" Spacing="6">
+									<TextBlock Text="{Binding}" VerticalAlignment="Center" />
+									<Button Classes="DialogToolButton"
+											Width="22"
+											Height="22"
+											Padding="0"
+											Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).RemoveTagCommand}"
+											CommandParameter="{Binding}">
+										<iconPacks:PackIconBootstrapIcons Kind="X" Width="10" Height="10" />
+									</Button>
+								</StackPanel>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</Grid>
+
 		<StackPanel
-			Grid.Row="4"
+			Grid.Row="5"
 			Orientation="Horizontal"
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"

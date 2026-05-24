@@ -6,7 +6,9 @@ using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
@@ -64,6 +66,11 @@ public partial class BaseTransactionViewModel : ViewModelBase
     [ObservableProperty]
     public partial DateTime? LastChange { get; set; }
 
+    public ObservableCollection<string> Tags { get; } = [];
+
+    [ObservableProperty]
+    public partial string TagInput { get; set; } = string.Empty;
+
     private bool CanOkCommand()
     {
         return Sum != 0 && Account != null && (!IsTransfer || ToAccount != null);
@@ -99,6 +106,46 @@ public partial class BaseTransactionViewModel : ViewModelBase
         Date = Date!.Value.AddDays(1);
     }
 
+    [RelayCommand]
+    public async Task AddTagAsync()
+    {
+        var tag = TagInput.Trim();
+        if (string.IsNullOrEmpty(tag))
+        {
+            return;
+        }
+
+        if (!Tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)))
+        {
+            Tags.Add(tag);
+        }
+
+        TagInput = string.Empty;
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task RemoveTagAsync(string? tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+        {
+            return;
+        }
+
+        var existing = Tags.FirstOrDefault(t => string.Equals(t, tag, StringComparison.Ordinal));
+        if (existing != null)
+        {
+            Tags.Remove(existing);
+        }
+
+        await Task.CompletedTask;
+    }
+
+    public string[]? GetTagsForSave()
+    {
+        return Tags.Count > 0 ? Tags.ToArray() : null;
+    }
+
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
@@ -116,6 +163,15 @@ public partial class BaseTransactionViewModel : ViewModelBase
         Date = transaction.Date;
         LastChange = transaction.LastChange;
         Comment = transaction.Comment;
+
+        Tags.Clear();
+        if (transaction.Tags != null)
+        {
+            foreach (var tag in transaction.Tags.Where(t => !string.IsNullOrWhiteSpace(t)))
+            {
+                Tags.Add(tag.Trim());
+            }
+        }
     }
 }
 

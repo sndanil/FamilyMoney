@@ -393,6 +393,7 @@ public partial class TransactionsViewModel : ViewModelBase
         transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
         transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId);
         transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
+        transactionViewModel.Comments = transactionViewModel.SubCategory?.Comments ?? [];
 
         transactionViewModel.Categories = transactionViewModel.Categories.Where(c => !c.IsHidden).ToList();
         transactionViewModel.SubCategories = transactionViewModel.SubCategories.Where(c => c.Category?.IsHidden == false).ToList();
@@ -415,6 +416,7 @@ public partial class TransactionsViewModel : ViewModelBase
         transaction.CategoryId = transactionViewModel.Category?.Id;
         transaction.Sum = transactionViewModel.Sum;
         transaction.Comment = transactionViewModel.Comment;
+        transaction.Tags = transactionViewModel.GetTagsForSave();
         transaction.Date = transactionViewModel.Date!.Value.Date;
         transaction.LastChange = DateTime.Now;
 
