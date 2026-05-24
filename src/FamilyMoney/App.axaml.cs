@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.Configuration;
@@ -57,7 +57,7 @@ public partial class App : Application
           })
           .ConfigureAppConfiguration((hostingContext, config) =>
           {
-              var userSettingsPath = Path.Combine(GlobalConfiguration.HomeFolder, "appsettings.json");
+              var userSettingsPath = GlobalConfiguration.UserSettingsPath;
               config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
               config.AddCommandLine(System.Environment.GetCommandLineArgs());

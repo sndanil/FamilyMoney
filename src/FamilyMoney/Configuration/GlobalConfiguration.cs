@@ -14,6 +14,12 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "FamilyMoney");
 
+#if DEBUG
+    public static string UserSettingsPath { get; } = Path.Combine(HomeFolder, "appsettings.debug.json");
+#else
+    public static string UserSettingsPath { get; } = Path.Combine(HomeFolder, "appsettings.json");
+#endif
+
     public GlobalConfiguration(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -44,9 +50,8 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
     public void Save(RootConfiguration configuration)
     {
         Directory.CreateDirectory(HomeFolder);
-        var userSettingsPath = Path.Combine(HomeFolder, "appsettings.json");
         var json = JsonSerializer.Serialize(configuration, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(userSettingsPath, json);
+        File.WriteAllText(UserSettingsPath, json);
         _rootConfiguration = configuration;
     }
 
