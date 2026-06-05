@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="620"
 		Width="600" Height="620"
 		WindowStartupLocation="CenterOwner"
@@ -140,7 +140,7 @@
 			<Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="30 * 30">
 				<Button Command="{Binding PrevDayCommand}" Classes="CalendarButton"
 						HotKey="Ctrl+Alt+Left">
-					<iconPacks:PackIconBootstrapIcons Kind="ArrowLeftShort" />
+					<mi:MaterialIcon Kind="ChevronLeft" />
 				</Button>
 				<CalendarDatePicker Grid.Column="1" SelectedDate="{Binding Date}"
 						CustomDateFormatString="dd.MM.YYYY"
@@ -149,7 +149,7 @@
 						/>
 				<Button Grid.Column="2" Command="{Binding NextDayCommand}" Classes="CalendarButton"
 						HotKey="Ctrl+Alt+Right">
-					<iconPacks:PackIconBootstrapIcons Kind="ArrowRightShort" />
+					<mi:MaterialIcon Kind="ChevronRight" />
 				</Button>
 			</Grid>
 
@@ -172,14 +172,14 @@
 						Click="ClearSubCategoryButtonClick"
 						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
 						>
-					<iconPacks:PackIconBootstrapIcons Kind="X" />
+					<mi:MaterialIcon Kind="Close" />
 				</Button>
 				<Button DockPanel.Dock="Right" 
 						Margin="2"
 						Click="ShowDropDownButtonClick"
 						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
 						>
-					<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" />
+					<mi:MaterialIcon Kind="ChevronDown" />
 				</Button>
 				<AutoCompleteBox DockPanel.Dock="Left"
 							SelectedItem="{Binding SubCategory}"
@@ -259,7 +259,7 @@
 						IsVisible="{Binding Comments.Count}"
 						>
 					<Button.Content>
-						<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" />
+						<mi:MaterialIcon Kind="ChevronDown" />
 					</Button.Content>
 					<Button.Flyout>
 						<MenuFlyout ItemsSource="{Binding Comments}">
@@ -291,7 +291,7 @@
 							Width="30"
 							IsVisible="{Binding HasSelectableSuggestedTags}">
 						<Button.Content>
-							<iconPacks:PackIconBootstrapIcons Kind="TagsFill" />
+							<mi:MaterialIcon Kind="TagMultiple" />
 						</Button.Content>
 						<Button.Flyout>
 							<MenuFlyout ItemsSource="{Binding SelectableSuggestedTags}">
@@ -309,7 +309,7 @@
 							Classes="DialogButton"
 							Width="30"
 							Command="{Binding AddTagCommand}">
-						<iconPacks:PackIconBootstrapIcons Kind="Plus" />
+						<mi:MaterialIcon Kind="Plus" />
 					</Button>
 					<AutoCompleteBox Name="TagCompleteBox"
 									 Text="{Binding TagInput, Mode=TwoWay}"
@@ -340,7 +340,7 @@
 											Padding="0"
 											Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).RemoveTagCommand}"
 											CommandParameter="{Binding}">
-										<iconPacks:PackIconBootstrapIcons Kind="X" Width="10" Height="10" />
+										<mi:MaterialIcon Kind="Close" Width="10" Height="10" />
 									</Button>
 								</StackPanel>
 							</Border>

@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
@@ -24,7 +24,7 @@
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
-		<Style Selector="iconPacks|PackIconBootstrapIcons">
+		<Style Selector="mi|MaterialIcon">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -102,8 +102,8 @@
 								Command="{Binding Parent.ToggleExpandCommand}" 
 								CommandParameter="{Binding}">
 							<Grid>
-								<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-								<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
+								<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+								<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 							</Grid>
 						</Button>
 
@@ -152,8 +152,8 @@
 												Command="{Binding Parent.ToggleExpandCommand}"
 												CommandParameter="{Binding}">
 											<Grid>
-												<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-												<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
+												<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+												<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 											</Grid>
 										</Button>
 										<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
@@ -197,7 +197,7 @@
 															Command="{Binding Parent.CopyCommand}"
 															CommandParameter="{Binding}"
 															ToolTip.Tip="Копировать">
-														<iconPacks:PackIconBootstrapIcons Kind="Copy" />
+														<mi:MaterialIcon Kind="ContentCopy" />
 													</Button>
 													<Button Margin="45 0 0 0" 
 															Classes="Expander"
@@ -211,7 +211,7 @@
 															</MenuFlyout>
 														</Button.Flyout>
 
-														<iconPacks:PackIconBootstrapIcons Kind="Trash" />
+														<mi:MaterialIcon Kind="Delete" />
 													</Button>
 
 													<Border Classes="Category TransactionRow" Classes.Selected="{Binding IsSelected}">

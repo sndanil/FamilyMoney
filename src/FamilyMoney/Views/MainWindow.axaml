@@ -1,6 +1,6 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:vm="using:FamilyMoney.ViewModels"
 		xmlns:settingsVm="using:FamilyMoney.ViewModels.Settings"
 		xmlns:cv="using:FamilyMoney.Converters"
@@ -46,7 +46,7 @@
 		<Style Selector="Border.SideBarMenuItem:disabled">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
-		<Style Selector="Border.SideBarMenuItem iconPacks|PackIconBootstrapIcons">
+		<Style Selector="Border.SideBarMenuItem mi|MaterialIcon">
 			<Setter Property="Width" Value="14"/>
 		</Style>
 		<Style Selector="Button.AddButton">
@@ -84,13 +84,13 @@
 						Margin="7 12"
 						Background="Transparent"
 						Command="{Binding TriggerPaneCommand}">
-					<iconPacks:PackIconBootstrapIcons Kind="List" />
+					<mi:MaterialIcon Kind="Menu" />
 				</Button>
 
 				<StackPanel Classes="SideBarMenu">
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<iconPacks:PackIconBootstrapIcons Kind="House" />
+							<mi:MaterialIcon Kind="Home" />
 							<TextBlock Text="Главная" />
 						</StackPanel>
 
@@ -111,7 +111,7 @@
 
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<iconPacks:PackIconBootstrapIcons Kind="Database" />
+							<mi:MaterialIcon Kind="Database" />
 							<TextBlock Text="Базы данных" />
 						</StackPanel>
 
@@ -136,7 +136,7 @@
 										CommandParameter="{Binding}"
 										IsEnabled="{Binding !IsSelected}">
 									<StackPanel Orientation="Horizontal" Spacing="8">
-										<iconPacks:PackIconBootstrapIcons Kind="Check"
+										<mi:MaterialIcon Kind="Check"
 																			IsVisible="{Binding IsSelected}"
 																			Width="14" />
 										<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
@@ -148,7 +148,7 @@
 
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<iconPacks:PackIconBootstrapIcons Kind="Bookmark" />
+							<mi:MaterialIcon Kind="Bookmark" />
 							<TextBlock Text="Категории" />
 						</StackPanel>
 
@@ -169,7 +169,7 @@
 
 					<Border Classes="SideBarMenuItem">
 						<StackPanel>
-							<iconPacks:PackIconBootstrapIcons Kind="Gear" />
+							<mi:MaterialIcon Kind="Cog" />
 							<TextBlock Text="Параметры" />
 						</StackPanel>
 
@@ -210,14 +210,14 @@
 										  Height="30" 
 										  VerticalAlignment="Center" 
 										  Margin="5 0">
-								<iconPacks:PackIconBootstrapIcons Kind="ListNested" />
+								<mi:MaterialIcon Kind="FormatListGroup" />
 							</ToggleButton >
 
 							<ToggleButton IsChecked="{Binding !ShowTransactionsTree}"
 										  Height="30" 
 										  VerticalAlignment="Center" 
 										  Margin="10 0">
-								<iconPacks:PackIconBootstrapIcons Kind="CalendarCheck" />
+								<mi:MaterialIcon Kind="CalendarCheck" />
 							</ToggleButton >
 
 							<views:PeriodView DataContext="{Binding Period}" Margin="10 0 0 0" />
@@ -244,7 +244,7 @@
 										  Height="30"
 										  VerticalAlignment="Center"
 										  Margin="5 0">
-								<iconPacks:PackIconBootstrapIcons Kind="ListCheck" />
+								<mi:MaterialIcon Kind="PlaylistCheck" />
 							</ToggleButton >
 						</StackPanel>
 

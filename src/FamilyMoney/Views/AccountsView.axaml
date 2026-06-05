@@ -1,8 +1,8 @@
-	<UserControl xmlns="https://github.com/avaloniaui"
+﻿	<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:cv="using:FamilyMoney.Converters"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
@@ -122,7 +122,7 @@
 		<Style Selector="StackPanel.ShiftForMove">
 			<Setter Property="Margin" Value="35 0 0 0" />
 		</Style>
-		<Style Selector="iconPacks|PackIconBootstrapIcons">
+		<Style Selector="mi|MaterialIcon">
 			<Setter Property="Height" Value="14" />
 			<Setter Property="Width" Value="14" />
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -221,14 +221,14 @@
 										PointerPressed="OnPointerPressed"
 										IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
 										>
-										<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" />
+										<mi:MaterialIcon Kind="DotsVertical" />
 									</Grid>
 									<Button Grid.Column="1" Classes="Expander" 
 											IsVisible="{Binding IsGroup}"
 											Command="{Binding ToggleExpandCommand}">
 										<Grid>
-											<iconPacks:PackIconBootstrapIcons Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-											<iconPacks:PackIconBootstrapIcons Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
+											<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+											<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
 										</Grid>
 									</Button>
 									<StackPanel Orientation="Horizontal" 
@@ -303,7 +303,7 @@
 														PointerPressed="OnPointerPressed"
 														IsVisible="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
 													>
-													<iconPacks:PackIconBootstrapIcons Kind="ThreeDotsVertical" />
+													<mi:MaterialIcon Kind="DotsVertical" />
 												</Grid>
 												<Image Grid.Column="1" Stretch="Uniform"
 														Source="{Binding Image}"
@@ -344,33 +344,33 @@
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить группу счетов"
 						>					
-					<iconPacks:PackIconBootstrapIcons Kind="FolderPlus" />
+					<mi:MaterialIcon Kind="FolderPlus" />
 				</Button>
 				<Button Command="{Binding AddElementCommand}" 
 						Classes="BottomButton"
 						ToolTip.Tip="Добавить счёт"
 						>					
-					<iconPacks:PackIconBootstrapIcons Kind="CreditCard" />
+					<mi:MaterialIcon Kind="CreditCard" />
 				</Button>
 				<Button Command="{Binding EditCommand}" CommandParameter="{Binding SelectedAccount}"
 						Classes="BottomButton"
 						ToolTip.Tip="Изменить"
 						>					
-					<iconPacks:PackIconBootstrapIcons Kind="PencilSquare" />
+					<mi:MaterialIcon Kind="SquareEditOutline" />
 				</Button>
 				<Button Command="{Binding ReorderCommand}"
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHiddenReorder}"
 						ToolTip.Tip="Изменить порядок"
 						>					
-					<iconPacks:PackIconBootstrapIcons Kind="ArrowsExpand" />
+					<mi:MaterialIcon Kind="SwapVertical" />
 				</Button>
 				<Button Command="{Binding ShowHiddenCommand}" 						
 						Classes="BottomButton"
 						Classes.Checked="{Binding ShowHidden}"
 						ToolTip.Tip="Показать скрытые"
 						>					
-					<iconPacks:PackIconBootstrapIcons Kind="EyeSlash" />
+					<mi:MaterialIcon Kind="EyeOff" />
 				</Button>
 			</StackPanel>
 		</Border>

@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:FamilyMoney.ViewModels.Settings"
-             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -20,8 +20,8 @@
 								   FontSize="11"
 								   TextTrimming="CharacterEllipsis" />
 					</StackPanel>
-					<iconPacks:PackIconBootstrapIcons Grid.Column="1"
-													  Kind="CheckCircleFill"
+					<mi:MaterialIcon Grid.Column="1"
+													  Kind="CheckCircle"
 													  IsVisible="{Binding IsSelected}"
 													  VerticalAlignment="Center"
 													  Margin="10 0 0 0" />
