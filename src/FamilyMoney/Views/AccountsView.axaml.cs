@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,7 +12,7 @@ public partial class AccountsView : UserControl
     private Point _ghostPosition = new(0, 0);
     private readonly Point _mouseOffset = new(-5, -5);
 
-    private readonly string customFormat = "account-view-model";
+    private static readonly DataFormat<AccountViewModel> customFormat = DataFormat.CreateInProcessFormat<AccountViewModel>("account-view-model");
 
     public AccountsView()
     {
@@ -40,9 +40,10 @@ public partial class AccountsView : UserControl
         e.DragEffects = DragDropEffects.Move;
         if (DataContext is not AccountsViewModel vm)
             return;
+
         
-        var data = e.Data.Get(customFormat);
-        if (data is not AccountViewModel account) 
+        var account = e.DataTransfer.TryGetValue(customFormat);
+        if (account is null) 
             return;
         if ((e.Source as Control)?.DataContext is not AccountViewModel destAccount)
             return;
@@ -55,9 +56,9 @@ public partial class AccountsView : UserControl
 
     private void Drop(object? sender, DragEventArgs e)
     {
-        var data = e.Data.Get(customFormat);
+        var account = e.DataTransfer.TryGetValue(customFormat);
 
-        if (data is not AccountViewModel account)
+        if (account is null)
         {
             return;
         }
@@ -93,9 +94,9 @@ public partial class AccountsView : UserControl
 
         GhostItem.IsVisible = true;
 
-        var dragData = new DataObject();
-        dragData.Set(customFormat, account);
-        var _ = await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
+        var dragData = new DataTransfer();
+        dragData.Add(DataTransferItem.Create(customFormat, account));
+        var _ = await DragDrop.DoDragDropAsync(e, dragData, DragDropEffects.Move);
         GhostItem.IsVisible = false;
     }
 

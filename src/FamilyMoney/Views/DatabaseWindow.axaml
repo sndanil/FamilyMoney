@@ -7,7 +7,6 @@
         Width="800" Height="300"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaChromeHints="NoChrome"
 		xmlns:vm="clr-namespace:FamilyMoney.ViewModels.Settings"
 		x:DataType="vm:DatabaseViewModel"
 		Classes="Dialog"

@@ -7,7 +7,6 @@
 		Width="600" Height="620"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaChromeHints="NoChrome"
         xmlns:s="using:System"
         xmlns:bh="using:FamilyMoney.Behaviours"
 		xmlns:cv="using:FamilyMoney.Converters"
