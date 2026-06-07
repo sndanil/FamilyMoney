@@ -11,7 +11,7 @@
         xmlns:bh="using:FamilyMoney.Behaviours"
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
-		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
+		xmlns:vm="using:FamilyMoney.ViewModels"
 		x:DataType="vm:BaseTransactionViewModel"		
         x:Class="FamilyMoney.Views.TransactionWindow"
 		Classes="Dialog"
@@ -57,6 +57,7 @@
 		</Style>
 	</Window.Styles>
 	<Window.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:IsNotAccountGroupConverter x:Key="accountConverter" />
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 		<cv:TransactionTypeConverter x:Key="transactionTypeConverter" />
@@ -68,8 +69,8 @@
 				<Grid>
 					<Grid ColumnDefinitions="auto auto * auto">
 						<Image Grid.Column="1" Stretch="Uniform"
-								Source="{Binding Image}"
-								IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+								Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+								IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 							/>
 						<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis"
 								   Text="{Binding Name}"
@@ -87,8 +88,8 @@
 			<StackPanel Orientation="Horizontal" Height="30">
 				<Image Stretch="Uniform"
 						Width="40"
-						Source="{Binding Image}"
-						IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+						Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+						IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 					/>
 				<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
 			</StackPanel>

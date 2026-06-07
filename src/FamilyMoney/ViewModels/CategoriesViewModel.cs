@@ -1,5 +1,4 @@
-﻿using Avalonia.Media.Imaging;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
@@ -97,7 +96,7 @@ public partial class CategoriesViewModel : ViewModelBase
 
         category.Id = editCategory.Id;
         category.Name = editCategory.Name;
-        category.Image = editCategory.Image;
+        category.ImageData = editCategory.ImageData;
         category.IsHidden = editCategory.IsHidden;
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseCategoryViewModel>(category));
@@ -135,11 +134,10 @@ public partial class CategoriesViewModel : ViewModelBase
             };
         }
 
-        if (categoryForUpdate?.Image != categoryForSave.Image)
+        if (!ImageDataHelper.AreEqual(categoryForUpdate?.ImageData, categoryForSave.ImageData)
+            && categoryForSave.ImageData != null)
         {
-            var stream = new MemoryStream();
-            ((Bitmap)categoryForSave.Image!).Save(stream);
-            stream.Position = 0;
+            using var stream = new MemoryStream(categoryForSave.ImageData);
             _repository!.UpdateImage(categoryForSave.Id, categoryForSave.Name, stream);
         }
 
@@ -152,7 +150,7 @@ public partial class CategoriesViewModel : ViewModelBase
         if (categoryForUpdate is not null)
         {
             categoryForUpdate.Name = categoryForSave.Name;
-            categoryForUpdate.Image = categoryForSave.Image;
+            categoryForUpdate.ImageData = categoryForSave.ImageData;
             categoryForUpdate.IsHidden = categoryForSave.IsHidden;
         }
     }

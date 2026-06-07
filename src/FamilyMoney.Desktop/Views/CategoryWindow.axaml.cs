@@ -10,13 +10,13 @@ using System.Linq;
 
 namespace FamilyMoney.Views;
 
-public partial class AccountWindow : Window
+public partial class CategoryWindow : Window
 {
-    public AccountWindow()
+    public CategoryWindow()
     {
         InitializeComponent();
 
-        WeakReferenceMessenger.Default.Register<AccountWindow, ModelCloseMessage<AccountViewModel>>(this, static (w, m) => w.Close(m.Result));
+        WeakReferenceMessenger.Default.Register<CategoryWindow, ModelCloseMessage<BaseCategoryViewModel>>(this, static (w, m) => w.Close(m.Result));
 
         ImageControl.AddHandler(DragDrop.DropEvent, DropImage);
     }
@@ -25,11 +25,13 @@ public partial class AccountWindow : Window
     {
         var file = e.DataTransfer.TryGetFiles()?.FirstOrDefault();
 
-        if (file == null || DataContext is not AccountViewModel account)
+        if (file == null || DataContext is not BaseCategoryViewModel category)
+        {
             return;
+        }
 
         using var stream = File.OpenRead(file.Path.LocalPath);
-        account.Image = ImageConverter.ToImage(stream);
+        category.ImageData = ImageConverter.ToImageData(stream);
     }
 
     private async void ChangeImage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -39,17 +41,18 @@ public partial class AccountWindow : Window
         {
             Title = "Выбор изображения",
             AllowMultiple = false,
-            FileTypeFilter = [
+            FileTypeFilter =
+            [
                 new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
-                    FilePickerFileTypes.All
-                ]
+                FilePickerFileTypes.All
+            ]
         });
 
-        if (files.Any() && DataContext is AccountViewModel account)
+        if (files.Any() && DataContext is BaseCategoryViewModel category)
         {
             var file = files.Single();
             await using var stream = await file.OpenReadAsync();
-            account.Image = ImageConverter.ToImage(stream);
+            category.ImageData = ImageConverter.ToImageData(stream);
         }
     }
 }

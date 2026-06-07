@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -32,7 +31,7 @@ public partial class AccountViewModel : ViewModelBase
     public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial IImage? Image { get; set; }
+    public partial byte[]? ImageData { get; set; }
 
     [ObservableProperty]
     public partial bool IsGroup { get; set; }
@@ -49,12 +48,9 @@ public partial class AccountViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
-    public bool IsAloneGroup
-    {
-        get => Children.Count == 0;
-    }
+    public bool IsAloneGroup => Children.Count == 0;
 
-    public ObservableCollection<AccountViewModel> Children { get => _children; }
+    public ObservableCollection<AccountViewModel> Children => _children;
 
     [RelayCommand]
     public void SelectCommand()
@@ -65,14 +61,11 @@ public partial class AccountViewModel : ViewModelBase
     [RelayCommand]
     public void ToggleExpandCommand()
     {
-        this.IsExpanded = !this.IsExpanded;
+        IsExpanded = !IsExpanded;
         WeakReferenceMessenger.Default.Send(new AccountExpandMessage(Id, IsExpanded));
     }
 
-    private bool CanOkCommand()
-    {
-        return !string.IsNullOrEmpty(Name);
-    }
+    private bool CanOkCommand() => !string.IsNullOrEmpty(Name);
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
     public async Task OkAsync()
@@ -86,14 +79,13 @@ public partial class AccountViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(null));
     }
 
-    public void AddFromAccount(IRepository repository, IEnumerable<Models.Account> accounts)
+    public void AddFromAccount(IRepository repository, IEnumerable<Account> accounts)
     {
         var viewModels = accounts.Where(a => a.ParentId == Id).OrderBy(a => a.Order).Select(a =>
         {
             var account = new AccountViewModel();
             account.FillFrom(a, repository);
             account.Parent = this;
-
             return account;
         });
 
@@ -127,7 +119,6 @@ public partial class AccountViewModel : ViewModelBase
         IsHidden = account.IsHidden;
         IsExpanded = account.IsExpanded;
         IsNotSummable = account.IsNotSummable;
-        Image = ImageConverter.ToImage(repository.TryGetImage(account.Id));
+        ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(account.Id));
     }
 }
-

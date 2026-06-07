@@ -13,7 +13,9 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         if (Design.IsDesignMode)
+        {
             return;
+        }
 
         WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<AccountViewModel>>(this, static (w, m) =>
         {
@@ -44,16 +46,5 @@ public partial class MainWindow : Window
             var dialog = new DatabaseWindow { DataContext = m?.From };
             m?.Reply(dialog.ShowDialog<DatabaseViewModel?>(w));
         });
-
-        this.Activated += MainWindowActivated;
-    }
-
-    private void MainWindowActivated(object? sender, System.EventArgs e)
-    {
-        var viewModel = DataContext as MainWindowViewModel;
-        if (viewModel is not null && viewModel.CurrentPanel == null)
-        {
-            viewModel.CurrentPanel = TransactionsPanel;
-        }
     }
 }

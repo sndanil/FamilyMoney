@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Import;
 
-internal class CsvImporter(ILogger<CsvImporter> logger, IRepository repository) : IImporter
+public class CsvImporter(ILogger<CsvImporter> logger, IRepository repository) : IImporter
 {
     private readonly ILogger _logger = logger;
     private readonly IRepository _repository = repository;

@@ -9,6 +9,7 @@
 			 x:DataType="vm:SummaryTransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
 	<UserControl.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
@@ -120,8 +121,8 @@
 							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 								<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
 									<Image Stretch="Uniform"
-											Source="{Binding Category.Image}"
-											IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+											Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+											IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 									/>
 									<TextBlock Classes="Name" Text="{Binding Category.Name}" />
 								</StackPanel>

@@ -1,47 +1,55 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:cv="using:FamilyMoney.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
 		Width="600" Height="400"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
-		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
-		x:DataType="vm:BaseCategoryViewModel"		
-        x:Class="FamilyMoney.Views.CategoryWindow"
+		xmlns:vm="using:FamilyMoney.ViewModels"
+		x:DataType="vm:AccountViewModel"		
+        x:Class="FamilyMoney.Views.AccountWindow"
 		Classes="Dialog"
-        Title="">
-	<Window.Styles>
+        Title="Счёт">
+	<Window.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+	</Window.Resources>
+<Window.Styles>
 		<Style Selector="CheckBox">
 			<Setter Property="Margin" Value="20 0" />
 		</Style>
 	</Window.Styles>
 	<Grid RowDefinitions="auto auto * auto auto">
+		<TextBlock Text="Группа счетов" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding IsGroup}"/>
+		<TextBlock Text="Счёт" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding !IsGroup}"/>
+
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
-			<CheckBox IsChecked="{Binding IsHidden}">Скрытая для выбора</CheckBox>
+			<CheckBox IsChecked="{Binding IsHidden}">Скрытый</CheckBox>
+			<CheckBox IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
 		</StackPanel>
 		<Image Grid.Row="2"
 			Name="ImageControl"
 			DragDrop.AllowDrop="True"
 			Stretch="Uniform"
-			Source="{Binding Image}"
+			Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
 			VerticalAlignment="Center"
 			/>
-		<mi:MaterialIcon Kind="Image"
-			Grid.Row="2"
+		
+		<mi:MaterialIcon Grid.Row="2" Kind="Image"
 			Width="100" Height="100"
 			 VerticalAlignment="Stretch"
 			 HorizontalAlignment="Stretch"
-			 IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"
+			 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}"			 
 		/>
 
-		<Button Grid.Row="3"
-				Classes="DialogButton"
+		<Button Grid.Row="3" 
+				Classes="DialogButton" 
 				Width="250"
-				Content="Загрузить картинку из файла"
+				Content="Загрузить картинку из файла" 
 				HorizontalAlignment="Center"
 				x:Name="ChangeImageButton"
 				Click="ChangeImage"
@@ -53,7 +61,7 @@
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"
 			>
-			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" CommandParameter="{Binding}" />
+			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
 			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
 		</StackPanel>
 	</Grid>

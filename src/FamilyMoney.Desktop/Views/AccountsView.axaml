@@ -11,6 +11,7 @@
              x:Class="FamilyMoney.Views.AccountsView"
 			 >
 	<UserControl.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
 		<cv:FirstIsMainConverter x:Key="firstIsMainConverter" />
@@ -164,8 +165,8 @@
 					<ColumnDefinition Width="auto" />
 				</Grid.ColumnDefinitions>
 				<Image Stretch="Uniform"
-						Source="{Binding Image}"
-						IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+						Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+						IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 						/>
 				<TextBlock Grid.Column="1" Text="{Binding Name}" Name="AccountName"/>
 				<SelectableTextBlock Grid.Column="2" 
@@ -237,8 +238,8 @@
 											Classes.ShiftForMove="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}"
 											Classes.Group="{Binding IsGroup}">
 										<Image Stretch="Uniform"
-												Source="{Binding Image}"
-												IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+												Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+												IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 												/>
 										<TextBlock
 												   TextTrimming="CharacterEllipsis" 
@@ -306,8 +307,8 @@
 													<mi:MaterialIcon Kind="DotsVertical" />
 												</Grid>
 												<Image Grid.Column="1" Stretch="Uniform"
-														Source="{Binding Image}"
-														IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+														Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+														IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 													/>
 												<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" />
 												<SelectableTextBlock Grid.Column="3" 
@@ -328,8 +329,8 @@
 		<Border Classes="Account Drag" Name="GhostItem">
 			<StackPanel Orientation="Horizontal">
 				<Image Stretch="Uniform"
-						Source="{Binding DraggingAccount.Image}"
-						IsVisible="{Binding DraggingAccount.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+						Source="{Binding DraggingAccount.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+						IsVisible="{Binding DraggingAccount.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 												/>
 				<TextBlock Text="{Binding DraggingAccount.Name}" Name="AccountName2" />
 			</StackPanel>

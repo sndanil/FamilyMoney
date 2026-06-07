@@ -6,7 +6,7 @@ using System.IO;
 
 namespace FamilyMoney.DataAccess;
 
-internal class DesignerRepository : IRepository
+public class DesignerRepository : IRepository
 {
     public void DeleteAccount(Guid id)
     {

@@ -1,9 +1,12 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Desktop.Services;
 using FamilyMoney.Import;
+using FamilyMoney.Services;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.ViewModels.Settings;
@@ -12,8 +15,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NLog.Extensions.Logging;
-using System;
-using System.IO;
 
 namespace FamilyMoney;
 
@@ -36,10 +37,7 @@ public partial class App : Application
             {
                 DataContext = GlobalHost.Services.GetRequiredService<MainWindowViewModel>(),
             };
-            desktop.Exit += (sender, args) =>
-            {
-                GlobalHost.Dispose();
-            };
+            desktop.Exit += (_, _) => GlobalHost.Dispose();
 
             GlobalHost.RunAsync();
         }
@@ -49,34 +47,40 @@ public partial class App : Application
 
     private static IHost InitHost()
     {
-        var host = Host
-          .CreateDefaultBuilder()
-          .ConfigureServices(services =>
-          {
-              ConfigureServices(services);
-          })
-          .ConfigureAppConfiguration((hostingContext, config) =>
-          {
-              var userSettingsPath = GlobalConfiguration.UserSettingsPath;
-              config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
-              config.AddCommandLine(System.Environment.GetCommandLineArgs());
-          })
-          .ConfigureLogging((hostingContext, builder) =>
-          {
-              builder.AddNLog(hostingContext.Configuration);
-          })
-          .Build();
-
-        return host;
+        return Host
+            .CreateDefaultBuilder()
+            .ConfigureServices(ConfigureServices)
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                var userSettingsPath = GlobalConfiguration.UserSettingsPath;
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
+                config.AddCommandLine(Environment.GetCommandLineArgs());
+            })
+            .ConfigureLogging((hostingContext, builder) =>
+            {
+                builder.AddNLog(hostingContext.Configuration);
+            })
+            .Build();
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        services.AddTransient<MainWindowViewModel>();
         services.AddSingleton<IGlobalConfiguration, GlobalConfiguration>();
+        services.AddSingleton<IFilePickerService>(sp =>
+        {
+            return new AvaloniaFilePickerService(() =>
+            {
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    return TopLevel.GetTopLevel(desktop.MainWindow);
+                }
 
-        if (Avalonia.Controls.Design.IsDesignMode)
+                return null;
+            });
+        });
+
+        if (Design.IsDesignMode)
         {
             services.AddTransient<IRepository, DesignerRepository>();
         }
@@ -85,12 +89,11 @@ public partial class App : Application
             services.AddTransient<IRepository, LiteDbRepository>();
         }
 
+        services.AddTransient<IImporter, CsvImporter>();
+        services.AddTransient<IStateManager, StateManager>();
         services.AddTransient<PeriodViewModel>();
         services.AddTransient<CategoriesViewModel>();
         services.AddTransient<SettingsViewModel>();
-        services.AddTransient<IImporter, CsvImporter>();
-        services.AddTransient<IStateManager, StateManager>();
-
         services.AddSingleton<AccountsViewModel>();
         services.AddSingleton<TransactionsViewModel>();
         services.AddSingleton<MainWindowViewModel>();

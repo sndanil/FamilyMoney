@@ -7,7 +7,7 @@
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
-		xmlns:vm="clr-namespace:FamilyMoney.ViewModels"
+		xmlns:vm="using:FamilyMoney.ViewModels"
 		x:DataType="vm:CustomPeriodViewModel"
         x:Class="FamilyMoney.Views.CustomPeriodWindow"
 		Classes="Dialog"

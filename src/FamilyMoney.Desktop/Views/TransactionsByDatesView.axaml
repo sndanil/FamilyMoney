@@ -11,6 +11,7 @@
 			 x:DataType="vm:TransactionsViewModel"
 			 x:Class="FamilyMoney.Views.TransactionsByDatesView">
 	<UserControl.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
 	</UserControl.Resources>
@@ -176,8 +177,8 @@
 												<Grid ColumnDefinitions="25 25 20 130 200 * 100">
 
 													<Image Stretch="Uniform" Grid.Column="2"
-															Source="{Binding Category.Image}"
-															IsVisible="{Binding Category.Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+															Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+															IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 														/>
 													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />

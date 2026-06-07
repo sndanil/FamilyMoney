@@ -1,11 +1,11 @@
-﻿using Avalonia.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.State;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -262,7 +262,7 @@ public partial class AccountsViewModel : ViewModelBase
             Name = editAccount.Name,
             Sum = editAccount.Sum,
             IsGroup = editAccount.IsGroup,
-            Image = editAccount.Image,
+            ImageData = editAccount.ImageData,
             IsHidden = editAccount.IsHidden,
             IsNotSummable = editAccount.IsNotSummable,
         };
@@ -378,18 +378,16 @@ public partial class AccountsViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(other, nameof(other));
         ArgumentNullException.ThrowIfNull(other.Id, $"{nameof(other)}.{nameof(other.Id)}");
 
-        if (one?.Image != other.Image)
+        if (!ImageDataHelper.AreEqual(one?.ImageData, other.ImageData))
         {
-            var stream = new MemoryStream();
-            ((Bitmap)other.Image!).Save(stream);
-            stream.Position = 0;
+            using var stream = new MemoryStream(other.ImageData!);
             _repository!.UpdateImage(other.Id.Value, other.Name, stream);
         }
 
         if (one != null)
         {
             one.Name = other.Name;
-            one.Image = other.Image;
+            one.ImageData = other.ImageData;
             one.IsHidden = other.IsHidden;
             one.IsNotSummable = other.IsNotSummable;
         }

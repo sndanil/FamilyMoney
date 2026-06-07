@@ -13,8 +13,8 @@
 			<Border Classes="Item">
 				<StackPanel Orientation="Horizontal">
 					<Image Stretch="Uniform"
-							Source="{Binding Image}"
-							IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNotNull}}"
+							Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+							IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 						/>
 					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
 				</StackPanel>

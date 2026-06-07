@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -8,6 +7,7 @@ using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using System;
 using System.Threading.Tasks;
+
 namespace FamilyMoney.ViewModels;
 
 public abstract partial class BaseCategoryViewModel : ViewModelBase
@@ -23,12 +23,9 @@ public abstract partial class BaseCategoryViewModel : ViewModelBase
     public partial bool IsHidden { get; set; }
 
     [ObservableProperty]
-    public partial IImage? Image { get; set; }
+    public partial byte[]? ImageData { get; set; }
 
-    private bool CanOkCommand()
-    {
-        return !string.IsNullOrEmpty(Name);
-    }
+    private bool CanOkCommand() => !string.IsNullOrEmpty(Name);
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
     public async Task OkAsync()
@@ -56,22 +53,12 @@ public abstract partial class BaseCategoryViewModel : ViewModelBase
         Id = category.Id;
         Name = category.Name;
         IsHidden = category.IsHidden;
-        Image = ImageConverter.ToImage(repository.TryGetImage(Id));
+        ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(Id));
     }
 }
 
-public sealed class DebetCategoryViewModel : BaseCategoryViewModel
-{
+public sealed class DebetCategoryViewModel : BaseCategoryViewModel;
 
-}
+public sealed class CreditCategoryViewModel : BaseCategoryViewModel;
 
-public sealed class CreditCategoryViewModel : BaseCategoryViewModel
-{
-
-}
-
-public sealed class TransferCategoryViewModel : BaseCategoryViewModel
-{
-
-}
-
+public sealed class TransferCategoryViewModel : BaseCategoryViewModel;

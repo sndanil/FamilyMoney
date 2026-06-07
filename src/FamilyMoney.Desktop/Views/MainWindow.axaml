@@ -1,6 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:services="clr-namespace:FamilyMoney.Services;assembly=FamilyMoney"
         xmlns:vm="using:FamilyMoney.ViewModels"
 		xmlns:settingsVm="using:FamilyMoney.ViewModels.Settings"
 		xmlns:cv="using:FamilyMoney.Converters"
@@ -21,8 +22,8 @@
 	</Design.DataContext>
 	<Window.Resources>
 		<cv:GridLengthConverter x:Key="gridLengthConverter" />
-		<cv:IsEqualConverter x:Key="isEqualConverter" />
-		<cv:IsNotEqualConverter x:Key="isNotEqualConverter" />
+		<cv:IsEqualToConverter x:Key="isEqualToConverter" />
+		<cv:IsNotEqualToConverter x:Key="isNotEqualToConverter" />
 	</Window.Resources>
 	<Window.Styles>
 		<Style Selector="Window">
@@ -97,15 +98,14 @@
 						<Interaction.Behaviors>
 							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding SwitchToCommand}"
-													 CommandParameter="{Binding #TransactionsPanel}"/>
+													 CommandParameter="{x:Static services:MainPanel.Transactions}"/>
 							</EventTriggerBehavior>
 						</Interaction.Behaviors>
 
 						<Border.IsEnabled>
-							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
-								<Binding Path="CurrentPanel"/>
-								<Binding Path="#TransactionsPanel"/>
-							</MultiBinding>
+							<Binding Path="CurrentPanel"
+									 Converter="{StaticResource isNotEqualToConverter}"
+									 ConverterParameter="{x:Static services:MainPanel.Transactions}" />
 						</Border.IsEnabled>
 					</Border>
 
@@ -155,15 +155,14 @@
 						<Interaction.Behaviors>
 							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding SwitchToCommand}"
-													 CommandParameter="{Binding #CategoriesPanel}"/>
+													 CommandParameter="{x:Static services:MainPanel.Categories}"/>
 							</EventTriggerBehavior>
 						</Interaction.Behaviors>
 
 						<Border.IsEnabled>
-							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
-								<Binding Path="CurrentPanel"/>
-								<Binding Path="#CategoriesPanel"/>
-							</MultiBinding>
+							<Binding Path="CurrentPanel"
+									 Converter="{StaticResource isNotEqualToConverter}"
+									 ConverterParameter="{x:Static services:MainPanel.Categories}" />
 						</Border.IsEnabled>
 					</Border>
 
@@ -176,15 +175,14 @@
 						<Interaction.Behaviors>
 							<EventTriggerBehavior EventName="Tapped">
 								<InvokeCommandAction Command="{Binding SwitchToCommand}"
-													 CommandParameter="{Binding #SettingsPanel}"/>
+													 CommandParameter="{x:Static services:MainPanel.Settings}"/>
 							</EventTriggerBehavior>
 						</Interaction.Behaviors>
 
 						<Border.IsEnabled>
-							<MultiBinding Converter="{StaticResource isNotEqualConverter}">
-								<Binding Path="CurrentPanel"/>
-								<Binding Path="#SettingsPanel"/>
-							</MultiBinding>
+							<Binding Path="CurrentPanel"
+									 Converter="{StaticResource isNotEqualToConverter}"
+									 ConverterParameter="{x:Static services:MainPanel.Settings}" />
 						</Border.IsEnabled>
 					</Border>
 
@@ -196,7 +194,8 @@
 			<Grid>
 				<Border Name="TransactionsPanel"
 						Classes="LeftTop" 
-						Background="{DynamicResource SystemAltMediumLowColor}">
+						Background="{DynamicResource SystemAltMediumLowColor}"
+						IsVisible="{Binding CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Transactions}}">
 					<Grid RowDefinitions="45 *">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="{Binding LeftSideWidth, Mode=TwoWay, Converter={StaticResource gridLengthConverter}}" />
@@ -261,31 +260,13 @@
 
 					</Grid>
 
-					<Border.IsVisible>
-						<MultiBinding Converter="{StaticResource isEqualConverter}">
-							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
-							<Binding Path="$self"/>
-						</MultiBinding>
-					</Border.IsVisible>
 				</Border>
 
-				<views:CategoriesView Name="CategoriesPanel" DataContext="{Binding Categories}">
-					<views:CategoriesView.IsVisible>
-						<MultiBinding Converter="{StaticResource isEqualConverter}">
-							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
-							<Binding Path="$self"/>
-						</MultiBinding>
-					</views:CategoriesView.IsVisible>
-				</views:CategoriesView>
+				<views:CategoriesView DataContext="{Binding Categories}"
+					IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Categories}}" />
 
-				<views:SettingsView Name="SettingsPanel" DataContext="{Binding Settings}">
-					<views:SettingsView.IsVisible>
-						<MultiBinding Converter="{StaticResource isEqualConverter}">
-							<Binding Path="$parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel"/>
-							<Binding Path="$self"/>
-						</MultiBinding>
-					</views:SettingsView.IsVisible>
-				</views:SettingsView>
+				<views:SettingsView DataContext="{Binding Settings}"
+					IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Settings}}" />
 			</Grid>
 		</SplitView.Content>
 	</SplitView>

@@ -1,13 +1,12 @@
-﻿using Avalonia.Controls;
-using Avalonia.Platform.Storage;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
 using FamilyMoney.Messages;
+using FamilyMoney.Services;
 using FamilyMoney.State;
-using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.ViewModels.Settings;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +21,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IRepository _repository;
     private readonly IImporter _importer;
     private readonly IGlobalConfiguration _configuration;
+    private readonly IFilePickerService _filePickerService;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
@@ -38,40 +38,30 @@ public partial class MainWindowViewModel : ViewModelBase
     public partial bool ShowTransactionsTree { get; set; } = true;
 
     [ObservableProperty]
-    public partial Control? CurrentPanel { get; set; }
+    public partial MainPanel CurrentPanel { get; set; } = MainPanel.Transactions;
 
     [ObservableProperty]
     public partial string WindowTitle { get; private set; } = AppTitle;
 
-    public PeriodViewModel Period
-    {
-        get => _period;
-    }
+    public PeriodViewModel Period => _period;
 
     public SettingsViewModel Settings { get; init; }
 
-    public CategoriesViewModel Categories
-    {
-        get => _categoriesViewModel;
-    }
+    public CategoriesViewModel Categories => _categoriesViewModel;
 
-    public AccountsViewModel Accounts
-    {
-        get => _accountsViewModel;
-    }
+    public AccountsViewModel Accounts => _accountsViewModel;
 
-    public TransactionsViewModel Transactions
-    {
-        get => _transactionsViewModel;
-    }
+    public TransactionsViewModel Transactions => _transactionsViewModel;
 
-    public MainWindowViewModel(IRepository repository, 
+    public MainWindowViewModel(
+        IRepository repository,
         IStateManager stateManager,
         IImporter importer,
         IGlobalConfiguration configuration,
-        PeriodViewModel period, 
+        IFilePickerService filePickerService,
+        PeriodViewModel period,
         CategoriesViewModel categoriesViewModel,
-        AccountsViewModel accounts, 
+        AccountsViewModel accounts,
         TransactionsViewModel transactionsViewModel,
         SettingsViewModel settingsViewModel)
     {
@@ -79,9 +69,9 @@ public partial class MainWindowViewModel : ViewModelBase
         _importer = importer;
         _stateManager = stateManager;
         _configuration = configuration;
+        _filePickerService = filePickerService;
 
         Settings = settingsViewModel;
-
         _categoriesViewModel = categoriesViewModel;
         _accountsViewModel = accounts;
         _transactionsViewModel = transactionsViewModel;
@@ -111,7 +101,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void MainWindowViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(CurrentPanel) && CurrentPanel?.Name == "TransactionsPanel")
+        if (e.PropertyName == nameof(CurrentPanel) && CurrentPanel == MainPanel.Transactions)
         {
             MainInit();
         }
@@ -134,34 +124,29 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task ImportAsync(Avalonia.Visual visual)
+    public async Task ImportAsync()
     {
-        var topLevel = TopLevel.GetTopLevel(visual);
-        var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        await using var stream = await _filePickerService.PickCsvAsync();
+        if (stream == null)
         {
-            Title = "Выбор файла для импорта",
-            AllowMultiple = false,
-            FileTypeFilter = [new("Файл CSV") { Patterns = ["*.csv"], MimeTypes = ["*/*"] }, FilePickerFileTypes.All]
-        });
-
-        if (files.Any())
-        {
-            await using var stream = await files.Single().OpenReadAsync();
-            _importer.DoImport(stream);
-            MainInit();
+            return;
         }
+
+        _importer.DoImport(stream);
+        MainInit();
     }
 
     [RelayCommand]
     public async Task TriggerPaneAsync()
-    {         
+    {
         IsPaneOpen = !IsPaneOpen;
         await Task.CompletedTask;
     }
 
     [RelayCommand]
-    public async Task SwitchToAsync(Control control)
+    public async Task SwitchToAsync(MainPanel panel)
     {
-        CurrentPanel = control;
+        CurrentPanel = panel;
+        await Task.CompletedTask;
     }
 }

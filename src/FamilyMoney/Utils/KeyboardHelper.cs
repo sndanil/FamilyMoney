@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FamilyMoney.Utils
 {
-    internal static class KeyboardHelper
+public static class KeyboardHelper
     {
         private static readonly Dictionary<char, char> _keyboard = new()
         {
