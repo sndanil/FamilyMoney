@@ -25,8 +25,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        dotnet restore ./src/FamilyMoney/FamilyMoney.csproj
-        dotnet pack ./src/FamilyMoney/FamilyMoney.csproj --no-restore
-        Compress-Archive ./src/FamilyMoney/bin/Release/net10.0/win-x64/ ./FamilyMoney.zip 
+        dotnet restore ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj
+        dotnet pack ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj --no-restore
+        Compress-Archive ./src/FamilyMoney.Desktop/bin/Release/net10.0/win-x64/ ./FamilyMoney.Desktop.zip 
         echo ${{ env.NOW }}
-        gh release create ${{ env.NOW }} ./FamilyMoney.zip 
+        gh release create ${{ env.NOW }} ./FamilyMoney.Desktop.zip 
