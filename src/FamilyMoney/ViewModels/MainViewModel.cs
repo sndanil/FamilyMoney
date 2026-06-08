@@ -79,9 +79,6 @@ public partial class MainViewModel : ViewModelBase
 
         UpdateTitle();
         MainInit();
-
-        _repository.DoBackup();
-        _repository.UpdateDbSchema();
     }
 
     private void UpdateTitle()
@@ -102,6 +99,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void MainInit(bool resetAccountSelection = false)
     {
+        _repository.UpdateDbSchema();
         _categoriesViewModel.Reload();
 
         var accounts = _accountsViewModel.LoadAccounts();
