@@ -86,6 +86,7 @@ public partial class MainWindowViewModel : ViewModelBase
         });
 
         UpdateWindowTitle();
+        MainInit();
 
         _repository.DoBackup();
         _repository.UpdateDbSchema();
