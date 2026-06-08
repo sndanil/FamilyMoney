@@ -23,7 +23,7 @@
 		</Style>
 	</Window.Styles>
 	<Grid RowDefinitions="auto auto * auto auto">
-		<TextBox Text="{Binding Name}" Margin="15 35 15 5" Watermark="Наименование" HorizontalAlignment="Stretch"/>
+		<TextBox Text="{Binding Name}" Margin="15 35 15 5" PlaceholderText="Наименование" HorizontalAlignment="Stretch"/>
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
 			<CheckBox IsChecked="{Binding IsHidden}">Скрытая для выбора</CheckBox>
 		</StackPanel>

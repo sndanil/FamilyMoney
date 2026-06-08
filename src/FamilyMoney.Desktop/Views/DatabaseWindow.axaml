@@ -27,33 +27,33 @@
 	</Window.Styles>
 	<Grid RowDefinitions="auto auto auto auto auto" 
 			ColumnDefinitions="200 * 20" Margin="5 50 5 5">
-		<TextBlock Text="{Binding Watermark, ElementName=Name}"/>
-		<TextBox Grid.Column="1" x:Name="Name" Text="{Binding Name}" 
-		   Watermark="Наименование"/>
+		<TextBlock Text="{Binding PlaceholderText, ElementName=DatabaseName}"/>
+		<TextBox Grid.Column="1" x:Name="DatabaseName" Text="{Binding Name}" 
+		   PlaceholderText="Наименование"/>
 		
-		<TextBlock Grid.Row="1" Text="{Binding Watermark, ElementName=Path}"/>
+		<TextBlock Grid.Row="1" Text="{Binding PlaceholderText, ElementName=Path}"/>
 		<TextBox Grid.Column="1" Grid.Row="1" 
 		   Name="Path"
 		   Text="{Binding Path}" 
-		   Watermark="Путь"/>
+		   PlaceholderText="Путь"/>
 		<Button Grid.Row="1" Grid.Column="2"
 				Classes="DialogToolButton"
 				Content="..."
 				Click="BrowseDatabasePath" />
 
-		<TextBlock Grid.Row="2" Text="{Binding Watermark, ElementName=BackupsFolder}"/>
+		<TextBlock Grid.Row="2" Text="{Binding PlaceholderText, ElementName=BackupsFolder}"/>
 		<TextBox Grid.Column="1" Grid.Row="2" Text="{Binding BackupsFolder}" 
 		   x:Name="BackupsFolder"
-		   Watermark="Папка для резервных копий"/>
+		   PlaceholderText="Папка для резервных копий"/>
 		<Button Grid.Row="2" Grid.Column="2"
 				Classes="DialogToolButton"
 				Content="..."
 				Click="BrowseBackupsFolder" />
 
-		<TextBlock Grid.Row="3" Text="{Binding Watermark, ElementName=MaxBackups}"/>
+		<TextBlock Grid.Row="3" Text="{Binding PlaceholderText, ElementName=MaxBackups}"/>
 		<NumericUpDown Grid.Row="3" Grid.Column="1"
 				 Name="MaxBackups"
-				Watermark="Максимум резервных копий"
+				PlaceholderText="Максимум резервных копий"
 				FormatString="#,##0"
 				Minimum="0"
 				Value="{Binding MaxBackups}"

@@ -189,7 +189,7 @@
 							FilterMode="Custom"
 							Margin="0 10"
 							ItemsSource="{Binding SubCategories}"								
-							Watermark="Стрелка вниз или F4 откроет список">
+							PlaceholderText="Стрелка вниз или F4 откроет список">
 					<Interaction.Behaviors>
 						<bh:AutoCompleteForceDropdownBehaviour/>
 					</Interaction.Behaviors>
@@ -316,7 +316,7 @@
 									 ItemsSource="{Binding SelectableSuggestedTags}"
 									 FilterMode="Contains"
 									 IsTextCompletionEnabled="True"
-									 Watermark="Новый тег"
+									 PlaceholderText="Новый тег"
 									 SelectionChanged="TagCompleteBoxSelectionChanged"
 									 KeyDown="TagInputKeyDown" />
 				</DockPanel>
