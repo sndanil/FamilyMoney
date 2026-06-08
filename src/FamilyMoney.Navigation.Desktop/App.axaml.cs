@@ -1,15 +1,15 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using FamilyMoney.Desktop.Services;
+using FamilyMoney.Navigation;
+using FamilyMoney.Navigation.Desktop.Services;
 using FamilyMoney.Services;
 using FamilyMoney.ViewModels;
-using FamilyMoney.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace FamilyMoney;
+namespace FamilyMoney.Navigation.Desktop;
 
 public partial class App : Application
 {
@@ -21,36 +21,33 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         AppInit.InitHost(ConfigureServices, Design.IsDesignMode);
-
         var host = AppInit.GlobalHost ?? throw new InvalidOperationException("Host initialization failed.");
+
+        var mainViewModel = host.Services.GetRequiredService<MainViewModel>();
+        var mainView = new MainView { DataContext = mainViewModel };
+        host.Services.GetRequiredService<MainViewHolder>().View = mainView;
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = host.Services.GetRequiredService<MainViewModel>(),
+                DataContext = mainViewModel,
+                Content = mainView,
             };
             desktop.Exit += (_, _) => host.Dispose();
-
-            host.RunAsync();
         }
 
+        host.RunAsync();
         base.OnFrameworkInitializationCompleted();
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<MainViewHolder>();
         services.AddSingleton<IFilePickerService>(sp =>
         {
-            return new AvaloniaFilePickerService(() =>
-            {
-                if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    return TopLevel.GetTopLevel(desktop.MainWindow);
-                }
-
-                return null;
-            });
+            var mainView = sp.GetRequiredService<MainViewHolder>().View;
+            return new AvaloniaFilePickerService(() => TopLevel.GetTopLevel(mainView));
         });
     }
 }

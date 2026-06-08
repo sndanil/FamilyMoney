@@ -11,7 +11,7 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
     private RootConfiguration? _rootConfiguration;
 
     public static string HomeFolder { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FamilyMoney");
 
 #if DEBUG
@@ -64,8 +64,8 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
                 new DatabaseConfiguration
                 {
                     Name = "База данных",
-                    Path = Path.Combine(HomeFolder, "database.db"),
-                    BackupsFolder = Path.Combine(HomeFolder, "Backups"),
+                    Path = "database.db",
+                    BackupsFolder = "Backups",
                     MaxBackups = 10,
                 },
             ],

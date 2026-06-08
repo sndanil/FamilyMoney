@@ -3,7 +3,7 @@
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.MenuPage"
-             x:DataType="vm:MainWindowViewModel"
+             x:DataType="vm:MainViewModel"
              Header="Меню"
              NavigationPage.HasNavigationBar="False">
   <StackPanel Spacing="4" Margin="8">

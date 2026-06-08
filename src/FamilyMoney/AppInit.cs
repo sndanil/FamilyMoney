@@ -1,6 +1,7 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Import;
+using FamilyMoney.Services;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.ViewModels.Settings;
@@ -40,9 +41,11 @@ public static class AppInit
     private static void ConfigureServices(IServiceCollection services, bool isDesignMode)
     {
         services.AddSingleton<IGlobalConfiguration, GlobalConfiguration>();
+
         if (isDesignMode)
         {
             services.AddTransient<IRepository, DesignerRepository>();
+            services.AddSingleton<IFilePickerService, NullFilePickerService>();
         }
         else
         {
@@ -56,6 +59,6 @@ public static class AppInit
         services.AddTransient<SettingsViewModel>();
         services.AddSingleton<AccountsViewModel>();
         services.AddSingleton<TransactionsViewModel>();
-        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<MainViewModel>();
     }
 }

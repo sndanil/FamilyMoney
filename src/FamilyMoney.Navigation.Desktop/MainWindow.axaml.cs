@@ -1,8 +1,6 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
-namespace FamilyMoney.Navigation;
+namespace FamilyMoney.Navigation.Desktop;
 
 public partial class MainWindow : Window
 {

@@ -1,0 +1,14 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nav="using:FamilyMoney.Navigation"
+             x:Class="FamilyMoney.Navigation.Desktop.App"
+             RequestedThemeVariant="Default">
+
+    <Application.DataTemplates>
+        <nav:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>

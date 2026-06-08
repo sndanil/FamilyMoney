@@ -11,7 +11,7 @@ public partial class MenuPage : ContentPage
         InitializeComponent();
     }
 
-    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+    private MainViewModel? ViewModel => DataContext as MainViewModel;
 
     private async void OnHomeClick(object? sender, RoutedEventArgs e)
     {

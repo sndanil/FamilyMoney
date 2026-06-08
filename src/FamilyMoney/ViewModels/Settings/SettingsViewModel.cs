@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
+using FamilyMoney.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IGlobalConfiguration _configuration;
     private readonly IRepository _repository;
+    private readonly IFilePickerService _filePickerService;
 
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
 
@@ -21,10 +23,14 @@ public partial class SettingsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(EditDatabaseCommand), nameof(DeleteDatabaseCommand), nameof(SetActiveDatabaseCommand))]
     public partial DatabaseViewModel? SelectedDatabase { get; set; }
 
-    public SettingsViewModel(IGlobalConfiguration configuration, IRepository repository)
+    public SettingsViewModel(
+        IGlobalConfiguration configuration,
+        IRepository repository,
+        IFilePickerService filePickerService)
     {
         _configuration = configuration;
         _repository = repository;
+        _filePickerService = filePickerService;
         Load();
     }
 
@@ -46,7 +52,7 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddDatabaseAsync()
     {
-        var database = DatabaseViewModel.CreateNew();
+        var database = DatabaseViewModel.CreateNew(_filePickerService);
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<DatabaseViewModel>(database));
         if (result == null)
         {
@@ -70,7 +76,7 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
-        var copy = SelectedDatabase.Clone();
+        var copy = SelectedDatabase.Clone(_filePickerService);
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<DatabaseViewModel>(copy));
         if (result == null)
         {
@@ -149,6 +155,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         return SelectedDatabase != null && Databases.Count > 1;
     }
+
     private void Save()
     {
         var root = _configuration.Get();
