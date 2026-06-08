@@ -21,7 +21,6 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IRepository _repository;
     private readonly IImporter _importer;
     private readonly IGlobalConfiguration _configuration;
-    private readonly IFilePickerService _filePickerService;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
@@ -58,7 +57,6 @@ public partial class MainWindowViewModel : ViewModelBase
         IStateManager stateManager,
         IImporter importer,
         IGlobalConfiguration configuration,
-        IFilePickerService filePickerService,
         PeriodViewModel period,
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts,
@@ -69,7 +67,6 @@ public partial class MainWindowViewModel : ViewModelBase
         _importer = importer;
         _stateManager = stateManager;
         _configuration = configuration;
-        _filePickerService = filePickerService;
 
         Settings = settingsViewModel;
         _categoriesViewModel = categoriesViewModel;
@@ -122,19 +119,6 @@ public partial class MainWindowViewModel : ViewModelBase
             SelectedAccountId = resetAccountSelection ? null : state.SelectedAccountId,
         };
         _stateManager.SetMainState(newState);
-    }
-
-    [RelayCommand]
-    public async Task ImportAsync()
-    {
-        await using var stream = await _filePickerService.PickCsvAsync();
-        if (stream == null)
-        {
-            return;
-        }
-
-        _importer.DoImport(stream);
-        MainInit();
     }
 
     [RelayCommand]

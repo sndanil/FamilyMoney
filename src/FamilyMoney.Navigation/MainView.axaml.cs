@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using FamilyMoney.Navigation.Pages;
-using FamilyMoney.ViewModels;
 
 namespace FamilyMoney.Navigation;
 
@@ -19,7 +18,7 @@ public partial class MainView : NavigationPage
         if (CurrentPage == null)
             await PushAsync(new HomePage()
             {
-                DataContext = new object()
+                DataContext = DataContext
             });
     }
 }
