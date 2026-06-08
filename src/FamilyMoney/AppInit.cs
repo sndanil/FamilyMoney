@@ -1,6 +1,5 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
-using FamilyMoney.Import;
 using FamilyMoney.Services;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
@@ -52,7 +51,6 @@ public static class AppInit
             services.AddTransient<IRepository, LiteDbRepository>();
         }
 
-        services.AddTransient<IImporter, CsvImporter>();
         services.AddTransient<IStateManager, StateManager>();
         services.AddTransient<PeriodViewModel>();
         services.AddTransient<CategoriesViewModel>();

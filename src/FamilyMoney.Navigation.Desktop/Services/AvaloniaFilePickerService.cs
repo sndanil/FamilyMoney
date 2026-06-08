@@ -6,11 +6,6 @@ namespace FamilyMoney.Navigation.Desktop.Services;
 
 public sealed class AvaloniaFilePickerService(Func<TopLevel?> topLevelProvider) : IFilePickerService
 {
-    public Task<Stream?> PickCsvAsync(CancellationToken cancellationToken = default)
-    {
-        return PickCsvInternalAsync();
-    }
-
     public async Task<string?> PickSaveDatabaseFileAsync(string? suggestedFileName = null, CancellationToken cancellationToken = default)
     {
         var topLevel = topLevelProvider();
@@ -69,32 +64,5 @@ public sealed class AvaloniaFilePickerService(Func<TopLevel?> topLevelProvider) 
         });
 
         return folders.FirstOrDefault()?.Path.LocalPath;
-    }
-
-    private async Task<Stream?> PickCsvInternalAsync()
-    {
-        var topLevel = topLevelProvider();
-        if (topLevel == null)
-        {
-            return null;
-        }
-
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Выбор файла для импорта",
-            AllowMultiple = false,
-            FileTypeFilter =
-            [
-                new FilePickerFileType("Файл CSV") { Patterns = ["*.csv"], MimeTypes = ["*/*"] },
-                FilePickerFileTypes.All,
-            ],
-        });
-
-        if (files.Count == 0)
-        {
-            return null;
-        }
-
-        return await files.Single().OpenReadAsync();
     }
 }

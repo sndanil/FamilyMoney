@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
-using FamilyMoney.Import;
 using FamilyMoney.Messages;
 using FamilyMoney.Services;
 using FamilyMoney.State;
@@ -18,9 +17,7 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
-    private readonly IImporter _importer;
     private readonly IGlobalConfiguration _configuration;
-    private readonly IFilePickerService _filePickerService;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
@@ -55,9 +52,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(
         IRepository repository,
         IStateManager stateManager,
-        IImporter importer,
         IGlobalConfiguration configuration,
-        IFilePickerService filePickerService,
         PeriodViewModel period,
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts,
@@ -65,10 +60,8 @@ public partial class MainViewModel : ViewModelBase
         SettingsViewModel settingsViewModel)
     {
         _repository = repository;
-        _importer = importer;
         _stateManager = stateManager;
         _configuration = configuration;
-        _filePickerService = filePickerService;
 
         Settings = settingsViewModel;
         _categoriesViewModel = categoriesViewModel;
@@ -121,19 +114,6 @@ public partial class MainViewModel : ViewModelBase
             SelectedAccountId = resetAccountSelection ? null : state.SelectedAccountId,
         };
         _stateManager.SetMainState(newState);
-    }
-
-    [RelayCommand]
-    public async Task ImportAsync()
-    {
-        await using var stream = await _filePickerService.PickCsvAsync();
-        if (stream == null)
-        {
-            return;
-        }
-
-        _importer.DoImport(stream);
-        MainInit();
     }
 
     [RelayCommand]
