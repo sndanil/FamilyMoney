@@ -1,69 +1,43 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>FamilyMoney</RootNamespace>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <ApplicationIcon>wallet.ico</ApplicationIcon>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+<Project Sdk="Microsoft.NET.Sdk">  <PropertyGroup>    <OutputType>WinExe</OutputType>    <TargetFramework>net10.0</TargetFramework>    <LangVersion>preview</LangVersion>    <Nullable>enable</Nullable>    <ImplicitUsings>enable</ImplicitUsings>    <RootNamespace>FamilyMoney</RootNamespace>    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>    <ApplicationManifest>app.manifest</ApplicationManifest>    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>    <ApplicationIcon>wallet.ico</ApplicationIcon>    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>    <SelfContained>true</SelfContained>  </PropertyGroup>
+  <ItemGroup>    <AvaloniaResource Include="Assets\**" />  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Remove="Assets\Icons.axaml" />
   </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaResource Remove="Assets\Icons.axaml" />
+  <ItemGroup>
+    <None Remove="Assets\wallet.ico" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Assets\wallet.ico" />
+  <ItemGroup>
+    <Content Include="wallet.ico" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="wallet.ico" />
+  <ItemGroup>
+    <ProjectReference Include="..\FamilyMoney\FamilyMoney.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FamilyMoney\FamilyMoney.csproj" />
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.8" />
+    <PackageReference Include="NLog" Version="6.1.3" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.3" />
+    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.0.1" />
+    <PackageReference Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.0.4" />
-    <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.2" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.8" />
-    <PackageReference Include="NLog" Version="6.1.3" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.3" />
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.0.1" />
-    <PackageReference Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Icons.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
   </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Update="Assets\Icons.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaXaml>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

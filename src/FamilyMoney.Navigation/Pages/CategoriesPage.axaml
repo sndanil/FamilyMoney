@@ -1,0 +1,14 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.CategoriesPage"
+             x:DataType="vm:MainWindowViewModel"
+             Header="Категории">
+  <ListBox ItemsSource="{Binding Categories.DebetCategories}" Margin="8">
+    <ListBox.ItemTemplate>
+      <DataTemplate x:DataType="vm:DebetCategoryViewModel">
+        <TextBlock Text="{Binding Name}" Margin="4" />
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+  </ListBox>
+</ContentPage>

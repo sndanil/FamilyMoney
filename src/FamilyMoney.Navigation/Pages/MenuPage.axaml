@@ -1,0 +1,29 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.MenuPage"
+             x:DataType="vm:MainWindowViewModel"
+             Header="Меню"
+             NavigationPage.HasNavigationBar="False">
+  <StackPanel Spacing="4" Margin="8">
+    <Button Click="OnHomeClick">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <mi:MaterialIcon Kind="Home" />
+        <TextBlock Text="Главная" VerticalAlignment="Center" />
+      </StackPanel>
+    </Button>
+    <Button Click="OnCategoriesClick">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <mi:MaterialIcon Kind="Bookmark" />
+        <TextBlock Text="Категории" VerticalAlignment="Center" />
+      </StackPanel>
+    </Button>
+    <Button Click="OnSettingsClick">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <mi:MaterialIcon Kind="Cog" />
+        <TextBlock Text="Параметры" VerticalAlignment="Center" />
+      </StackPanel>
+    </Button>
+  </StackPanel>
+</ContentPage>

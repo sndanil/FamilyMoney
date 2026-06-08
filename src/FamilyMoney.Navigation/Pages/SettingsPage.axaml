@@ -1,0 +1,18 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:settingsVm="using:FamilyMoney.ViewModels.Settings"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.SettingsPage"
+             x:DataType="vm:MainWindowViewModel"
+             Header="Параметры">
+  <ListBox ItemsSource="{Binding Settings.Databases}" Margin="8">
+    <ListBox.ItemTemplate>
+      <DataTemplate x:DataType="settingsVm:DatabaseViewModel">
+        <StackPanel Spacing="2" Margin="4">
+          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding Path}" Opacity="0.7" FontSize="11" />
+        </StackPanel>
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+  </ListBox>
+</ContentPage>

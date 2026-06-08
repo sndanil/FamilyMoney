@@ -1,0 +1,34 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FamilyMoney.Android.App"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:local="using:FamilyMoney"
+             RequestedThemeVariant="Default">
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
+          <SolidColorBrush x:Key="GroupBackBrush" Color="#CFEAFF" />
+          <SolidColorBrush x:Key="MainBackBrush" Color="#EFF4F9" />
+          <SolidColorBrush x:Key="DialogBackBrush" Color="#FAFCFD" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
+          <SolidColorBrush x:Key="GroupBackBrush" Color="#0D2644" />
+          <SolidColorBrush x:Key="MainBackBrush" Color="#1A202F" />
+          <SolidColorBrush x:Key="DialogBackBrush" Color="#262B3E" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <mi:MaterialIconStyles />
+  </Application.Styles>
+</Application>
