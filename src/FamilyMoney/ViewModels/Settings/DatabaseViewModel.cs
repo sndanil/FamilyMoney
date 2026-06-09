@@ -16,7 +16,13 @@ public partial class DatabaseViewModel : ViewModelBase
     public DatabaseViewModel(IFilePickerService? filePickerService = null)
     {
         _filePickerService = filePickerService;
+        S3.PropertyChanged += (_, _) => OkCommand.NotifyCanExecuteChanged();
     }
+
+    public S3StorageViewModel S3 { get; } = new();
+
+    [ObservableProperty]
+    public partial Guid SyncId { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(OkCommand))]
@@ -38,10 +44,22 @@ public partial class DatabaseViewModel : ViewModelBase
 
     private bool CanOkCommand()
     {
-        return !string.IsNullOrWhiteSpace(Name)
-            && !string.IsNullOrWhiteSpace(Path)
-            && !string.IsNullOrWhiteSpace(BackupsFolder)
-            && MaxBackups >= 0;
+        if (string.IsNullOrWhiteSpace(Name)
+            || string.IsNullOrWhiteSpace(Path)
+            || string.IsNullOrWhiteSpace(BackupsFolder)
+            || MaxBackups < 0)
+        {
+            return false;
+        }
+
+        if (!S3.Enabled)
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(S3.Bucket)
+            && !string.IsNullOrWhiteSpace(S3.AccessKey)
+            && !string.IsNullOrWhiteSpace(S3.SecretKey);
     }
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
@@ -92,39 +110,57 @@ public partial class DatabaseViewModel : ViewModelBase
 
     public void FillFrom(DatabaseConfiguration config)
     {
+        SyncId = config.SyncId == Guid.Empty ? Guid.NewGuid() : config.SyncId;
         Name = config.Name;
         Path = config.Path;
         BackupsFolder = config.BackupsFolder;
         MaxBackups = config.MaxBackups;
+        S3.FillFrom(config.S3);
     }
 
     public DatabaseConfiguration ToConfiguration()
     {
         return new DatabaseConfiguration
         {
+            SyncId = SyncId == Guid.Empty ? Guid.NewGuid() : SyncId,
             Name = Name.Trim(),
             Path = Path.Trim(),
             BackupsFolder = BackupsFolder.Trim(),
             MaxBackups = MaxBackups,
+            S3 = S3.ToConfiguration(),
         };
+    }
+
+    public void ApplyFrom(DatabaseViewModel source)
+    {
+        SyncId = source.SyncId;
+        Name = source.Name;
+        Path = source.Path;
+        BackupsFolder = source.BackupsFolder;
+        MaxBackups = source.MaxBackups;
+        S3.ApplyFrom(source.S3);
     }
 
     public DatabaseViewModel Clone(IFilePickerService? filePickerService = null)
     {
-        return new DatabaseViewModel(filePickerService ?? _filePickerService)
+        var clone = new DatabaseViewModel(filePickerService ?? _filePickerService)
         {
+            SyncId = SyncId,
             Name = Name,
             Path = Path,
             BackupsFolder = BackupsFolder,
             MaxBackups = MaxBackups,
             IsSelected = IsSelected,
         };
+        clone.S3.ApplyFrom(S3);
+        return clone;
     }
 
     public static DatabaseViewModel CreateNew(IFilePickerService filePickerService)
     {
         return new DatabaseViewModel(filePickerService)
         {
+            SyncId = Guid.NewGuid(),
             Name = "Новая база",
             Path = "database.db",
             BackupsFolder = "Backups",

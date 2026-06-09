@@ -2,9 +2,11 @@
 
 namespace FamilyMoney.Models;
 
-public abstract class Transaction
+public abstract class Transaction : ISyncable
 {
     public required Guid Id { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 
     public Guid? AccountId { get; set; }
 

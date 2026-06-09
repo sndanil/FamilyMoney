@@ -5,14 +5,23 @@
              x:Class="FamilyMoney.Navigation.Pages.SettingsPage"
              x:DataType="vm:MainViewModel"
              Header="Параметры">
-  <ListBox ItemsSource="{Binding Settings.Databases}" Margin="8">
-    <ListBox.ItemTemplate>
-      <DataTemplate x:DataType="settingsVm:DatabaseViewModel">
-        <StackPanel Spacing="2" Margin="4">
-          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-          <TextBlock Text="{Binding Path}" Opacity="0.7" FontSize="11" />
-        </StackPanel>
-      </DataTemplate>
-    </ListBox.ItemTemplate>
-  </ListBox>
+  <Grid RowDefinitions="auto *" Margin="8">
+    <StackPanel Spacing="8">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Синхронизировать" Command="{Binding Settings.SyncNowCommand}" />
+        <TextBlock Text="{Binding Settings.SyncStatus}" VerticalAlignment="Center" TextWrapping="Wrap" />
+      </StackPanel>
+      <TextBlock Text="Базы данных" FontWeight="SemiBold" />
+    </StackPanel>
+    <ListBox Grid.Row="1" ItemsSource="{Binding Settings.Databases}" Margin="0 8 0 0">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="settingsVm:DatabaseViewModel">
+          <StackPanel Spacing="2" Margin="4">
+            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Path}" Opacity="0.7" FontSize="11" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
 </ContentPage>

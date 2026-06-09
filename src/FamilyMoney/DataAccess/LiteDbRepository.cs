@@ -1,5 +1,6 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
+using FamilyMoney.Sync;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,11 +14,19 @@ namespace FamilyMoney.DataAccess;
 public class LiteDbRepository : IRepository
 {
     private readonly IGlobalConfiguration _configuration;
+    private readonly LiteDbSyncOutbox _syncOutbox;
+    private readonly LiteDbSyncImageOutbox _syncImageOutbox;
     private readonly ILogger<LiteDbRepository> _logger;
 
-    public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
+    public LiteDbRepository(
+        IGlobalConfiguration configuration,
+        LiteDbSyncOutbox syncOutbox,
+        LiteDbSyncImageOutbox syncImageOutbox,
+        ILogger<LiteDbRepository> logger)
     {
         _configuration = configuration;
+        _syncOutbox = syncOutbox;
+        _syncImageOutbox = syncImageOutbox;
         _logger = logger;
     }
 
@@ -32,12 +41,12 @@ public class LiteDbRepository : IRepository
         _logger.LogInformation("Start update schema");
 
         var directory = Path.GetDirectoryName(DatabasePath);
-        if (!string.IsNullOrEmpty(directory)) 
+        if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
 
         var subcategories = db.GetCollection<SubCategory>(nameof(SubCategory));
         subcategories.EnsureIndex(s => s.Name);
@@ -87,14 +96,15 @@ public class LiteDbRepository : IRepository
     public void UpdateImage(Guid id, string fileName, Stream stream)
     {
         var strId = id.ToString();
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         db.FileStorage.Upload(strId, fileName, stream);
+        _syncImageOutbox.EnqueueUpload(db, id, fileName);
     }
 
     public Stream? TryGetImage(Guid id)
     {
         var strId = id.ToString();
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var file = db.FileStorage.FindById(strId);
         if (file != null)
         {
@@ -110,79 +120,95 @@ public class LiteDbRepository : IRepository
 
     public Account GetAccount(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
         return collection.FindOne(c => c.Id == id);
     }
 
     public IEnumerable<Account> GetAccounts()
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
-        return collection.FindAll().ToList();
+        return collection.Find(a => a.DeletedAt == null).ToList();
     }
 
     public void UpdateAccount(Account account)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        Touch(account);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
         collection.Upsert(account);
+        _syncOutbox.Enqueue(db, account);
     }
 
     public void DeleteAccount(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
-        collection.Delete(id);
+        var account = collection.FindOne(c => c.Id == id);
+        if (account == null)
+        {
+            return;
+        }
+
+        MarkDeleted(account);
+        collection.Upsert(account);
+        _syncOutbox.Enqueue(db, account);
+        _syncImageOutbox.EnqueueDelete(db, id);
         db.FileStorage.Delete(id.ToString());
     }
 
     public void UpdateCategroty(Category category)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        Touch(category);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Category>(nameof(Category));
         collection.Upsert(category);
+        _syncOutbox.Enqueue(db, category);
     }
 
     public Category GetCategory(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Category>(nameof(Category));
         return collection.FindOne(c => c.Id == id);
     }
 
     public IEnumerable<Category> GetCategories()
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Category>(nameof(Category));
-        return collection.FindAll().ToList();
+        return collection.Find(c => c.DeletedAt == null).ToList();
     }
 
     public SubCategory GetSubCategory(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         return collection.FindOne(c => c.Id == id);
     }
 
     public SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         var result = collection.Query()
-                        .Where(s => s.CategoryId == categoryId && s.Name == name)
+                        .Where(s => s.CategoryId == categoryId && s.Name == name && s.DeletedAt == null)
                         .FirstOrDefault();
 
         if (result == null)
         {
             result = collection.Query()
-                            .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name.ToLower())
+                            .Where(s => s.CategoryId == categoryId && s.Name.ToLower() == name.ToLower() && s.DeletedAt == null)
                             .FirstOrDefault();
         }
+
         if (result == null)
         {
             result = factory();
+            Touch(result);
             collection.Insert(result);
+            _syncOutbox.Enqueue(db, result);
         }
 
         return result;
@@ -190,33 +216,39 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<SubCategory> GetSubCategories()
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
-        return collection.FindAll().ToList();
+        return collection.Find(s => s.DeletedAt == null).ToList();
     }
 
     public void UpdateSubCategory(SubCategory subCategory)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        Touch(subCategory);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         collection.Upsert(subCategory);
+        _syncOutbox.Enqueue(db, subCategory);
     }
 
     public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
         var result = new List<SubCategoryLastSum>();
         foreach (var subCategory in subCategoryIds.Distinct())
         {
             db.BeginTrans();
-            var query = collection.Query().Where(t => t.Date >= from && t.SubCategoryId == subCategory).OrderByDescending(t => t.Date).Limit(1);
+            var query = collection.Query()
+                .Where(t => t.Date >= from && t.SubCategoryId == subCategory && t.DeletedAt == null)
+                .OrderByDescending(t => t.Date)
+                .Limit(1);
             var transaction = query.FirstOrDefault();
             if (transaction != null)
             {
-                result.Add(new (subCategory, transaction.Sum));
+                result.Add(new(subCategory, transaction.Sum));
             }
+
             db.Rollback();
         }
 
@@ -225,10 +257,11 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
-        var query = collection.Query().Where(t => t.Date >= from && !string.IsNullOrEmpty(t.Comment))
+        var query = collection.Query()
+            .Where(t => t.Date >= from && t.DeletedAt == null && !string.IsNullOrEmpty(t.Comment))
             .Select(t => new { t.SubCategoryId, t.Comment });
 
         var result = query
@@ -243,11 +276,11 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
         return collection.Query()
-            .Where(t => t.Date >= from && t.SubCategoryId != null && t.CategoryId != null)
+            .Where(t => t.Date >= from && t.DeletedAt == null && t.SubCategoryId != null && t.CategoryId != null)
             .ToList()
             .Where(t => t.Tags is { Length: > 0 })
             .GroupBy(t => (CategoryId: t.CategoryId!.Value, SubCategoryId: t.SubCategoryId!.Value))
@@ -265,11 +298,12 @@ public class LiteDbRepository : IRepository
 
     public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
-        var query = collection.Query().Where(t => t.Date >= filter.PeriodFrom && t.Date <= filter.PeriodTo);
-        
+        var query = collection.Query()
+            .Where(t => t.Date >= filter.PeriodFrom && t.Date <= filter.PeriodTo && t.DeletedAt == null);
+
         if (filter.AccountId.HasValue)
         {
             var accountsCollection = db.GetCollection<Account>(nameof(Account));
@@ -283,36 +317,72 @@ public class LiteDbRepository : IRepository
 
             query = query.Where(Query.Or(queries.ToArray()));
         }
-            
+
         return query.OrderByDescending(t => t.Date)
             .ToList();
     }
 
     public Transaction? GetTransaction(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
-        return collection.FindById(id);
+        var transaction = collection.FindById(id);
+        return transaction is { DeletedAt: not null } ? null : transaction;
     }
 
     public void DeleteTransaction(Guid id)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
-        collection.Delete(id);
+        var transaction = collection.FindById(id);
+        if (transaction == null)
+        {
+            return;
+        }
+
+        MarkDeleted(transaction);
+        collection.Upsert(transaction);
+        _syncOutbox.Enqueue(db, transaction);
     }
 
     public void UpdateTransaction(Transaction transaction)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        if (transaction.LastChange == default)
+        {
+            transaction.LastChange = DateTime.UtcNow;
+        }
+
+        transaction.DeletedAt = null;
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         collection.Upsert(transaction);
+        _syncOutbox.Enqueue(db, transaction);
     }
 
     public void InsertTransactions(IEnumerable<Transaction> transactions)
     {
-        using var db = new LiteDatabase(DatabasePath);
+        var items = transactions.ToList();
+        using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
-        collection.InsertBulk(transactions);
+        foreach (var transaction in items)
+        {
+            Touch(transaction);
+            collection.Insert(transaction);
+            _syncOutbox.Enqueue(db, transaction);
+        }
+    }
+
+    private LiteDatabase OpenDatabase() => new(DatabasePath);
+
+    private static void Touch(ISyncable entity)
+    {
+        entity.LastChange = DateTime.UtcNow;
+        entity.DeletedAt = null;
+    }
+
+    private static void MarkDeleted(ISyncable entity)
+    {
+        entity.LastChange = DateTime.UtcNow;
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }

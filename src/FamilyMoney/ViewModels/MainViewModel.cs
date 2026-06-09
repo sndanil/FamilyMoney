@@ -6,6 +6,7 @@ using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Services;
 using FamilyMoney.State;
+using FamilyMoney.Sync;
 using FamilyMoney.ViewModels.Settings;
 using System.Threading.Tasks;
 
@@ -18,6 +19,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
     private readonly IGlobalConfiguration _configuration;
+    private readonly ISyncService _syncService;
 
     private readonly PeriodViewModel _period;
     private readonly CategoriesViewModel _categoriesViewModel;
@@ -53,6 +55,7 @@ public partial class MainViewModel : ViewModelBase
         IRepository repository,
         IStateManager stateManager,
         IGlobalConfiguration configuration,
+        ISyncService syncService,
         PeriodViewModel period,
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts,
@@ -62,6 +65,7 @@ public partial class MainViewModel : ViewModelBase
         _repository = repository;
         _stateManager = stateManager;
         _configuration = configuration;
+        _syncService = syncService;
 
         Settings = settingsViewModel;
         _categoriesViewModel = categoriesViewModel;
@@ -79,6 +83,17 @@ public partial class MainViewModel : ViewModelBase
 
         UpdateTitle();
         MainInit();
+        _ = TrySyncOnStartupAsync();
+    }
+
+    private async Task TrySyncOnStartupAsync()
+    {
+        if (!_syncService.IsEnabled)
+        {
+            return;
+        }
+
+        await _syncService.SyncAsync();
     }
 
     private void UpdateTitle()

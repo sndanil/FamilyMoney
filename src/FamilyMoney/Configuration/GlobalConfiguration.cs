@@ -63,6 +63,7 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
             [
                 new DatabaseConfiguration
                 {
+                    SyncId = Guid.NewGuid(),
                     Name = "База данных",
                     Path = "database.db",
                     BackupsFolder = "Backups",

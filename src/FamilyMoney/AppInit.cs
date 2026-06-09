@@ -1,6 +1,7 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Services;
+using FamilyMoney.Sync;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.ViewModels.Settings;
@@ -45,11 +46,20 @@ public static class AppInit
         {
             services.AddTransient<IRepository, DesignerRepository>();
             services.AddSingleton<IFilePickerService, NullFilePickerService>();
+            services.AddSingleton<ISyncObjectStoreFactory, NullSyncObjectStoreFactory>();
         }
         else
         {
             services.AddTransient<IRepository, LiteDbRepository>();
+            services.AddSingleton<ISyncObjectStoreFactory, S3SyncObjectStoreFactory>();
         }
+
+        services.AddSingleton<LocalSyncStateStore>();
+        services.AddSingleton<LiteDbSyncOutbox>();
+        services.AddSingleton<LiteDbSyncImageOutbox>();
+        services.AddSingleton<SyncDeltaApplier>();
+        services.AddSingleton<SyncImageSynchronizer>();
+        services.AddSingleton<ISyncService, SyncService>();
 
         services.AddTransient<IStateManager, StateManager>();
         services.AddTransient<PeriodViewModel>();

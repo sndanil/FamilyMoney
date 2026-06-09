@@ -35,7 +35,7 @@
 		</Style>
 	</UserControl.Styles>
 
-	<Grid ColumnDefinitions="*" RowDefinitions="50 *" Margin="20">
+	<Grid ColumnDefinitions="*" RowDefinitions="50 auto *" Margin="20">
 		<Border Classes="Header">
 			<StackPanel Orientation="Horizontal" Spacing="10">
 				<TextBlock Text="Базы данных" />
@@ -46,7 +46,15 @@
 			</StackPanel>
 		</Border>
 
-		<Border Grid.Row="1" Classes="Content">
+		<Border Grid.Row="1" Classes="Header" Margin="0 8 0 0">
+			<StackPanel Orientation="Horizontal" Spacing="10">
+				<TextBlock Text="Синхронизация S3" VerticalAlignment="Center" />
+				<Button Command="{Binding SyncNowCommand}" Content="Синхронизировать" />
+				<TextBlock Text="{Binding SyncStatus}" VerticalAlignment="Center" Opacity="0.8" />
+			</StackPanel>
+		</Border>
+
+		<Border Grid.Row="2" Classes="Content">
 			<ListBox ItemsSource="{Binding Databases}"
 					 SelectedItem="{Binding SelectedDatabase}"
 					 Name="DatabasesList">

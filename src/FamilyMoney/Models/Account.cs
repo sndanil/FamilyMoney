@@ -2,9 +2,13 @@
 
 namespace FamilyMoney.Models;
 
-public sealed class Account
+public sealed class Account : ISyncable
 {
     public required Guid Id { get; set; }
+
+    public DateTime LastChange { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 
     public Guid? ParentId { get; set; }
 

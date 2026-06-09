@@ -2,11 +2,15 @@
 
 namespace FamilyMoney.Models;
 
-public abstract class SubCategory
+public abstract class SubCategory : ISyncable
 {
     public required Guid Id { get; set; }
     public Guid? CategoryId { get; set; }
     public required string Name { get; set; }
+
+    public DateTime LastChange { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 
     protected SubCategory()
     {
