@@ -1,4 +1,5 @@
 using FamilyMoney.Configuration;
+using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using CommunityToolkit.Mvvm.Messaging;
 using LiteDB;
@@ -13,10 +14,9 @@ public sealed class SyncService : ISyncService
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     private readonly IGlobalConfiguration _configuration;
+    private readonly IRepository _repository;
     private readonly ISyncObjectStoreFactory _objectStoreFactory;
     private readonly LocalSyncStateStore _stateStore;
-    private readonly LiteDbSyncOutbox _outbox;
-    private readonly LiteDbSyncImageOutbox _imageOutbox;
     private readonly SyncDeltaApplier _applier;
     private readonly SyncImageSynchronizer _imageSynchronizer;
     private readonly ILogger<SyncService> _logger;
@@ -24,19 +24,17 @@ public sealed class SyncService : ISyncService
 
     public SyncService(
         IGlobalConfiguration configuration,
+        IRepository repository,
         ISyncObjectStoreFactory objectStoreFactory,
         LocalSyncStateStore stateStore,
-        LiteDbSyncOutbox outbox,
-        LiteDbSyncImageOutbox imageOutbox,
         SyncDeltaApplier applier,
         SyncImageSynchronizer imageSynchronizer,
         ILogger<SyncService> logger)
     {
         _configuration = configuration;
+        _repository = repository;
         _objectStoreFactory = objectStoreFactory;
         _stateStore = stateStore;
-        _outbox = outbox;
-        _imageOutbox = imageOutbox;
         _applier = applier;
         _imageSynchronizer = imageSynchronizer;
         _logger = logger;
@@ -151,7 +149,10 @@ public sealed class SyncService : ISyncService
             _applier.Apply(db, delta);
             if (delta.Images.Count > 0)
             {
-                await _imageSynchronizer.ApplyAsync(db, database, objectStore, delta.Images, cancellationToken);
+                await _repository.ApplySyncedImagesAsync(
+                    delta.Images,
+                    async (image, ct) => await objectStore.DownloadStreamAsync(SyncPaths.ImageKey(database, image.EntityId), ct),
+                    cancellationToken);
             }
 
             state.AppliedRevision = revision;
@@ -168,10 +169,8 @@ public sealed class SyncService : ISyncService
         ISyncObjectStore objectStore,
         CancellationToken cancellationToken)
     {
-        using var db = new LiteDatabase(databasePath);
-        var entries = _outbox.GetAll(db);
-        var imageEntries = _imageOutbox.GetAll(db);
-        if (entries.Count == 0 && imageEntries.Count == 0)
+        var pending = _repository.GetPendingSyncChanges();
+        if (!pending.HasChanges)
         {
             return false;
         }
@@ -186,9 +185,9 @@ public sealed class SyncService : ISyncService
         }
 
         var newRevision = Math.Max(remoteRevision, state.PublishedRevision) + 1;
-        var delta = _outbox.BuildDelta(entries, newRevision, _deviceId);
-        _imageOutbox.AddToDelta(delta, imageEntries);
-        await _imageSynchronizer.UploadPendingAsync(db, database, objectStore, imageEntries, cancellationToken);
+        var delta = SyncDeltaBuilder.Build(pending.Entities, newRevision, _deviceId);
+        SyncDeltaBuilder.AddImages(delta, pending.Images);
+        await _imageSynchronizer.UploadPendingAsync(database, objectStore, pending.Images, cancellationToken);
 
         var deltaJson = JsonSerializer.Serialize(delta, JsonOptions);
         await objectStore.UploadTextAsync(SyncPaths.DeltaKey(database, newRevision), deltaJson, null, cancellationToken);
@@ -220,8 +219,7 @@ public sealed class SyncService : ISyncService
         var newManifestJson = JsonSerializer.Serialize(manifest, JsonOptions);
         await objectStore.UploadTextAsync(manifestKey, newManifestJson, manifestEtag, cancellationToken);
 
-        _outbox.Clear(db);
-        _imageOutbox.Clear(db);
+        _repository.ClearPendingSyncChanges();
         state.PublishedRevision = newRevision;
         state.AppliedRevision = Math.Max(state.AppliedRevision, newRevision);
         return true;

@@ -55,8 +55,6 @@ public static class AppInit
         }
 
         services.AddSingleton<LocalSyncStateStore>();
-        services.AddSingleton<LiteDbSyncOutbox>();
-        services.AddSingleton<LiteDbSyncImageOutbox>();
         services.AddSingleton<SyncDeltaApplier>();
         services.AddSingleton<SyncImageSynchronizer>();
         services.AddSingleton<ISyncService, SyncService>();

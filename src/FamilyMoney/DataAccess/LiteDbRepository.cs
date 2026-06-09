@@ -13,20 +13,16 @@ namespace FamilyMoney.DataAccess;
 
 public class LiteDbRepository : IRepository
 {
+    private const string SyncOutboxCollectionName = "_SyncOutbox";
+    private const string SyncImageOutboxCollectionName = "_SyncImageOutbox";
+    private const string SyncImageMetaCollectionName = "_SyncImageMeta";
+
     private readonly IGlobalConfiguration _configuration;
-    private readonly LiteDbSyncOutbox _syncOutbox;
-    private readonly LiteDbSyncImageOutbox _syncImageOutbox;
     private readonly ILogger<LiteDbRepository> _logger;
 
-    public LiteDbRepository(
-        IGlobalConfiguration configuration,
-        LiteDbSyncOutbox syncOutbox,
-        LiteDbSyncImageOutbox syncImageOutbox,
-        ILogger<LiteDbRepository> logger)
+    public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
     {
         _configuration = configuration;
-        _syncOutbox = syncOutbox;
-        _syncImageOutbox = syncImageOutbox;
         _logger = logger;
     }
 
@@ -35,6 +31,73 @@ public class LiteDbRepository : IRepository
     private string DatabasePath => DatabaseConfiguration.GetResolvedPath();
 
     private string BackupsFolder => DatabaseConfiguration.GetResolvedBackupsFolder();
+
+    public SyncPendingChanges GetPendingSyncChanges()
+    {
+        using var db = OpenDatabase();
+        return new SyncPendingChanges
+        {
+            Entities = db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName).FindAll().ToList(),
+            Images = db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName).FindAll().ToList(),
+        };
+    }
+
+    public void ClearPendingSyncChanges()
+    {
+        using var db = OpenDatabase();
+        db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName).DeleteAll();
+        db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName).DeleteAll();
+    }
+
+    public async Task ApplySyncedImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default)
+    {
+        using var _ = SyncContext.EnterApplyScope();
+        using var db = OpenDatabase();
+        var metaCollection = db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName);
+
+        foreach (var image in images)
+        {
+            var localMeta = metaCollection.FindOne(x => x.EntityId == image.EntityId);
+            if (localMeta != null && !ShouldReplaceImage(localMeta, image))
+            {
+                continue;
+            }
+
+            var storageId = image.EntityId.ToString();
+            if (image.DeletedAt != null)
+            {
+                db.FileStorage.Delete(storageId);
+                metaCollection.Upsert(new SyncImageMeta
+                {
+                    EntityId = image.EntityId,
+                    LastChange = image.LastChange,
+                    DeletedAt = image.DeletedAt,
+                    FileName = image.FileName ?? "image",
+                });
+                continue;
+            }
+
+            await using var stream = await downloadImageAsync(image, cancellationToken);
+            if (stream == null)
+            {
+                _logger.LogWarning("Remote image {EntityId} was not downloaded", image.EntityId);
+                continue;
+            }
+
+            var fileName = string.IsNullOrWhiteSpace(image.FileName) ? "image" : image.FileName;
+            db.FileStorage.Upload(storageId, fileName, stream);
+            metaCollection.Upsert(new SyncImageMeta
+            {
+                EntityId = image.EntityId,
+                LastChange = image.LastChange,
+                DeletedAt = null,
+                FileName = fileName,
+            });
+        }
+    }
 
     public void UpdateDbSchema()
     {
@@ -98,7 +161,7 @@ public class LiteDbRepository : IRepository
         var strId = id.ToString();
         using var db = OpenDatabase();
         db.FileStorage.Upload(strId, fileName, stream);
-        _syncImageOutbox.EnqueueUpload(db, id, fileName);
+        EnqueueImageUpload(db, id, fileName);
     }
 
     public Stream? TryGetImage(Guid id)
@@ -138,7 +201,7 @@ public class LiteDbRepository : IRepository
         using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
         collection.Upsert(account);
-        _syncOutbox.Enqueue(db, account);
+        EnqueueEntity(db, account);
     }
 
     public void DeleteAccount(Guid id)
@@ -153,8 +216,8 @@ public class LiteDbRepository : IRepository
 
         MarkDeleted(account);
         collection.Upsert(account);
-        _syncOutbox.Enqueue(db, account);
-        _syncImageOutbox.EnqueueDelete(db, id);
+        EnqueueEntity(db, account);
+        EnqueueImageDelete(db, id);
         db.FileStorage.Delete(id.ToString());
     }
 
@@ -164,7 +227,7 @@ public class LiteDbRepository : IRepository
         using var db = OpenDatabase();
         var collection = db.GetCollection<Category>(nameof(Category));
         collection.Upsert(category);
-        _syncOutbox.Enqueue(db, category);
+        EnqueueEntity(db, category);
     }
 
     public Category GetCategory(Guid id)
@@ -208,7 +271,7 @@ public class LiteDbRepository : IRepository
             result = factory();
             Touch(result);
             collection.Insert(result);
-            _syncOutbox.Enqueue(db, result);
+            EnqueueEntity(db, result);
         }
 
         return result;
@@ -227,7 +290,7 @@ public class LiteDbRepository : IRepository
         using var db = OpenDatabase();
         var collection = db.GetCollection<SubCategory>(nameof(SubCategory));
         collection.Upsert(subCategory);
-        _syncOutbox.Enqueue(db, subCategory);
+        EnqueueEntity(db, subCategory);
     }
 
     public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
@@ -342,7 +405,7 @@ public class LiteDbRepository : IRepository
 
         MarkDeleted(transaction);
         collection.Upsert(transaction);
-        _syncOutbox.Enqueue(db, transaction);
+        EnqueueEntity(db, transaction);
     }
 
     public void UpdateTransaction(Transaction transaction)
@@ -356,7 +419,7 @@ public class LiteDbRepository : IRepository
         using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
         collection.Upsert(transaction);
-        _syncOutbox.Enqueue(db, transaction);
+        EnqueueEntity(db, transaction);
     }
 
     public void InsertTransactions(IEnumerable<Transaction> transactions)
@@ -368,11 +431,108 @@ public class LiteDbRepository : IRepository
         {
             Touch(transaction);
             collection.Insert(transaction);
-            _syncOutbox.Enqueue(db, transaction);
+            EnqueueEntity(db, transaction);
         }
     }
 
     private LiteDatabase OpenDatabase() => new(DatabasePath);
+
+    private static void EnqueueEntity(LiteDatabase db, ISyncable entity)
+    {
+        if (SyncContext.IsApplying)
+        {
+            return;
+        }
+
+        var collection = db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName);
+        var record = SyncEntitySerializer.CreateRecord(entity);
+        var existing = collection.FindOne(x => x.EntityType == record.EntityType && x.EntityId == record.Id);
+        if (existing != null)
+        {
+            existing.LastChange = record.LastChange;
+            existing.DeletedAt = record.DeletedAt;
+            existing.DataJson = record.DataJson;
+            collection.Update(existing);
+            return;
+        }
+
+        collection.Insert(new SyncOutboxEntry
+        {
+            EntityType = record.EntityType,
+            EntityId = record.Id,
+            LastChange = record.LastChange,
+            DeletedAt = record.DeletedAt,
+            DataJson = record.DataJson,
+        });
+    }
+
+    private static void EnqueueImageUpload(LiteDatabase db, Guid entityId, string fileName)
+    {
+        if (SyncContext.IsApplying)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var collection = db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName);
+        var existing = collection.FindOne(x => x.EntityId == entityId);
+        if (existing != null)
+        {
+            existing.LastChange = now;
+            existing.DeletedAt = null;
+            existing.FileName = fileName;
+            collection.Update(existing);
+            return;
+        }
+
+        collection.Insert(new SyncImageOutboxEntry
+        {
+            EntityId = entityId,
+            LastChange = now,
+            FileName = fileName,
+        });
+    }
+
+    private static void EnqueueImageDelete(LiteDatabase db, Guid entityId)
+    {
+        if (SyncContext.IsApplying)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var collection = db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName);
+        var existing = collection.FindOne(x => x.EntityId == entityId);
+        if (existing != null)
+        {
+            existing.LastChange = now;
+            existing.DeletedAt = now;
+            collection.Update(existing);
+            return;
+        }
+
+        collection.Insert(new SyncImageOutboxEntry
+        {
+            EntityId = entityId,
+            LastChange = now,
+            DeletedAt = now,
+        });
+    }
+
+    private static bool ShouldReplaceImage(SyncImageMeta local, SyncImageRecord remote)
+    {
+        if (remote.LastChange > local.LastChange)
+        {
+            return true;
+        }
+
+        if (remote.LastChange < local.LastChange)
+        {
+            return false;
+        }
+
+        return remote.DeletedAt.HasValue && !local.DeletedAt.HasValue;
+    }
 
     private static void Touch(ISyncable entity)
     {

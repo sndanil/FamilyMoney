@@ -1,8 +1,11 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
+using FamilyMoney.Sync;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FamilyMoney.DataAccess;
 
@@ -123,4 +126,16 @@ public class DesignerRepository : IRepository
     {
         throw new NotImplementedException();
     }
+
+    public SyncPendingChanges GetPendingSyncChanges() => new();
+
+    public void ClearPendingSyncChanges()
+    {
+    }
+
+    public Task ApplySyncedImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 }

@@ -1,5 +1,6 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
+using FamilyMoney.Sync;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -47,5 +48,14 @@ public interface IRepository
     void UpdateTransaction(Transaction transaction);
 
     void InsertTransactions(IEnumerable<Transaction> transactions);
+
+    SyncPendingChanges GetPendingSyncChanges();
+
+    void ClearPendingSyncChanges();
+
+    Task ApplySyncedImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default);
 
 }
