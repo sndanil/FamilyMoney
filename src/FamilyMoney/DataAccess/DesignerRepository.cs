@@ -133,6 +133,10 @@ public class DesignerRepository : IRepository
     {
     }
 
+    public void ApplySyncDelta(SyncDelta delta)
+    {
+    }
+
     public Task ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,

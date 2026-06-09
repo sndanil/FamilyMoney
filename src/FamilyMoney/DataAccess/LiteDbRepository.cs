@@ -49,6 +49,37 @@ public class LiteDbRepository : IRepository
         db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName).DeleteAll();
     }
 
+    public void ApplySyncDelta(SyncDelta delta)
+    {
+        using var _ = SyncContext.EnterApplyScope();
+        using var db = OpenDatabase();
+
+        foreach (var record in delta.Accounts)
+        {
+            ApplySyncRecord(db.GetCollection<Account>(nameof(Account)), record);
+        }
+
+        foreach (var record in delta.Categories)
+        {
+            ApplySyncRecord(db.GetCollection<Category>(nameof(Category)), record);
+        }
+
+        foreach (var record in delta.SubCategories)
+        {
+            ApplySyncRecord(db.GetCollection<SubCategory>(nameof(SubCategory)), record);
+        }
+
+        foreach (var record in delta.Transactions)
+        {
+            ApplySyncRecord(db.GetCollection<Transaction>(nameof(Transaction)), record);
+        }
+
+        _logger.LogInformation(
+            "Applied sync delta {Revision} from device {DeviceId}",
+            delta.Revision,
+            delta.DeviceId);
+    }
+
     public async Task ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
@@ -532,6 +563,52 @@ public class LiteDbRepository : IRepository
         }
 
         return remote.DeletedAt.HasValue && !local.DeletedAt.HasValue;
+    }
+
+    private static void ApplySyncRecord<T>(ILiteCollection<T> collection, SyncEntityRecord record)
+        where T : class, ISyncable
+    {
+        var existing = collection.FindOne(x => x.Id == record.Id);
+        if (record.DeletedAt != null)
+        {
+            if (existing == null || !ShouldReplaceSyncRecord(existing, record))
+            {
+                return;
+            }
+
+            existing.LastChange = record.LastChange;
+            existing.DeletedAt = record.DeletedAt;
+            collection.Update(existing);
+            return;
+        }
+
+        var entity = SyncEntitySerializer.Deserialize(record) as T;
+        if (entity == null)
+        {
+            return;
+        }
+
+        if (existing != null && !ShouldReplaceSyncRecord(existing, record))
+        {
+            return;
+        }
+
+        collection.Upsert(entity);
+    }
+
+    private static bool ShouldReplaceSyncRecord(ISyncable existing, SyncEntityRecord incoming)
+    {
+        if (incoming.LastChange > existing.LastChange)
+        {
+            return true;
+        }
+
+        if (incoming.LastChange < existing.LastChange)
+        {
+            return false;
+        }
+
+        return incoming.DeletedAt.HasValue && !existing.DeletedAt.HasValue;
     }
 
     private static void Touch(ISyncable entity)

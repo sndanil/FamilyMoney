@@ -2,7 +2,6 @@ using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using CommunityToolkit.Mvvm.Messaging;
-using LiteDB;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -17,7 +16,6 @@ public sealed class SyncService : ISyncService
     private readonly IRepository _repository;
     private readonly ISyncObjectStoreFactory _objectStoreFactory;
     private readonly LocalSyncStateStore _stateStore;
-    private readonly SyncDeltaApplier _applier;
     private readonly SyncImageSynchronizer _imageSynchronizer;
     private readonly ILogger<SyncService> _logger;
     private readonly string _deviceId;
@@ -27,7 +25,6 @@ public sealed class SyncService : ISyncService
         IRepository repository,
         ISyncObjectStoreFactory objectStoreFactory,
         LocalSyncStateStore stateStore,
-        SyncDeltaApplier applier,
         SyncImageSynchronizer imageSynchronizer,
         ILogger<SyncService> logger)
     {
@@ -35,7 +32,6 @@ public sealed class SyncService : ISyncService
         _repository = repository;
         _objectStoreFactory = objectStoreFactory;
         _stateStore = stateStore;
-        _applier = applier;
         _imageSynchronizer = imageSynchronizer;
         _logger = logger;
         _deviceId = LocalSyncStateStore.GetOrCreateDeviceId();
@@ -145,8 +141,7 @@ public sealed class SyncService : ISyncService
             var delta = JsonSerializer.Deserialize<SyncDelta>(deltaJson, JsonOptions)
                 ?? throw new InvalidOperationException($"Invalid sync delta {revision}.");
 
-            using var db = new LiteDatabase(databasePath);
-            _applier.Apply(db, delta);
+            _repository.ApplySyncDelta(delta);
             if (delta.Images.Count > 0)
             {
                 await _repository.ApplySyncedImagesAsync(

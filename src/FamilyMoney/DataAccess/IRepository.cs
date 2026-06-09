@@ -53,6 +53,8 @@ public interface IRepository
 
     void ClearPendingSyncChanges();
 
+    void ApplySyncDelta(SyncDelta delta);
+
     Task ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,

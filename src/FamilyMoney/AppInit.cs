@@ -55,7 +55,6 @@ public static class AppInit
         }
 
         services.AddSingleton<LocalSyncStateStore>();
-        services.AddSingleton<SyncDeltaApplier>();
         services.AddSingleton<SyncImageSynchronizer>();
         services.AddSingleton<ISyncService, SyncService>();
 
