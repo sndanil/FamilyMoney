@@ -66,6 +66,7 @@ public sealed class SyncService : ISyncService
             var changed = false;
             changed |= await PullAsync(database, state, databasePath, objectStore, cancellationToken);
             changed |= await PushAsync(database, state, databasePath, objectStore, cancellationToken);
+            await EnsureSnapshotAsync(database, state, databasePath, objectStore, cancellationToken);
             _stateStore.Save(state);
 
             if (changed)
@@ -205,6 +206,60 @@ public sealed class SyncService : ISyncService
         state.PublishedRevision = newRevision;
         state.AppliedRevision = Math.Max(state.AppliedRevision, newRevision);
         return true;
+    }
+
+    private async Task EnsureSnapshotAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
+        string databasePath,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var manifestKey = SyncPaths.ManifestKey(database);
+        var (manifestJson, manifestEtag) = await objectStore.TryDownloadTextAsync(manifestKey, cancellationToken);
+
+        SyncManifest? remoteManifest = null;
+        if (manifestJson != null)
+        {
+            remoteManifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonDefaults.Indented);
+        }
+
+        if (!string.IsNullOrWhiteSpace(remoteManifest?.SnapshotKey))
+        {
+            return;
+        }
+
+        var remoteRevision = remoteManifest?.Revision ?? 0;
+        if (remoteRevision > state.AppliedRevision)
+        {
+            // Локальная база отстаёт от хранилища — снимок с неё был бы неполным.
+            return;
+        }
+
+        var snapshotRevision = Math.Max(remoteRevision, 1);
+        var snapshotKey = SyncPaths.SnapshotKey(database, snapshotRevision);
+        await objectStore.UploadFileAsync(snapshotKey, databasePath, cancellationToken);
+
+        var manifest = new SyncManifest
+        {
+            Revision = snapshotRevision,
+            UpdatedAt = DateTime.UtcNow,
+            UpdatedByDevice = _deviceId,
+            SnapshotRevision = snapshotRevision,
+            SnapshotKey = snapshotKey,
+        };
+
+        var newManifestJson = JsonSerializer.Serialize(manifest, JsonDefaults.Indented);
+        await objectStore.UploadTextAsync(manifestKey, newManifestJson, manifestEtag, cancellationToken);
+
+        state.AppliedRevision = Math.Max(state.AppliedRevision, snapshotRevision);
+        state.PublishedRevision = Math.Max(state.PublishedRevision, snapshotRevision);
+
+        _logger.LogInformation(
+            "Created initial sync snapshot {SnapshotKey} at revision {Revision} for database {SyncId}",
+            snapshotKey,
+            snapshotRevision,
+            database.SyncId);
     }
 
     private static async Task RestoreSnapshotAsync(
