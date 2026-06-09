@@ -60,7 +60,7 @@ public sealed class SyncService : ISyncService
         var database = EnsureDatabaseSyncId();
         var state = _stateStore.Load(database.SyncId, _deviceId);
         var databasePath = database.GetResolvedPath();
-        var objectStore = CreateObjectStore(database);
+        var objectStore = _objectStoreFactory.Create(database.S3);
         try
         {
             var changed = false;
@@ -80,19 +80,6 @@ public sealed class SyncService : ISyncService
             _logger.LogError(ex, "Sync failed for database {SyncId}", database.SyncId);
             return SyncResult.Failed(ex.Message);
         }
-        finally
-        {
-            if (objectStore is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-    }
-
-    private ISyncObjectStore CreateObjectStore(DatabaseConfiguration database)
-    {
-        var store = _objectStoreFactory.Create(database.S3);
-        return store is IDisposable disposable ? new DisposableObjectStore(store, disposable) : store;
     }
 
     private async Task<bool> PullAsync(

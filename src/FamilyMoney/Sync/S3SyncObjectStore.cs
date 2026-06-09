@@ -6,38 +6,41 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Sync;
 
-public sealed class S3SyncObjectStore : ISyncObjectStore, IDisposable
+public sealed class S3SyncObjectStore : ISyncObjectStore
 {
+    private readonly S3StorageConfiguration _configuration;
     private readonly ILogger<S3SyncObjectStore> _logger;
-    private readonly IBlobStorage _storage;
 
     public S3SyncObjectStore(S3StorageConfiguration configuration, ILogger<S3SyncObjectStore> logger)
     {
+        _configuration = configuration;
         _logger = logger;
-        _storage = CreateBlobStorage(configuration);
     }
 
     public async Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default)
     {
-        var blob = await _storage.GetBlobAsync(key, cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        var blob = await storage.GetBlobAsync(key, cancellationToken);
         if (blob == null)
         {
             return (null, null);
         }
 
-        var content = await _storage.ReadTextAsync(key, cancellationToken: cancellationToken);
+        var content = await storage.ReadTextAsync(key, cancellationToken: cancellationToken);
         return (content, GetETag(blob));
     }
 
     public async Task UploadTextAsync(string key, string content, string? ifMatchEtag, CancellationToken cancellationToken = default)
     {
-        await _storage.WriteTextAsync(key, content, cancellationToken: cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        await storage.WriteTextAsync(key, content, cancellationToken: cancellationToken);
         _logger.LogDebug("Uploaded S3 object {Key}", key);
     }
 
     public async Task UploadFileAsync(string key, string localFilePath, CancellationToken cancellationToken = default)
     {
-        await _storage.WriteFileAsync(key, localFilePath, cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        await storage.WriteFileAsync(key, localFilePath, cancellationToken);
         _logger.LogDebug("Uploaded S3 file {Key}", key);
     }
 
@@ -49,21 +52,27 @@ public sealed class S3SyncObjectStore : ISyncObjectStore, IDisposable
             Directory.CreateDirectory(directory);
         }
 
-        await _storage.ReadToFileAsync(key, localFilePath, cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        await storage.ReadToFileAsync(key, localFilePath, cancellationToken);
     }
 
-    public Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default) =>
-        _storage.ExistsAsync(key, cancellationToken);
+    public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
+    {
+        using var storage = CreateBlobStorage(_configuration);
+        return await storage.ExistsAsync(key, cancellationToken);
+    }
 
     public async Task UploadStreamAsync(string key, Stream stream, string fileName, CancellationToken cancellationToken = default)
     {
-        await _storage.WriteAsync(key, stream, cancellationToken: cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        await storage.WriteAsync(key, stream, cancellationToken: cancellationToken);
         _logger.LogDebug("Uploaded S3 stream {Key}", key);
     }
 
     public async Task<Stream?> DownloadStreamAsync(string key, CancellationToken cancellationToken = default)
     {
-        await using var stream = await _storage.OpenReadAsync(key, cancellationToken);
+        using var storage = CreateBlobStorage(_configuration);
+        await using var stream = await storage.OpenReadAsync(key, cancellationToken);
         if (stream == null)
         {
             return null;
@@ -75,10 +84,11 @@ public sealed class S3SyncObjectStore : ISyncObjectStore, IDisposable
         return memoryStream;
     }
 
-    public Task DeleteAsync(string key, CancellationToken cancellationToken = default) =>
-        _storage.DeleteAsync(key, cancellationToken);
-
-    public void Dispose() => _storage.Dispose();
+    public async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    {
+        using var storage = CreateBlobStorage(_configuration);
+        await storage.DeleteAsync(key, cancellationToken);
+    }
 
     private static IBlobStorage CreateBlobStorage(S3StorageConfiguration configuration)
     {
