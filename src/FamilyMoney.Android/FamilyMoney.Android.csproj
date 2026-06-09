@@ -15,12 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AndroidResource Include="Icon.png">
-      <Link>Resources\drawable\Icon.png</Link>
-    </AndroidResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.4" />
     <PackageReference Include="Avalonia.Android" Version="12.0.4" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
@@ -50,6 +44,11 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\..\resources\Icon.svg" Link="Icon.svg" />
   </ItemGroup>
+
+  <Target Name="RenderSplashIcon" BeforeTargets="PrepareForBuild">
+    <Exec Command="python &quot;$(MSBuildProjectDirectory)\..\..\resources\render_splash.py&quot;" />
+  </Target>
 
 </Project>
