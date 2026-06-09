@@ -1,13 +1,17 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pages="using:FamilyMoney.Navigation.Pages"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.AppShell"
              x:DataType="vm:MainViewModel">
-  <DrawerPage x:Name="ShellDrawer">
+  <DrawerPage x:Name="ShellDrawer" IsOpen="True"
+              DrawerLayoutBehavior="Split"
+              DrawerBreakpointLength="720"  >
+
     <DrawerPage.Drawer>
       <pages:MenuPage DataContext="{Binding}" />
     </DrawerPage.Drawer>
+
     <NavigationPage x:Name="ShellNavigation">
       <pages:HomePage DataContext="{Binding}" />
     </NavigationPage>

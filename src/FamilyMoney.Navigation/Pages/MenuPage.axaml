@@ -1,29 +1,30 @@
-<ContentPage xmlns="https://github.com/avaloniaui"
+﻿<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.MenuPage"
              x:DataType="vm:MainViewModel"
              Header="Меню"
              NavigationPage.HasNavigationBar="False">
-  <StackPanel Spacing="4" Margin="8">
-    <Button Click="OnHomeClick">
-      <StackPanel Orientation="Horizontal" Spacing="12">
-        <mi:MaterialIcon Kind="Home" />
-        <TextBlock Text="Главная" VerticalAlignment="Center" />
-      </StackPanel>
-    </Button>
-    <Button Click="OnCategoriesClick">
-      <StackPanel Orientation="Horizontal" Spacing="12">
-        <mi:MaterialIcon Kind="Bookmark" />
-        <TextBlock Text="Категории" VerticalAlignment="Center" />
-      </StackPanel>
-    </Button>
-    <Button Click="OnSettingsClick">
-      <StackPanel Orientation="Horizontal" Spacing="12">
-        <mi:MaterialIcon Kind="Cog" />
-        <TextBlock Text="Параметры" VerticalAlignment="Center" />
-      </StackPanel>
-    </Button>
-  </StackPanel>
+  <Grid RowDefinitions="Auto Auto *">
+    <StackPanel Spacing="4" Margin="8">
+      <Button Click="OnSettingsClick" HorizontalAlignment="Stretch">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <mi:MaterialIcon Kind="Cog" />
+          <TextBlock Text="Параметры" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+    </StackPanel>
+
+    <TextBlock Grid.Row="1"
+               Text="Счета"
+               FontWeight="SemiBold"
+               Opacity="0.7"
+               Margin="12 8 12 4" />
+
+    <controls:AccountsDrawerView Grid.Row="2"
+                                 Margin="8 0 8 8"
+                                 DataContext="{Binding Accounts}" />
+  </Grid>
 </ContentPage>

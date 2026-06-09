@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="600"
+             x:DataType="vm:AccountsViewModel"
+             x:Class="FamilyMoney.Navigation.Controls.AccountsDrawerView">
+  <UserControl.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:IsNegativeConverter x:Key="isNegativeConverter" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <Style Selector="Border.Separator">
+      <Setter Property="Height" Value="3" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+    </Style>
+    <Style Selector="Border.Account">
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector="Border.Group">
+      <Setter Property="Margin" Value="1 2 1 0" />
+      <Setter Property="CornerRadius" Value="12 12 0 0" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+    </Style>
+    <Style Selector="Border.Element">
+      <Setter Property="Margin" Value="1 0 1 0" />
+      <Setter Property="BorderThickness" Value="1 1 1 0" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+    </Style>
+    <Style Selector="Border.AloneElement">
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Margin" Value="1 0 1 2" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="ItemsControl.Children > ContentPresenter:nth-last-child(1) > Border">
+      <Setter Property="CornerRadius" Value="0 0 12 12" />
+      <Setter Property="Margin" Value="1 0 1 2" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.Account:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+    </Style>
+    <Style Selector="Border.Account.Selected">
+      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+    </Style>
+    <Style Selector="Border.Account Image">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Margin" Value="10 4 0 4" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Account TextBlock.Name">
+      <Setter Property="Margin" Value="12 4 0 4" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Account TextBlock.Group">
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Border.Account TextBlock.Sum">
+      <Setter Property="Margin" Value="8 0 12 0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+    <Style Selector="TextBlock.Negative">
+      <Setter Property="Foreground" Value="Red" />
+    </Style>
+    <Style Selector="Button.Expander">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Width" Value="28" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="8 0 0 0" />
+    </Style>
+    <Style Selector="mi|MaterialIcon">
+      <Setter Property="Height" Value="14" />
+      <Setter Property="Width" Value="14" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="Gray" />
+    </Style>
+    <Style Selector="Border.AllTotal">
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Margin" Value="1 0" />
+    </Style>
+    <Style Selector="Border.AllTotal TextBlock">
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto Auto *">
+    <Border Classes="Account Group AllTotal"
+            DataContext="{Binding Total}"
+            Classes.Selected="{Binding IsSelected}"
+            Tapped="OnAccountTapped">
+      <Grid ColumnDefinitions="Auto * Auto">
+        <Image Stretch="Uniform"
+               Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <TextBlock Grid.Column="1" Classes="Name" Text="{Binding Name}" />
+        <TextBlock Grid.Column="2"
+                   Classes="Sum"
+                   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+                   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Classes="Separator" />
+
+    <ScrollViewer Grid.Row="2">
+      <ItemsControl ItemsSource="{Binding Total.Children}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:AccountViewModel">
+            <StackPanel Orientation="Vertical" IsVisible="{Binding !IsHidden}">
+              <Border Classes="Account"
+                      Classes.Element="{Binding !IsGroup}"
+                      Classes.Group="{Binding IsGroup}"
+                      Classes.Selected="{Binding IsSelected}"
+                      Tapped="OnAccountTapped">
+                <Classes.AloneElement>
+                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                    <Binding Path="!IsGroup" />
+                    <Binding Path="!IsExpanded" />
+                    <Binding Path="!Children.Count" />
+                  </MultiBinding>
+                </Classes.AloneElement>
+
+                <Grid ColumnDefinitions="Auto Auto * Auto">
+                  <Button Classes="Expander"
+                          IsVisible="{Binding IsGroup}"
+                          Command="{Binding ToggleExpandCommand}">
+                    <Grid>
+                      <mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+                      <mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
+                    </Grid>
+                  </Button>
+                  <Image Grid.Column="1"
+                         Stretch="Uniform"
+                         Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                         IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <TextBlock Grid.Column="2"
+                             Classes="Name"
+                             Classes.Group="{Binding IsGroup}"
+                             TextTrimming="CharacterEllipsis"
+                             Text="{Binding Name}" />
+                  <TextBlock Grid.Column="3"
+                             Classes="Sum"
+                             Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+                             Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                </Grid>
+              </Border>
+
+              <ItemsControl ItemsSource="{Binding Children}"
+                            Classes="Children"
+                            IsVisible="{Binding IsExpanded}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AccountViewModel">
+                    <Border Classes="Account Element"
+                            Classes.Selected="{Binding IsSelected}"
+                            IsVisible="{Binding !IsHidden}"
+                            Tapped="OnAccountTapped">
+                      <Grid ColumnDefinitions="Auto * Auto">
+                        <Image Stretch="Uniform"
+                               Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <TextBlock Grid.Column="1"
+                                   Classes="Name"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding Name}" />
+                        <TextBlock Grid.Column="2"
+                                   Classes="Sum"
+                                   Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
+                                   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
