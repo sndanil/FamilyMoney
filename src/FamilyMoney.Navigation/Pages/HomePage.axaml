@@ -1,9 +1,189 @@
 ﻿<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.HomePage"
              x:DataType="vm:MainViewModel"
              Header="Главная">
-  <ScrollViewer>
-  </ScrollViewer>
+  <ContentPage.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+  </ContentPage.Resources>
+
+  <ContentPage.Styles>
+    <Style Selector="Border.Total">
+      <Setter Property="Margin" Value="8 8 8 0" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="10 5" />
+    </Style>
+    <Style Selector="Border.Total TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Transaction">
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Margin" Value="16 -1 16 0" />
+      <Setter Property="CornerRadius" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="8 4" />
+    </Style>
+    <Style Selector="Border.TransactionTag">
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="6 2" />
+      <Setter Property="Margin" Value="0 1 2 0" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+    </Style>
+    <Style Selector="Border.TransactionTag TextBlock">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Opacity" Value="0.85" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.Name">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="TextBlock.Comment">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.7" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="SelectableTextBlock.Sum">
+      <Setter Property="FontFamily" Value="Verdana" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="8 0 0 0" />
+    </Style>
+    <Style Selector="SelectableTextBlock.Debet">
+      <Setter Property="Foreground" Value="#3BCE5E" />
+    </Style>
+    <Style Selector="SelectableTextBlock.Negative">
+      <Setter Property="Foreground" Value="Red" />
+    </Style>
+    <Style Selector="Image.Category">
+      <Setter Property="Margin" Value="0 0 8 0" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="Width" Value="20" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Period">
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="10 0" />
+    </Style>
+    <Style Selector="mi|MaterialIcon">
+      <Setter Property="Height" Value="14" />
+      <Setter Property="Width" Value="14" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+  </ContentPage.Styles>
+
+  <Grid RowDefinitions="Auto *">
+    <Grid ColumnDefinitions="Auto * Auto" Margin="8 8 8 0">
+      <Button Classes="Period"
+              CornerRadius="12 0 0 12"
+              Command="{Binding Period.PrevCommand}">
+        <mi:MaterialIcon Kind="ChevronLeft" />
+      </Button>
+      <Button Grid.Column="1"
+              Classes="Period"
+              CornerRadius="0"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Period.ToMonthCommand}">
+        <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" />
+      </Button>
+      <Button Grid.Column="2"
+              Classes="Period"
+              CornerRadius="0 12 12 0"
+              Command="{Binding Period.NextCommand}">
+        <mi:MaterialIcon Kind="ChevronRight" />
+      </Button>
+    </Grid>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" Margin="0 0 0 8">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <StackPanel>
+              <Border Classes="Total">
+                <Grid ColumnDefinitions="* Auto">
+                  <TextBlock Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
+                  <SelectableTextBlock Grid.Column="1"
+                                       Classes="Sum"
+                                       Classes.Debet="{Binding IsDebet}"
+                                       Classes.Negative="{Binding !IsDebet}"
+                                       Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                </Grid>
+              </Border>
+
+              <ItemsControl ItemsSource="{Binding Transactions}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="Transaction">
+                      <Grid ColumnDefinitions="Auto * Auto">
+                        <Image Classes="Category"
+                               Stretch="Uniform"
+                               Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                               IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Classes="Name" Text="{Binding Category.Name}" />
+                            <TextBlock Classes="Name"
+                                       Opacity="0.8"
+                                       Text="{Binding SubCategory.Name}"
+                                       IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                          </StackPanel>
+                          <TextBlock Classes="Comment"
+                                     Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+                                     IsVisible="{Binding Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                          <ItemsControl ItemsSource="{Binding Tags}" IsVisible="{Binding HasTags}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <Border Classes="TransactionTag">
+                                  <TextBlock Text="{Binding}" />
+                                </Border>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
+
+                        <SelectableTextBlock Grid.Column="2"
+                                             Classes="Sum"
+                                             Classes.Debet="{Binding IsDebet}"
+                                             Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
 </ContentPage>

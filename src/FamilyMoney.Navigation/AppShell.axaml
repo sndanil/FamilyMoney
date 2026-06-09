@@ -9,11 +9,11 @@
               DrawerBreakpointLength="720"  >
 
     <DrawerPage.Drawer>
-      <pages:MenuPage DataContext="{Binding}" />
+      <pages:MenuPage x:Name="ShellMenu" />
     </DrawerPage.Drawer>
 
     <NavigationPage x:Name="ShellNavigation">
-      <pages:HomePage DataContext="{Binding}" />
+      <pages:HomePage x:Name="ShellHome" />
     </NavigationPage>
   </DrawerPage>
 </UserControl>
