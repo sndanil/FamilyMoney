@@ -1,0 +1,31 @@
+---
+description: Build and utility scripts use dotnet script (.csx), not Python
+alwaysApply: true
+---
+
+# Build and utility scripts — dotnet, not Python
+
+When creating scripts for build steps, code generation, asset rendering, or other project tooling:
+
+- Prefer **dotnet script** (`.csx`) or a small **console tool project** under `tools/`.
+- Do **not** add new Python scripts (`.py`) unless the user explicitly asks for Python.
+
+## Preferred approaches
+
+1. **`.csx` + `dotnet script`** — for one-off or lightweight utilities.
+2. **`tools/<Name>/` console project** — when NuGet dependencies, tests, or CI stability matter.
+
+## MSBuild integration
+
+```xml
+<Exec Command="dotnet script &quot;$(MSBuildProjectDirectory)\..\..\resources\render_splash.csx&quot;" />
+```
+
+## Avoid
+
+- New `*.py` scripts for rendering, codegen, or pre/post-build tasks.
+- Requiring Python/cairosvg/Pillow in the build pipeline when a .NET library can do the job (e.g. SkiaSharp + Svg.Skia for SVG→PNG).
+
+## Existing Python scripts
+
+Legacy `*.py` scripts in `resources/` are kept for reference; use the matching `*.csx` scripts instead (`render_splash.csx`, `render_icons.csx`).

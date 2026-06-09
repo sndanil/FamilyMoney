@@ -1,17 +1,39 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">  <PropertyGroup>    <OutputType>WinExe</OutputType>    <TargetFramework>net10.0</TargetFramework>    <LangVersion>preview</LangVersion>    <Nullable>enable</Nullable>    <ImplicitUsings>enable</ImplicitUsings>    <RootNamespace>FamilyMoney</RootNamespace>    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>    <ApplicationManifest>app.manifest</ApplicationManifest>    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>    <ApplicationIcon>wallet.ico</ApplicationIcon>    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>    <SelfContained>true</SelfContained>  </PropertyGroup>
-  <ItemGroup>    <AvaloniaResource Include="Assets\**" />  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FamilyMoney</RootNamespace>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>wallet.ico</ApplicationIcon>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <AvaloniaResource Remove="Assets\Icons.axaml" />
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <None Remove="Assets\wallet.ico" />
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="wallet.ico" />
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\FamilyMoney\FamilyMoney.csproj" />
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.4" />
     <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
@@ -22,15 +44,19 @@
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.0.1" />
     <PackageReference Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <AvaloniaXaml Update="Assets\Icons.axaml">
       <SubType>Designer</SubType>
     </AvaloniaXaml>
-  </ItemGroup>
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-</Project>
+  </ItemGroup>
+
+</Project>
+

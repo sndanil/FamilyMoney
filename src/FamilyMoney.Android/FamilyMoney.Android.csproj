@@ -47,8 +47,4 @@
     <None Include="..\..\resources\Icon.svg" Link="Icon.svg" />
   </ItemGroup>
 
-  <Target Name="RenderSplashIcon" BeforeTargets="PrepareForBuild">
-    <Exec Command="python &quot;$(MSBuildProjectDirectory)\..\..\resources\render_splash.py&quot;" />
-  </Target>
-
 </Project>
