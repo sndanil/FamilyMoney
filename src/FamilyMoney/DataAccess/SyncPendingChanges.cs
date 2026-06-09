@@ -1,4 +1,4 @@
-using FamilyMoney.Sync;
+﻿using FamilyMoney.Models.Sync;
 
 namespace FamilyMoney.DataAccess;
 

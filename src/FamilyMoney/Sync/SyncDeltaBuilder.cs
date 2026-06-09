@@ -1,4 +1,5 @@
-using FamilyMoney.Models;
+﻿using FamilyMoney.Models;
+using FamilyMoney.Models.Sync;
 
 namespace FamilyMoney.Sync;
 
