@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FamilyMoney.Utils;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -50,7 +51,7 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
     public void Save(RootConfiguration configuration)
     {
         Directory.CreateDirectory(HomeFolder);
-        var json = JsonSerializer.Serialize(configuration, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(configuration, JsonDefaults.Indented);
         File.WriteAllText(UserSettingsPath, json);
         _rootConfiguration = configuration;
     }

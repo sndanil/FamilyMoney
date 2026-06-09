@@ -1,12 +1,11 @@
 using FamilyMoney.Configuration;
+using FamilyMoney.Utils;
 using System.Text.Json;
 
 namespace FamilyMoney.Sync;
 
 public sealed class LocalSyncStateStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
     public LocalSyncState Load(Guid databaseSyncId, string deviceId)
     {
         var path = SyncPaths.LocalStatePath(databaseSyncId);
@@ -20,7 +19,7 @@ public sealed class LocalSyncStateStore
         }
 
         var json = File.ReadAllText(path);
-        var state = JsonSerializer.Deserialize<LocalSyncState>(json, JsonOptions)
+        var state = JsonSerializer.Deserialize<LocalSyncState>(json, JsonDefaults.Indented)
             ?? new LocalSyncState { DatabaseSyncId = databaseSyncId, DeviceId = deviceId };
         state.DeviceId = deviceId;
         return state;
@@ -35,7 +34,7 @@ public sealed class LocalSyncStateStore
             Directory.CreateDirectory(directory);
         }
 
-        var json = JsonSerializer.Serialize(state, JsonOptions);
+        var json = JsonSerializer.Serialize(state, JsonDefaults.Indented);
         File.WriteAllText(path, json);
     }
 

@@ -1,6 +1,7 @@
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
+using FamilyMoney.Utils;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -10,7 +11,6 @@ namespace FamilyMoney.Sync;
 
 public sealed class SyncService : ISyncService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     private readonly IGlobalConfiguration _configuration;
     private readonly IRepository _repository;
@@ -96,7 +96,7 @@ public sealed class SyncService : ISyncService
             return false;
         }
 
-        var manifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonOptions)
+        var manifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonDefaults.Indented)
             ?? throw new InvalidOperationException("Invalid sync manifest.");
 
         if (manifest.Revision <= state.AppliedRevision)
@@ -125,7 +125,7 @@ public sealed class SyncService : ISyncService
                 break;
             }
 
-            var delta = JsonSerializer.Deserialize<SyncDelta>(deltaJson, JsonOptions)
+            var delta = JsonSerializer.Deserialize<SyncDelta>(deltaJson, JsonDefaults.Indented)
                 ?? throw new InvalidOperationException($"Invalid sync delta {revision}.");
 
             _repository.ApplySyncDelta(delta);
@@ -162,7 +162,7 @@ public sealed class SyncService : ISyncService
         var remoteRevision = 0L;
         if (manifestJson != null)
         {
-            var remoteManifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonOptions);
+            var remoteManifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonDefaults.Indented);
             remoteRevision = remoteManifest?.Revision ?? 0;
         }
 
@@ -171,7 +171,7 @@ public sealed class SyncService : ISyncService
         SyncDeltaBuilder.AddImages(delta, pending.Images);
         await _imageSynchronizer.UploadPendingAsync(database, objectStore, pending.Images, cancellationToken);
 
-        var deltaJson = JsonSerializer.Serialize(delta, JsonOptions);
+        var deltaJson = JsonSerializer.Serialize(delta, JsonDefaults.Indented);
         await objectStore.UploadTextAsync(SyncPaths.DeltaKey(database, newRevision), deltaJson, null, cancellationToken);
 
         string? snapshotKey = null;
@@ -184,7 +184,7 @@ public sealed class SyncService : ISyncService
         }
         else if (manifestJson != null)
         {
-            var remoteManifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonOptions);
+            var remoteManifest = JsonSerializer.Deserialize<SyncManifest>(manifestJson, JsonDefaults.Indented);
             snapshotKey = remoteManifest?.SnapshotKey;
             snapshotRevision = remoteManifest?.SnapshotRevision;
         }
@@ -198,7 +198,7 @@ public sealed class SyncService : ISyncService
             SnapshotKey = snapshotKey,
         };
 
-        var newManifestJson = JsonSerializer.Serialize(manifest, JsonOptions);
+        var newManifestJson = JsonSerializer.Serialize(manifest, JsonDefaults.Indented);
         await objectStore.UploadTextAsync(manifestKey, newManifestJson, manifestEtag, cancellationToken);
 
         _repository.ClearPendingSyncChanges();

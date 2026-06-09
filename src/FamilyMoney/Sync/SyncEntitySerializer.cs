@@ -1,18 +1,13 @@
 ﻿using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
+using FamilyMoney.Utils;
 using System.Text.Json;
 
 namespace FamilyMoney.Sync;
 
 public static class SyncEntitySerializer
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-    };
-
-  private static readonly Dictionary<string, Type> EntityTypes = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, Type> EntityTypes = new(StringComparer.Ordinal)
     {
         [nameof(Account)] = typeof(Account),
         [nameof(DebetCategory)] = typeof(DebetCategory),
@@ -34,7 +29,7 @@ public static class SyncEntitySerializer
             EntityType = entity.GetType().Name,
             LastChange = entity.LastChange,
             DeletedAt = entity.DeletedAt,
-            DataJson = entity.DeletedAt == null ? JsonSerializer.Serialize(entity, entity.GetType(), JsonOptions) : null,
+            DataJson = entity.DeletedAt == null ? JsonSerializer.Serialize(entity, entity.GetType(), JsonDefaults.CamelCaseCompact) : null,
         };
     }
 
@@ -62,7 +57,7 @@ public static class SyncEntitySerializer
             throw new InvalidOperationException($"Unknown sync entity type: {record.EntityType}");
         }
 
-        return JsonSerializer.Deserialize(record.DataJson, type, JsonOptions);
+        return JsonSerializer.Deserialize(record.DataJson, type, JsonDefaults.CamelCaseCompact);
     }
 
     public static string GetCollectionName(string entityType) => entityType switch
