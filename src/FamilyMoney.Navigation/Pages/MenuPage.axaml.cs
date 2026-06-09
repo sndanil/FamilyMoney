@@ -37,22 +37,6 @@ public partial class MenuPage : ContentPage
         CloseDrawer();
     }
 
-    private async void OnCategoriesClick(object? sender, RoutedEventArgs e)
-    {
-        var navigation = Shell?.NavigationPage;
-        if (navigation == null)
-        {
-            return;
-        }
-
-        if (navigation.CurrentPage is not CategoriesPage)
-        {
-            await navigation.PushAsync(new CategoriesPage { DataContext = ViewModel });
-        }
-
-        CloseDrawer();
-    }
-
     private async void OnSettingsClick(object? sender, RoutedEventArgs e)
     {
         var navigation = Shell?.NavigationPage;
