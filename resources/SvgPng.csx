@@ -39,6 +39,13 @@ static SKBitmap ComposeCentered(SKBitmap icon, int canvasSize)
     return canvas;
 }
 
+static byte[] EncodePng(SKBitmap bitmap)
+{
+    using var image = SKImage.FromBitmap(bitmap);
+    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+    return data.ToArray();
+}
+
 static void SavePng(SKBitmap bitmap, string outputPath)
 {
     var directory = Path.GetDirectoryName(outputPath);
@@ -47,8 +54,48 @@ static void SavePng(SKBitmap bitmap, string outputPath)
         Directory.CreateDirectory(directory);
     }
 
-    using var image = SKImage.FromBitmap(bitmap);
-    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
     using var stream = File.Create(outputPath);
-    data.SaveTo(stream);
+    stream.Write(EncodePng(bitmap));
 }
+
+static void SaveIco(string outputPath, IReadOnlyList<(int Size, byte[] PngData)> images)
+{
+    if (images.Count == 0)
+    {
+        throw new ArgumentException("ICO must contain at least one image.", nameof(images));
+    }
+
+    var directory = Path.GetDirectoryName(outputPath);
+    if (!string.IsNullOrEmpty(directory))
+    {
+        Directory.CreateDirectory(directory);
+    }
+
+    using var stream = File.Create(outputPath);
+    using var writer = new BinaryWriter(stream);
+
+    writer.Write((short)0);
+    writer.Write((short)1);
+    writer.Write((short)images.Count);
+
+    var offset = 6 + images.Count * 16;
+    foreach (var (size, png) in images)
+    {
+        writer.Write(ToIcoDimension(size));
+        writer.Write(ToIcoDimension(size));
+        writer.Write((byte)0);
+        writer.Write((byte)0);
+        writer.Write((short)1);
+        writer.Write((short)32);
+        writer.Write(png.Length);
+        writer.Write(offset);
+        offset += png.Length;
+    }
+
+    foreach (var (_, png) in images)
+    {
+        writer.Write(png);
+    }
+}
+
+static byte ToIcoDimension(int size) => size >= 256 ? (byte)0 : (byte)size;

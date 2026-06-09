@@ -4,6 +4,8 @@ var root = Directory.GetCurrentDirectory();
 var source = Path.Combine(root, "Icon_flat.svg");
 
 int[] pngSizes = [16, 32, 48, 64, 128, 256, 512];
+int[] icoSizes = [16, 32, 48, 256];
+var icoImages = new List<(int Size, byte[] PngData)>();
 
 foreach (var size in pngSizes)
 {
@@ -11,7 +13,13 @@ foreach (var size in pngSizes)
     var outputPath = Path.Combine(root, $"icon-{size}.png");
     SavePng(icon, outputPath);
     Console.WriteLine($"Saved icon-{size}.png: {size}x{size}");
+
+    if (icoSizes.Contains(size))
+    {
+        icoImages.Add((size, EncodePng(icon)));
+    }
 }
 
-int[] icoSizes = [16, 32, 48, 256];
-Console.WriteLine($"wallet.ico: {string.Join(", ", icoSizes.Select(s => $"{s}x{s}"))} (ICO generation not implemented)");
+var icoPath = Path.Combine(root, "wallet.ico");
+SaveIco(icoPath, icoImages);
+Console.WriteLine($"Saved wallet.ico: {string.Join(", ", icoSizes.Select(s => $"{s}x{s}"))}");
