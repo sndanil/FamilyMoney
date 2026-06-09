@@ -6,6 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="FamilyMoney.Navigation.Desktop.MainWindow"
         x:DataType="vm:MainViewModel"
+        Icon="/Assets/wallet.ico"
         Title="{Binding Title}"
         Width="1200"
         Height="800">
