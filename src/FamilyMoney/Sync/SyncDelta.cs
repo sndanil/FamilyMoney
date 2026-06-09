@@ -1,3 +1,5 @@
+﻿using FamilyMoney.Models.Sync;
+
 namespace FamilyMoney.Sync;
 
 public sealed class SyncDelta

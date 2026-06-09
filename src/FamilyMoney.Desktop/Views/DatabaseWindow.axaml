@@ -1,110 +1,118 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="560"
-        x:Class="FamilyMoney.DatabaseWindow"
-        Width="800" Height="560"
-		WindowStartupLocation="CenterOwner"
-		ExtendClientAreaToDecorationsHint="True"
-		xmlns:vm="using:FamilyMoney.ViewModels.Settings"
-		x:DataType="vm:DatabaseViewModel"
-		Classes="Dialog"
-        Title="База данных">
-	<Window.Styles>
-		<Style Selector="TextBox">
-			<Setter Property="Margin" Value="4" />
-			<Setter Property="HorizontalAlignment" Value="Stretch" />
-		</Style>
-		<Style Selector="TextBlock">
-			<Setter Property="Margin" Value="4" />
-			<Setter Property="TextWrapping" Value="Wrap" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-		</Style>
-		<Style Selector="NumericUpDown">
-			<Setter Property="Margin" Value="4" />
-		</Style>
-		<Style Selector="CheckBox">
-			<Setter Property="Margin" Value="4" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-		</Style>
-	</Window.Styles>
-	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-		<Grid RowDefinitions="auto auto auto auto auto auto auto auto auto auto auto auto auto"
-			  ColumnDefinitions="200 * 20" Margin="5 50 5 5">
-			<TextBlock Text="{Binding PlaceholderText, ElementName=DatabaseName}"/>
-			<TextBox Grid.Column="1" x:Name="DatabaseName" Text="{Binding Name}"
-			   PlaceholderText="Наименование"/>
-
-			<TextBlock Grid.Row="1" Text="{Binding PlaceholderText, ElementName=Path}"/>
-			<TextBox Grid.Column="1" Grid.Row="1"
-			   Name="Path"
-			   Text="{Binding Path}"
-			   PlaceholderText="Путь"/>
-			<Button Grid.Row="1" Grid.Column="2"
-					Classes="DialogToolButton"
-					Content="..."
-					Command="{Binding BrowseDatabasePathCommand}" />
-
-			<TextBlock Grid.Row="2" Text="{Binding PlaceholderText, ElementName=BackupsFolder}"/>
-			<TextBox Grid.Column="1" Grid.Row="2" Text="{Binding BackupsFolder}"
-			   x:Name="BackupsFolder"
-			   PlaceholderText="Папка для резервных копий"/>
-			<Button Grid.Row="2" Grid.Column="2"
-					Classes="DialogToolButton"
-					Content="..."
-					Command="{Binding BrowseBackupsFolderCommand}" />
-
-			<TextBlock Grid.Row="3" Text="{Binding PlaceholderText, ElementName=MaxBackups}"/>
-			<NumericUpDown Grid.Row="3" Grid.Column="1"
-					 Name="MaxBackups"
-					PlaceholderText="Максимум резервных копий"
-					FormatString="#,##0"
-					Minimum="0"
-					Value="{Binding MaxBackups}"
-					/>
-
-			<TextBlock Grid.Row="4" Grid.ColumnSpan="3" FontWeight="SemiBold" Text="Хранилище S3"/>
-
-			<TextBlock Grid.Row="5" Text="Использовать S3"/>
-			<CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding S3.Enabled}" Content="Включить хранение в S3"/>
-
-			<TextBlock Grid.Row="6" Text="URL сервиса"/>
-			<TextBox Grid.Row="6" Grid.Column="1" Text="{Binding S3.ServiceUrl}"
-			   PlaceholderText="https://s3.amazonaws.com или адрес MinIO"/>
-
-			<TextBlock Grid.Row="7" Text="Bucket"/>
-			<TextBox Grid.Row="7" Grid.Column="1" Text="{Binding S3.Bucket}"
-			   PlaceholderText="Имя bucket"/>
-
-			<TextBlock Grid.Row="8" Text="Регион"/>
-			<TextBox Grid.Row="8" Grid.Column="1" Text="{Binding S3.Region}"
-			   PlaceholderText="us-east-1"/>
-
-			<TextBlock Grid.Row="9" Text="Access Key"/>
-			<TextBox Grid.Row="9" Grid.Column="1" Text="{Binding S3.AccessKey}"
-			   PlaceholderText="Идентификатор ключа доступа"/>
-
-			<TextBlock Grid.Row="10" Text="Secret Key"/>
-			<TextBox Grid.Row="10" Grid.Column="1" Text="{Binding S3.SecretKey}"
-			   PasswordChar="•"
-			   PlaceholderText="Секретный ключ"/>
-
-			<TextBlock Grid.Row="11" Text="Path-style"/>
-			<CheckBox Grid.Row="11" Grid.Column="1" IsChecked="{Binding S3.ForcePathStyle}"
-					  Content="Принудительный path-style (MinIO и совместимые хранилища)"/>
-
-			<StackPanel
-				Grid.Row="12"
-				Grid.ColumnSpan="3"
-				Orientation="Horizontal"
-				HorizontalAlignment="Right"
-				Margin="0 5 0 10"
-				>
-				<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
-				<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
-			</StackPanel>
-		</Grid>
-	</ScrollViewer>
-</Window>
-
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="560" d:DesignHeight="320"
+        x:Class="FamilyMoney.DatabaseWindow"
+        SizeToContent="WidthAndHeight"
+        MinWidth="520"
+        MaxWidth="640"
+        WindowStartupLocation="CenterOwner"
+        ExtendClientAreaToDecorationsHint="True"
+        xmlns:vm="using:FamilyMoney.ViewModels.Settings"
+        x:DataType="vm:DatabaseViewModel"
+        Classes="Dialog"
+        Title="База данных">
+	<Window.Styles>
+		<Style Selector="TextBox">
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="NumericUpDown">
+			<Setter Property="Margin" Value="4" />
+		</Style>
+		<Style Selector="CheckBox">
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="Padding" Value="12 6" />
+		</Style>
+	</Window.Styles>
+	<Grid RowDefinitions="Auto Auto" Margin="5 50 5 5">
+		<TabControl>
+			<TabItem Header="База данных">
+				<Grid RowDefinitions="Auto Auto Auto Auto"
+					  ColumnDefinitions="180 * 28"
+					  Margin="4">
+					<TextBlock Text="{Binding PlaceholderText, ElementName=DatabaseName}"/>
+					<TextBox Grid.Column="1" x:Name="DatabaseName" Text="{Binding Name}"
+					         PlaceholderText="Наименование"/>
+
+					<TextBlock Grid.Row="1" Text="{Binding PlaceholderText, ElementName=Path}"/>
+					<TextBox Grid.Column="1" Grid.Row="1"
+					         Name="Path"
+					         Text="{Binding Path}"
+					         PlaceholderText="Путь"/>
+					<Button Grid.Row="1" Grid.Column="2"
+					        Classes="DialogToolButton"
+					        Content="..."
+					        Command="{Binding BrowseDatabasePathCommand}" />
+
+					<TextBlock Grid.Row="2" Text="{Binding PlaceholderText, ElementName=BackupsFolder}"/>
+					<TextBox Grid.Column="1" Grid.Row="2" Text="{Binding BackupsFolder}"
+					         x:Name="BackupsFolder"
+					         PlaceholderText="Папка для резервных копий"/>
+					<Button Grid.Row="2" Grid.Column="2"
+					        Classes="DialogToolButton"
+					        Content="..."
+					        Command="{Binding BrowseBackupsFolderCommand}" />
+
+					<TextBlock Grid.Row="3" Text="{Binding PlaceholderText, ElementName=MaxBackups}"/>
+					<NumericUpDown Grid.Row="3" Grid.Column="1"
+					               Name="MaxBackups"
+					               PlaceholderText="Максимум резервных копий"
+					               FormatString="#,##0"
+					               Minimum="0"
+					               Value="{Binding MaxBackups}" />
+				</Grid>
+			</TabItem>
+			<TabItem Header="S3">
+				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto"
+					  ColumnDefinitions="180 *"
+					  Margin="4">
+					<TextBlock Text="Использовать S3"/>
+					<CheckBox Grid.Column="1" IsChecked="{Binding S3.Enabled}" Content="Включить хранение в S3"/>
+
+					<TextBlock Grid.Row="1" Text="URL сервиса"/>
+					<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding S3.ServiceUrl}"
+					         PlaceholderText="https://s3.amazonaws.com или адрес MinIO"/>
+
+					<TextBlock Grid.Row="2" Text="Bucket"/>
+					<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding S3.Bucket}"
+					         PlaceholderText="Имя bucket"/>
+
+					<TextBlock Grid.Row="3" Text="Регион"/>
+					<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding S3.Region}"
+					         PlaceholderText="us-east-1"/>
+
+					<TextBlock Grid.Row="4" Text="Access Key"/>
+					<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding S3.AccessKey}"
+					         PlaceholderText="Идентификатор ключа доступа"/>
+
+					<TextBlock Grid.Row="5" Text="Secret Key"/>
+					<TextBox Grid.Row="5" Grid.Column="1" Text="{Binding S3.SecretKey}"
+					         PasswordChar="•"
+					         PlaceholderText="Секретный ключ"/>
+
+					<TextBlock Grid.Row="6" Text="Path-style"/>
+					<CheckBox Grid.Row="6" Grid.Column="1" IsChecked="{Binding S3.ForcePathStyle}"
+					          Content="Принудительный path-style (MinIO и совместимые хранилища)"/>
+				</Grid>
+			</TabItem>
+		</TabControl>
+
+		<StackPanel Grid.Row="1"
+		            Orientation="Horizontal"
+		            HorizontalAlignment="Right"
+		            Margin="4 8 4 4">
+			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+		</StackPanel>
+	</Grid>
+</Window>

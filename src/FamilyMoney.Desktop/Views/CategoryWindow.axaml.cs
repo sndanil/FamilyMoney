@@ -39,11 +39,11 @@ public partial class CategoryWindow : Window
         var topLevel = GetTopLevel(this);
         var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Выбор изображения",
+            Title = "Р’С‹Р±РѕСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ",
             AllowMultiple = false,
             FileTypeFilter =
             [
-                new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
+                new ("РР·РѕР±СЂР°Р¶РµРЅРёСЏ") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
                 FilePickerFileTypes.All
             ]
         });

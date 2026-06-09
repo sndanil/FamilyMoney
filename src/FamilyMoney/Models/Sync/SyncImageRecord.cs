@@ -1,4 +1,4 @@
-namespace FamilyMoney.Sync;
+﻿namespace FamilyMoney.Models.Sync;
 
 public sealed class SyncImageRecord
 {

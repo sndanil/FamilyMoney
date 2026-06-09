@@ -1,5 +1,6 @@
-using FamilyMoney.Configuration;
+﻿using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
+using FamilyMoney.Models.Sync;
 using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Sync;

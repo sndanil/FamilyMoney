@@ -1,5 +1,6 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
+using FamilyMoney.Models.Sync;
 using FamilyMoney.Sync;
 using System;
 using System.Collections.Generic;
