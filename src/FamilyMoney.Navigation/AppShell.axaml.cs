@@ -10,4 +10,6 @@ public partial class AppShell : UserControl
     }
 
     public NavigationPage NavigationPage => ShellNavigation;
+
+    public DrawerPage DrawerPage => ShellDrawer;
 }
