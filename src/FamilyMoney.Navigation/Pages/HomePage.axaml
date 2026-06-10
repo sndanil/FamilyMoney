@@ -137,7 +137,7 @@
 
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <Border Classes="Transaction">
+                    <Border Classes="Transaction" Tapped="OnTransactionTapped">
                       <Grid ColumnDefinitions="Auto * Auto">
                         <Image Classes="Category"
                                Stretch="Uniform"
@@ -186,4 +186,26 @@
       </ItemsControl>
     </ScrollViewer>
   </Grid>
+
+  <ContentPage.BottomCommandBar>
+    <CommandBar OverflowButtonVisibility="Collapsed" HorizontalAlignment="Center">
+      <CommandBar.PrimaryCommands>
+        <CommandBarButton Label="Расход" Command="{Binding Transactions.AddCreditCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="CashMinus" Foreground="Red" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+        <CommandBarButton Label="Доход" Command="{Binding Transactions.AddDebetCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="CashPlus" Foreground="#3BCE5E" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+        <CommandBarButton Label="Перевод" Command="{Binding Transactions.AddTransferCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+      </CommandBar.PrimaryCommands>
+    </CommandBar>
+  </ContentPage.BottomCommandBar>
 </ContentPage>

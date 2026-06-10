@@ -1,0 +1,276 @@
+﻿<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:s="using:System"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.TransactionEditPage"
+             x:DataType="vm:BaseTransactionViewModel"
+             Header="Транзакция">
+  <ContentPage.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:IsNotAccountGroupConverter x:Key="accountConverter" />
+    <cv:NumericUpDownValueConverter x:Key="numericUpDownValueConverter" />
+  </ContentPage.Resources>
+
+  <ContentPage.Styles>
+    <Style Selector="TextBlock.Label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.7" />
+      <Setter Property="Margin" Value="2 8 0 2" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="FormatString" Value="#,##0.00" />
+      <Setter Property="HorizontalContentAlignment" Value="Right" />
+      <Setter Property="Increment" Value="1" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Border.IsGroup">
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+    </Style>
+    <Style Selector="Border.TagChip">
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="8 4" />
+      <Setter Property="Margin" Value="0 0 6 6" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+    </Style>
+    <Style Selector="mi|MaterialIcon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+  </ContentPage.Styles>
+
+  <ContentPage.DataTemplates>
+    <DataTemplate DataType="vm:AccountViewModel">
+      <Border Classes.IsGroup="{Binding IsGroup}" MinHeight="32">
+        <Grid ColumnDefinitions="Auto * Auto" Margin="4 0">
+          <Image Width="24" Height="24"
+                 Margin="0 0 8 0"
+                 Stretch="Uniform"
+                 VerticalAlignment="Center"
+                 Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Name}"
+                     VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="2"
+                     Margin="8 0 4 0"
+                     VerticalAlignment="Center"
+                     Text="{Binding Sum, StringFormat='#,##0.00'}"
+                     IsVisible="{Binding !IsGroup}" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+    <DataTemplate DataType="vm:BaseCategoryViewModel">
+      <StackPanel Orientation="Horizontal" MinHeight="28">
+        <Image Width="24" Height="24"
+               Stretch="Uniform"
+               VerticalAlignment="Center"
+               Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8 0" />
+      </StackPanel>
+    </DataTemplate>
+  </ContentPage.DataTemplates>
+
+  <Grid>
+    <ScrollViewer>
+      <StackPanel Margin="12 0 12 12">
+        <TextBlock Classes="Label" Text="Счёт" />
+        <ComboBox SelectedItem="{Binding Account}"
+                  ItemsSource="{Binding FlatAccounts}">
+          <ComboBox.Styles>
+            <Style Selector="ComboBoxItem">
+              <Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
+              <Setter Property="Padding" Value="4 2" />
+            </Style>
+          </ComboBox.Styles>
+        </ComboBox>
+
+        <TextBlock Classes="Label" Text="Дата" />
+        <Grid ColumnDefinitions="Auto * Auto">
+          <Button Command="{Binding PrevDayCommand}" VerticalAlignment="Stretch">
+            <mi:MaterialIcon Kind="ChevronLeft" />
+          </Button>
+          <CalendarDatePicker Grid.Column="1"
+                              Margin="6 0"
+                              SelectedDate="{Binding Date}"
+                              CustomDateFormatString="dd.MM.yyyy"
+                              HorizontalAlignment="Stretch" />
+          <Button Grid.Column="2" Command="{Binding NextDayCommand}" VerticalAlignment="Stretch">
+            <mi:MaterialIcon Kind="ChevronRight" />
+          </Button>
+        </Grid>
+
+        <TextBlock Classes="Label" Text="Категория" />
+        <ComboBox ItemsSource="{Binding Categories}"
+                  SelectedItem="{Binding Category}" />
+
+        <TextBlock Classes="Label" Text="Подкатегория" />
+        <Grid ColumnDefinitions="* Auto Auto">
+          <AutoCompleteBox x:Name="SubCategoryCompleteBox"
+                           SelectedItem="{Binding SubCategory}"
+                           Text="{Binding SubCategoryText, Mode=OneWayToSource}"
+                           IsTextCompletionEnabled="True"
+                           FilterMode="Custom"
+                           ItemsSource="{Binding SubCategories}"
+                           PlaceholderText="Подкатегория">
+            <AutoCompleteBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
+                <TextBlock Text="{Binding Name}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </AutoCompleteBox.ItemTemplate>
+          </AutoCompleteBox>
+          <Button Grid.Column="1"
+                  Margin="6 0 0 0"
+                  VerticalAlignment="Stretch"
+                  Click="ShowSubCategoryDropDownClick"
+                  IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}">
+            <mi:MaterialIcon Kind="ChevronDown" />
+          </Button>
+          <Button Grid.Column="2"
+                  Margin="6 0 0 0"
+                  VerticalAlignment="Stretch"
+                  Click="ClearSubCategoryClick"
+                  IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}">
+            <mi:MaterialIcon Kind="Close" />
+          </Button>
+        </Grid>
+
+        <TextBlock Classes="Label" Text="Сумма" />
+        <NumericUpDown x:Name="SumPicker"
+                       Value="{Binding Sum, Converter={StaticResource numericUpDownValueConverter}}" />
+
+        <StackPanel IsVisible="{Binding IsTransfer}">
+          <TextBlock Classes="Label" Text="Счёт зачисления" />
+          <ComboBox SelectedItem="{Binding ToAccount}"
+                    ItemsSource="{Binding FlatAccounts}">
+            <ComboBox.Styles>
+              <Style Selector="ComboBoxItem">
+                <Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
+                <Setter Property="Padding" Value="4 2" />
+              </Style>
+            </ComboBox.Styles>
+          </ComboBox>
+
+          <TextBlock Classes="Label" Text="Сумма зачисления" />
+          <NumericUpDown Value="{Binding ToSum, Converter={StaticResource numericUpDownValueConverter}}" />
+        </StackPanel>
+
+        <TextBlock Classes="Label" Text="Комментарий" />
+        <Grid ColumnDefinitions="* Auto">
+          <TextBox AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   MinHeight="64"
+                   Text="{Binding Comment}" />
+          <Button Grid.Column="1"
+                  Margin="6 0 0 0"
+                  VerticalAlignment="Top"
+                  IsVisible="{Binding Comments.Count}">
+            <mi:MaterialIcon Kind="ChevronDown" />
+            <Button.Flyout>
+              <MenuFlyout ItemsSource="{Binding Comments}">
+                <MenuFlyout.ItemTemplate>
+                  <DataTemplate x:DataType="s:String">
+                    <MenuItem Header="{Binding .}" Click="CommentClick" />
+                  </DataTemplate>
+                </MenuFlyout.ItemTemplate>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </Grid>
+
+        <TextBlock Classes="Label" Text="Теги" />
+        <Grid ColumnDefinitions="* Auto">
+          <TextBox Text="{Binding TagInput, Mode=TwoWay}"
+                   PlaceholderText="Новый тег" />
+          <Button Grid.Column="1"
+                  Margin="6 0 0 0"
+                  VerticalAlignment="Stretch"
+                  Command="{Binding AddTagCommand}">
+            <mi:MaterialIcon Kind="Plus" />
+          </Button>
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Tags}" Margin="0 8 0 0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Border Classes="TagChip">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                  <Button Padding="2"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).RemoveTagCommand}"
+                          CommandParameter="{Binding}">
+                    <mi:MaterialIcon Kind="Close" Width="12" Height="12" />
+                  </Button>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding SelectableSuggestedTags}"
+                      IsVisible="{Binding HasSelectableSuggestedTags}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Button Padding="8 4"
+                      Margin="0 0 6 6"
+                      CornerRadius="8"
+                      Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).SelectTagCommand}"
+                      CommandParameter="{Binding}">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <mi:MaterialIcon Kind="Plus" Width="12" Height="12" />
+                  <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="12" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+
+  </Grid>
+
+  <ContentPage.BottomCommandBar>
+    <CommandBar OverflowButtonVisibility="Collapsed" HorizontalAlignment="Center">
+      <CommandBar.PrimaryCommands>
+        <CommandBarButton Width="100" x:Name="DeleteButton" Label="Удалить">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="Delete" Foreground="Red" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+          <CommandBarButton.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="Удалить транзакцию" Click="DeleteConfirmClick" />
+            </MenuFlyout>
+          </CommandBarButton.Flyout>
+        </CommandBarButton>
+        <CommandBarButton Width="100" x:Name="CopyButton" Label="Копировать" Click="CopyClick">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="ContentCopy" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+        <CommandBarButton Width="100" Label="Сохранить" Command="{Binding OkCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="ContentSave" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+      </CommandBar.PrimaryCommands>
+    </CommandBar>
+  </ContentPage.BottomCommandBar>
+</ContentPage>

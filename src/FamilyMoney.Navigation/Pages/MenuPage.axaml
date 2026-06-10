@@ -7,8 +7,13 @@
              x:DataType="vm:MainViewModel"
              Header="Меню"
              NavigationPage.HasNavigationBar="False">
-  <Grid RowDefinitions="Auto Auto *">
-    <StackPanel Spacing="4" Margin="8">
+  <Grid RowDefinitions="* Auto">
+
+    <controls:AccountsDrawerView
+                                 Margin="8 0 8 8"
+                                 DataContext="{Binding Accounts}" />
+
+    <StackPanel Spacing="4" Margin="8" Grid.Row="1">
       <Button Click="OnSettingsClick" HorizontalAlignment="Stretch">
         <StackPanel Orientation="Horizontal" Spacing="12">
           <mi:MaterialIcon Kind="Cog" />
@@ -16,15 +21,5 @@
         </StackPanel>
       </Button>
     </StackPanel>
-
-    <TextBlock Grid.Row="1"
-               Text="Счета"
-               FontWeight="SemiBold"
-               Opacity="0.7"
-               Margin="12 8 12 4" />
-
-    <controls:AccountsDrawerView Grid.Row="2"
-                                 Margin="8 0 8 8"
-                                 DataContext="{Binding Accounts}" />
   </Grid>
 </ContentPage>
