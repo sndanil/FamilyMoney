@@ -96,7 +96,7 @@
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
               Command="{Binding Period.ToMonthCommand}">
-        <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
       </Button>
       <Button Grid.Column="2"
               Classes="Period"
