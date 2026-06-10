@@ -3,6 +3,7 @@
              xmlns:nav="using:FamilyMoney.Navigation"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+             TopLevel.AutoSafeAreaPadding="True">
   <nav:AppShell DataContext="{Binding}" />
 </UserControl>
