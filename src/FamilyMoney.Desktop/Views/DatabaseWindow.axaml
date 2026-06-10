@@ -107,12 +107,27 @@
 			</TabItem>
 		</TabControl>
 
-		<StackPanel Grid.Row="1"
-		            Orientation="Horizontal"
-		            HorizontalAlignment="Right"
-		            Margin="4 8 4 4">
-			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
-			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
-		</StackPanel>
+		<Grid Grid.Row="1" ColumnDefinitions="Auto * Auto" Margin="4 8 4 4">
+			<Button Classes="DialogButton"
+			        Content="QR-код"
+			        ToolTip.Tip="Показать QR-код с настройками базы данных и S3"
+			        Click="OnShowQrClick">
+				<Button.Flyout>
+					<Flyout Placement="TopEdgeAlignedLeft">
+						<StackPanel Spacing="8" Width="280">
+							<TextBlock Text="Отсканируйте код в мобильном приложении"
+							           TextWrapping="Wrap"
+							           HorizontalAlignment="Center" />
+							<Image x:Name="QrImage" Width="260" Height="260" Stretch="Uniform" />
+						</StackPanel>
+					</Flyout>
+				</Button.Flyout>
+			</Button>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal">
+				<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+				<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+			</StackPanel>
+		</Grid>
 	</Grid>
 </Window>

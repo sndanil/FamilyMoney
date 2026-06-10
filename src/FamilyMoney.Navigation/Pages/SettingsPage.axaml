@@ -9,8 +9,11 @@
     <StackPanel Spacing="8">
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button Content="Синхронизировать" Command="{Binding Settings.SyncNowCommand}" />
-        <TextBlock Text="{Binding Settings.SyncStatus}" VerticalAlignment="Center" TextWrapping="Wrap" />
+        <Button Content="Сканировать QR-код"
+                Command="{Binding Settings.ImportFromQrCommand}"
+                IsVisible="{Binding Settings.IsQrImportAvailable}" />
       </StackPanel>
+      <TextBlock Text="{Binding Settings.SyncStatus}" TextWrapping="Wrap" />
       <TextBlock Text="Базы данных" FontWeight="SemiBold" />
     </StackPanel>
     <ListBox Grid.Row="1" ItemsSource="{Binding Settings.Databases}" Margin="0 8 0 0">

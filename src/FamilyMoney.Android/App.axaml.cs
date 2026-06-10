@@ -44,6 +44,7 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<MainViewHolder>();
+        services.AddSingleton<IQrScannerService, AndroidQrScannerService>();
         services.AddSingleton<IFilePickerService>(sp =>
         {
             var mainView = sp.GetRequiredService<MainViewHolder>().View;

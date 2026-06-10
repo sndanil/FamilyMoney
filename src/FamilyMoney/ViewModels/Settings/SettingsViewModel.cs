@@ -18,6 +18,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IRepository _repository;
     private readonly IFilePickerService _filePickerService;
     private readonly ISyncService _syncService;
+    private readonly IQrScannerService? _qrScanner;
 
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
 
@@ -34,16 +35,20 @@ public partial class SettingsViewModel : ViewModelBase
 
     public bool IsSyncAvailable => _syncService.IsEnabled;
 
+    public bool IsQrImportAvailable => _qrScanner != null;
+
     public SettingsViewModel(
         IGlobalConfiguration configuration,
         IRepository repository,
         IFilePickerService filePickerService,
-        ISyncService syncService)
+        ISyncService syncService,
+        IQrScannerService? qrScanner = null)
     {
         _configuration = configuration;
         _repository = repository;
         _filePickerService = filePickerService;
         _syncService = syncService;
+        _qrScanner = qrScanner;
         Load();
     }
 
@@ -153,6 +158,66 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedDatabase = database;
         Save();
         await Task.CompletedTask;
+    }
+
+    [RelayCommand(CanExecute = nameof(IsQrImportAvailable))]
+    public async Task ImportFromQrAsync()
+    {
+        if (_qrScanner == null)
+        {
+            return;
+        }
+
+        string? text;
+        try
+        {
+            text = await _qrScanner.ScanAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            return;
+        }
+        catch (System.Exception ex)
+        {
+            SyncStatus = $"Ошибка сканирования: {ex.Message}";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var payload = DatabaseQrPayload.TryParse(text);
+        if (payload == null)
+        {
+            SyncStatus = "QR-код не содержит настроек приложения";
+            return;
+        }
+
+        var config = payload.ToConfiguration();
+        var database = Databases.FirstOrDefault(d => d.SyncId == config.SyncId);
+        if (database == null)
+        {
+            database = new DatabaseViewModel();
+            database.FillFrom(config);
+            if (Databases.Count == 0)
+            {
+                database.IsSelected = true;
+            }
+
+            Databases.Add(database);
+        }
+        else
+        {
+            var updated = new DatabaseViewModel();
+            updated.FillFrom(config);
+            database.ApplyFrom(updated);
+        }
+
+        Save();
+        OnPropertyChanged(nameof(IsSyncAvailable));
+        SyncStatus = $"Настройки получены: {config.Name}";
     }
 
     [RelayCommand(CanExecute = nameof(CanSyncNow))]
