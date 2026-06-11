@@ -107,7 +107,7 @@
     </Grid>
 
     <ScrollViewer Grid.Row="1">
-      <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" Margin="0 0 0 8">
+      <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" Margin="0 0 0 88">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
             <StackPanel Orientation="Vertical" />
@@ -185,27 +185,38 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
-  </Grid>
 
-  <ContentPage.BottomCommandBar>
-    <CommandBar OverflowButtonVisibility="Collapsed" HorizontalAlignment="Center">
-      <CommandBar.PrimaryCommands>
-        <CommandBarButton Label="Расход" Command="{Binding Transactions.AddCreditCommand}">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="CashMinus" Foreground="Red" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-        </CommandBarButton>
-        <CommandBarButton Label="Доход" Command="{Binding Transactions.AddDebetCommand}">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="CashPlus" Foreground="#3BCE5E" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-        </CommandBarButton>
-        <CommandBarButton Label="Перевод" Command="{Binding Transactions.AddTransferCommand}">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-        </CommandBarButton>
-      </CommandBar.PrimaryCommands>
-    </CommandBar>
-  </ContentPage.BottomCommandBar>
+    <Border Grid.Row="1"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            Margin="16 0 16 16"
+            Padding="10 2"
+            CornerRadius="24"
+            BorderBrush="{DynamicResource LikeGridLinesBrush}"
+            BorderThickness="1"
+            BoxShadow="0 4 16 0 #40000000">
+      <Border.Background>
+        <SolidColorBrush Color="{DynamicResource SystemAltHighColor}" Opacity="0.75" />
+      </Border.Background>
+      <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
+        <CommandBar.PrimaryCommands>
+          <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="CashMinus" Foreground="Red" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+          <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="CashPlus" Foreground="#3BCE5E" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+          <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+        </CommandBar.PrimaryCommands>
+      </CommandBar>
+    </Border>
+  </Grid>
 </ContentPage>

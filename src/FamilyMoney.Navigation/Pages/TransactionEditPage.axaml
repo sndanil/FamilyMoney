@@ -79,7 +79,7 @@
 
   <Grid>
     <ScrollViewer>
-      <StackPanel Margin="12 0 12 12">
+      <StackPanel Margin="12 0 12 88">
         <TextBlock Classes="Label" Text="Счёт" />
         <ComboBox SelectedItem="{Binding Account}"
                   ItemsSource="{Binding FlatAccounts}">
@@ -245,32 +245,41 @@
       </StackPanel>
     </ScrollViewer>
 
+    <Border VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            Margin="16 0 16 16"
+            Padding="10 2"
+            CornerRadius="24"
+            BorderBrush="{DynamicResource LikeGridLinesBrush}"
+            BorderThickness="1"
+            BoxShadow="0 4 16 0 #40000000">
+      <Border.Background>
+        <SolidColorBrush Color="{DynamicResource SystemAltHighColor}" Opacity="0.75" />
+      </Border.Background>
+      <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
+        <CommandBar.PrimaryCommands>
+          <CommandBarButton Width="100" CornerRadius="20" x:Name="DeleteButton" Label="Удалить">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="Delete" Foreground="Red" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+            <CommandBarButton.Flyout>
+              <MenuFlyout>
+                <MenuItem Header="Удалить транзакцию" Click="DeleteConfirmClick" />
+              </MenuFlyout>
+            </CommandBarButton.Flyout>
+          </CommandBarButton>
+          <CommandBarButton Width="100" CornerRadius="20" x:Name="CopyButton" Label="Копировать" Click="CopyClick">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="ContentCopy" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+          <CommandBarButton Width="100" CornerRadius="20" Label="Сохранить" Command="{Binding OkCommand}">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="ContentSave" Width="20" Height="20" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+        </CommandBar.PrimaryCommands>
+      </CommandBar>
+    </Border>
   </Grid>
-
-  <ContentPage.BottomCommandBar>
-    <CommandBar OverflowButtonVisibility="Collapsed" HorizontalAlignment="Center">
-      <CommandBar.PrimaryCommands>
-        <CommandBarButton Width="100" x:Name="DeleteButton" Label="Удалить">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="Delete" Foreground="Red" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-          <CommandBarButton.Flyout>
-            <MenuFlyout>
-              <MenuItem Header="Удалить транзакцию" Click="DeleteConfirmClick" />
-            </MenuFlyout>
-          </CommandBarButton.Flyout>
-        </CommandBarButton>
-        <CommandBarButton Width="100" x:Name="CopyButton" Label="Копировать" Click="CopyClick">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="ContentCopy" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-        </CommandBarButton>
-        <CommandBarButton Width="100" Label="Сохранить" Command="{Binding OkCommand}">
-          <CommandBarButton.Icon>
-            <mi:MaterialIcon Kind="ContentSave" Width="20" Height="20" />
-          </CommandBarButton.Icon>
-        </CommandBarButton>
-      </CommandBar.PrimaryCommands>
-    </CommandBar>
-  </ContentPage.BottomCommandBar>
 </ContentPage>
