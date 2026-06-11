@@ -145,13 +145,13 @@
                                IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                          <StackPanel Orientation="Horizontal" Spacing="6">
+                          <WrapPanel Orientation="Horizontal" ItemSpacing="6">
                             <TextBlock Classes="Name" Text="{Binding Category.Name}" />
                             <TextBlock Classes="Name"
                                        Opacity="0.8"
                                        Text="{Binding SubCategory.Name}"
                                        IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                          </StackPanel>
+                          </WrapPanel>
                           <TextBlock Classes="Comment"
                                      Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
                                      IsVisible="{Binding Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
