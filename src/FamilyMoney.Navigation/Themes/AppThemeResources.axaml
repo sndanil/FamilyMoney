@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="AccentBrush" Color="#3390EC" />
+      <SolidColorBrush x:Key="MainBackBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SidebarBackBrush" Color="#F4F4F5" />
+      <SolidColorBrush x:Key="GroupBackBrush" Color="#F4F4F5" />
+      <SolidColorBrush x:Key="CardBackBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="DialogBackBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SelectedBackBrush" Color="#E8F4FD" />
+      <SolidColorBrush x:Key="LikeGridLinesBrush" Color="#E5E5E5" />
+      <SolidColorBrush x:Key="PositiveBrush" Color="#4FAE4E" />
+      <SolidColorBrush x:Key="NegativeBrush" Color="#E53935" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#707579" />
+      <SolidColorBrush x:Key="HoverBackBrush" Color="#F4F4F5" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="AccentBrush" Color="#3390EC" />
+      <SolidColorBrush x:Key="MainBackBrush" Color="#17212B" />
+      <SolidColorBrush x:Key="SidebarBackBrush" Color="#0E1621" />
+      <SolidColorBrush x:Key="GroupBackBrush" Color="#232E3C" />
+      <SolidColorBrush x:Key="CardBackBrush" Color="#17212B" />
+      <SolidColorBrush x:Key="DialogBackBrush" Color="#17212B" />
+      <SolidColorBrush x:Key="SelectedBackBrush" Color="#2B5278" />
+      <SolidColorBrush x:Key="LikeGridLinesBrush" Color="#2B3740" />
+      <SolidColorBrush x:Key="PositiveBrush" Color="#4FAE4E" />
+      <SolidColorBrush x:Key="NegativeBrush" Color="#FF5252" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#708499" />
+      <SolidColorBrush x:Key="HoverBackBrush" Color="#232E3C" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

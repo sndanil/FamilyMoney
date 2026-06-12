@@ -67,7 +67,7 @@
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Debet">
-			<Setter Property="Foreground" Value="#3BCE5E" />
+			<Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
 		</Style>
 		<Style Selector="TextBlock.Name">
 			<Setter Property="Margin" Value="10 0 0 0" />

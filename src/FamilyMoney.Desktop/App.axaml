@@ -12,28 +12,15 @@
 
 	<Application.Resources>
 		<ResourceDictionary>
-			<ResourceDictionary.ThemeDictionaries>
-				<ResourceDictionary x:Key='Light'>
-					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-					<SolidColorBrush x:Key="GroupBackBrush" Color="#CFEAFF" />
-					<SolidColorBrush x:Key="MainBackBrush" Color="#EFF4F9" />
-					<SolidColorBrush x:Key="DialogBackBrush" Color="#FAFCFD" />
-				</ResourceDictionary>
-				<ResourceDictionary x:Key='Dark'>
-					<SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-					<SolidColorBrush x:Key="GroupBackBrush" Color="#0D2644" />
-					<SolidColorBrush x:Key="MainBackBrush" Color="#1A202F" />
-					<SolidColorBrush x:Key="DialogBackBrush" Color="#262B3E" />
-				</ResourceDictionary>
-			</ResourceDictionary.ThemeDictionaries>		
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeResources.axaml" />
+			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Application.Resources>
 	
     <Application.Styles>
-		<FluentTheme>
-			<FluentTheme.Palettes>
-			</FluentTheme.Palettes>
-		</FluentTheme>
+		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/FluentPalettes.axaml" />
+		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeStyles.axaml" />
 		<mi:MaterialIconStyles />
 
 		<Style Selector="NumericUpDown">
@@ -54,24 +41,23 @@
 		</Style>
 
 		<Style Selector="Border.LeftTop">
-			<Setter Property="CornerRadius" Value="12 0 0 0" />
+			<Setter Property="CornerRadius" Value="0" />
 		</Style>
 
 		<Style Selector="Button.DialogButton">
 			<Setter Property="Width" Value="100" />
 			<Setter Property="Margin" Value="0 2 10 2" />
+			<Setter Property="CornerRadius" Value="8" />
 		</Style>
 
 		<Style Selector="Button.DialogButton AccessText">
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 
-		<Style Selector="SelectableTextBlock.Negative">
-			<Setter Property="Foreground" Value="Red" />
-		</Style>
-
-		<Style Selector="TextBlock.Negative">
-			<Setter Property="Foreground" Value="Red" />
+		<Style Selector="Button.AddButton">
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Foreground" Value="White" />
 		</Style>
 
 		<Style Selector="TextBox">
@@ -102,13 +88,12 @@
 			<Setter Property="VerticalAlignment" Value="Center"/>
 			<Setter Property="HorizontalAlignment" Value="Center"/>
 		</Style>
-		<Style Selector="ListBox">
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
-		</Style>
 		<Style Selector="Border.Header">
-			<Setter Property="Margin" Value="0 10 10 0" />
-			<Setter Property="CornerRadius" Value="12 12 0 0" />
+			<Setter Property="Margin" Value="0 8 8 0" />
+			<Setter Property="CornerRadius" Value="8 8 0 0" />
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1 1 1 0" />
 		</Style>
 		<Style Selector="Border.Header Button">
 			<Setter Property="Margin" Value="20 0" />
@@ -119,24 +104,11 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Border.Content">
-			<Setter Property="Margin" Value="0 0 10 20" />
-			<Setter Property="CornerRadius" Value="0 0 12 12" />
+			<Setter Property="Margin" Value="0 0 8 16" />
+			<Setter Property="CornerRadius" Value="0 0 8 8" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-		</Style>
-
-		<Style Selector="mi|MaterialIcon.SyncSpin">
-			<Setter Property="RenderTransformOrigin" Value="50%,50%" />
-			<Style.Animations>
-				<Animation Duration="0:0:1.2" IterationCount="Infinite">
-					<KeyFrame Cue="0%">
-						<Setter Property="RotateTransform.Angle" Value="0" />
-					</KeyFrame>
-					<KeyFrame Cue="100%">
-						<Setter Property="RotateTransform.Angle" Value="360" />
-					</KeyFrame>
-				</Animation>
-			</Style.Animations>
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
 		</Style>
 
 	</Application.Styles>

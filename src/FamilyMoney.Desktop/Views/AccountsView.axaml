@@ -18,9 +18,8 @@
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.Separator">
-			<Setter Property="Height" Value="3" />
+			<Setter Property="Height" Value="5" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 		</Style>
 		<Style Selector="Border.Account">
 			<Setter Property="Height" Value="40" />
@@ -33,28 +32,28 @@
 			<Setter Property="Opacity" Value="0.6" />
 		</Style>
 		<Style Selector="Border.Group">
-			<Setter Property="Margin" Value="1 2 1 0" />
-			<Setter Property="CornerRadius" Value="12 12 0 0"/>
+			<Setter Property="Margin" Value="4 4 4 0" />
+			<Setter Property="CornerRadius" Value="8 8 0 0"/>
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.Element">
-			<Setter Property="Margin" Value="1 0 1 0" />
-			<Setter Property="BorderThickness" Value="1 1 1 0" />
+			<Setter Property="Margin" Value="4 0 4 0" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
 		</Style>
 		<Style Selector="Border.AloneElement">
-			<Setter Property="CornerRadius" Value="12"/>
-			<Setter Property="Margin" Value="1 0 1 2" />
-			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Margin" Value="4 0 4 4" />
+			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="ItemsControl.Children > ContentPresenter:nth-last-child(1) > Border">
-			<Setter Property="CornerRadius" Value="0 0 12 12"/>
-			<Setter Property="Margin" Value="1 0 1 2" />
-			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="0 0 8 8"/>
+			<Setter Property="Margin" Value="4 0 4 4" />
+			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Border.Account:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
 		</Style>
 		<Style Selector="Border.Account Image">
 			<Setter Property="Width" Value="40" />
@@ -79,7 +78,7 @@
 			<Setter Property="HorizontalAlignment" Value="Right" />
 		</Style>
 		<Style Selector="Border.Account.Selected">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
 		<Style Selector="Border.Account.Hidden">
 			<Setter Property="Opacity" Value="0.55" />
@@ -103,7 +102,7 @@
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
 		<Style Selector="Button.Checked">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
 		<Style Selector="Button.BottomButton:disabled">
 			<Setter Property="IsVisible" Value="False"/>
@@ -153,6 +152,7 @@
 	</UserControl.Styles>
 	
 	<Grid Name="MainContainer" 
+		  Margin="2 0 4 0"
 				DragDrop.AllowDrop="True" 
 				RowDefinitions="auto auto * auto"
 				>

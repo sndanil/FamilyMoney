@@ -1,0 +1,41 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <FluentTheme>
+    <FluentTheme.Palettes>
+      <ColorPaletteResources x:Key="Light"
+                             Accent="#3390EC"
+                             RegionColor="#FFFFFF"
+                             AltHigh="#EFEFF4"
+                             AltMediumHigh="#EFEFF4"
+                             AltMedium="#FFFFFF"
+                             AltMediumLow="#FFFFFF"
+                             AltLow="#F4F4F5"
+                             ListLow="#FFFFFF"
+                             ListMedium="#F4F4F5"
+                             BaseMedium="#707579"
+                             BaseMediumLow="#A0A5AA"
+                             ChromeHigh="#E5E5E5"
+                             ChromeMediumLow="#F4F4F5"
+                             ChromeLow="#FFFFFF"
+                             ChromeDisabledHigh="#E5E5E5"
+                             ErrorText="#E53935" />
+      <ColorPaletteResources x:Key="Dark"
+                             Accent="#3390EC"
+                             RegionColor="#17212B"
+                             AltHigh="#2B5278"
+                             AltMediumHigh="#232E3C"
+                             AltMedium="#232E3C"
+                             AltMediumLow="#1E2732"
+                             AltLow="#0E1621"
+                             ListLow="#17212B"
+                             ListMedium="#232E3C"
+                             BaseMedium="#708499"
+                             BaseMediumLow="#566A7A"
+                             ChromeHigh="#2B3740"
+                             ChromeMediumLow="#232E3C"
+                             ChromeLow="#17212B"
+                             ChromeDisabledHigh="#2B3740"
+                             ErrorText="#FF5252" />
+    </FluentTheme.Palettes>
+  </FluentTheme>
+</Styles>

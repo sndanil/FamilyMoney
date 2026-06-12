@@ -79,10 +79,10 @@
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="Border.Total SelectableTextBlock.Debet">
-			<Setter Property="Foreground" Value="#3BCE5E" />
+			<Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
 		</Style>
 		<Style Selector="Border.Total SelectableTextBlock.Credit">
-			<Setter Property="Foreground" Value="Red" />
+			<Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Sum">
 			<Setter Property="FontFamily" Value="Verdana" />
@@ -91,10 +91,10 @@
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Debet">
-			<Setter Property="Foreground" Value="#3BCE5E" />
+			<Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Credit">
-			<Setter Property="Foreground" Value="Red" />
+			<Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
 		</Style>
 		<Style Selector="TextBlock.Name">
 			<Setter Property="Margin" Value="10 0 0 0" />

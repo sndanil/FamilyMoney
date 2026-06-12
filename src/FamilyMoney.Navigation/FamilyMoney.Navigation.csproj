@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Themes\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FamilyMoney\FamilyMoney.csproj" />
   </ItemGroup>
 

@@ -34,7 +34,7 @@
 			<Setter Property="Margin" Value="0" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem">
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Background" Value="Transparent" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem StackPanel">
 			<Setter Property="Orientation" Value="Horizontal"/>
@@ -42,10 +42,10 @@
 			<Setter Property="Margin" Value="15 10" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem:disabled">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
 		<Style Selector="Border.SideBarMenuItem mi|MaterialIcon">
 			<Setter Property="Width" Value="14"/>
@@ -54,7 +54,6 @@
 			<Setter Property="Margin" Value="20 0 0 0" />
 			<Setter Property="Height" Value="30" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="CornerRadius" Value="12" />
 		</Style>
 		<Style Selector="Button.DatabaseQuickPick">
 			<Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -72,8 +71,8 @@
 		   CompactPaneLength="45"
 		   DisplayMode="CompactInline"
 		   OpenPaneLength="300"
-		   Background="{DynamicResource SystemAltMediumLowColor}"
-		   PaneBackground="{DynamicResource SystemAltMediumLowColor}">
+		   Background="{DynamicResource SidebarBackBrush}"
+		   PaneBackground="{DynamicResource SidebarBackBrush}">
 		<SplitView.Pane>
 			<StackPanel Orientation="Vertical"
 						Spacing="5"
@@ -194,7 +193,6 @@
 			<Grid>
 				<Border Name="TransactionsPanel"
 						Classes="LeftTop" 
-						Background="{DynamicResource SystemAltMediumLowColor}"
 						IsVisible="{Binding CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Transactions}}">
 					<Grid RowDefinitions="45 *">
 						<Grid.ColumnDefinitions>
@@ -265,7 +263,8 @@
 
 						<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
 
-						<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"/>
+						<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"
+									  Background="Transparent"/>
 
 						<Panel IsVisible="{Binding ShowTransactionsTree}" Grid.Column="2"	Grid.Row="1">
 							<views:TransactionsView DataContext="{Binding Transactions}" />

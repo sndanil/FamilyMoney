@@ -14,7 +14,7 @@
       <Setter Property="Padding" Value="12 10" />
     </Style>
     <Style Selector="Button.MenuAction:checked">
-      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
     </Style>
     <Style Selector="Button.MenuAction mi|MaterialIcon">
       <Setter Property="Width" Value="20" />
@@ -23,7 +23,7 @@
     </Style>
   </ContentPage.Styles>
 
-  <Grid RowDefinitions="* Auto">
+  <Grid RowDefinitions="* Auto" Background="{DynamicResource SidebarBackBrush}">
 
     <controls:AccountsDrawerView Margin="8 0 8 8"
                                  DataContext="{Binding Accounts}" />

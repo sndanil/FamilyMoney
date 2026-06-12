@@ -39,10 +39,10 @@
 			<Setter Property="BorderThickness" Value="1" />
 		</Style>
 		<Style Selector="Border.Trsansaction:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
 		</Style>
 		<Style Selector="Border.Trsansaction.Selected">
-			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
 		<Style Selector="Border.Trsansaction > Grid">
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -79,7 +79,7 @@
 			<Setter Property="Margin" Value="0 0 4 0" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Debet">
-			<Setter Property="Foreground" Value="#3BCE5E" />
+			<Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
 		</Style>
 		<Style Selector="Image">
 			<Setter Property="Margin" Value="5 0" />

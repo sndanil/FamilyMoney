@@ -16,7 +16,7 @@
   <ContentPage.Styles>
     <Style Selector="TextBlock.Label">
       <Setter Property="FontSize" Value="12" />
-      <Setter Property="Opacity" Value="0.7" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="Margin" Value="2 8 0 2" />
     </Style>
     <Style Selector="ComboBox">
@@ -77,7 +77,7 @@
     </DataTemplate>
   </ContentPage.DataTemplates>
 
-  <Grid>
+  <Grid Background="{DynamicResource MainBackBrush}">
     <ScrollViewer>
       <StackPanel Margin="12 0 12 88">
         <TextBlock Classes="Label" Text="Счёт" />
@@ -252,15 +252,15 @@
             CornerRadius="24"
             BorderBrush="{DynamicResource LikeGridLinesBrush}"
             BorderThickness="1"
-            BoxShadow="0 4 16 0 #40000000">
+            BoxShadow="0 2 12 0 #20000000">
       <Border.Background>
-        <SolidColorBrush Color="{DynamicResource SystemAltHighColor}" Opacity="0.75" />
+        <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
       </Border.Background>
       <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
         <CommandBar.PrimaryCommands>
           <CommandBarButton Width="100" CornerRadius="20" x:Name="DeleteButton" Label="Удалить">
             <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="Delete" Foreground="Red" Width="20" Height="20" />
+              <mi:MaterialIcon Kind="Delete" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
             </CommandBarButton.Icon>
             <CommandBarButton.Flyout>
               <MenuFlyout>

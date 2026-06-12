@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FamilyMoney\FamilyMoney.csproj" />
+    <ProjectReference Include="..\FamilyMoney.Navigation\FamilyMoney.Navigation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

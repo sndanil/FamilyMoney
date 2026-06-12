@@ -10,39 +10,15 @@
 
   <Application.Resources>
     <ResourceDictionary>
-      <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-          <SolidColorBrush x:Key="GroupBackBrush" Color="#CFEAFF" />
-          <SolidColorBrush x:Key="MainBackBrush" Color="#EFF4F9" />
-          <SolidColorBrush x:Key="DialogBackBrush" Color="#FAFCFD" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="LikeGridLinesBrush" Opacity="0.4" Color="{DynamicResource SystemBaseMediumLowColor}" />
-          <SolidColorBrush x:Key="GroupBackBrush" Color="#0D2644" />
-          <SolidColorBrush x:Key="MainBackBrush" Color="#1A202F" />
-          <SolidColorBrush x:Key="DialogBackBrush" Color="#262B3E" />
-        </ResourceDictionary>
-      </ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeResources.axaml" />
+      </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 
   <Application.Styles>
-    <FluentTheme />
+    <StyleInclude Source="avares://FamilyMoney.Navigation/Themes/FluentPalettes.axaml" />
+    <StyleInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeStyles.axaml" />
     <mi:MaterialIconStyles />
-
-    <Style Selector="mi|MaterialIcon.SyncSpin">
-      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
-      <Style.Animations>
-        <Animation Duration="0:0:1.2" IterationCount="Infinite">
-          <KeyFrame Cue="0%">
-            <Setter Property="RotateTransform.Angle" Value="0" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="RotateTransform.Angle" Value="360" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
   </Application.Styles>
 </Application>

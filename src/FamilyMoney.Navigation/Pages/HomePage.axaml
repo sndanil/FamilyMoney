@@ -6,233 +6,237 @@
              x:Class="FamilyMoney.Navigation.Pages.HomePage"
              x:DataType="vm:MainViewModel"
              Header="Главная">
-  <ContentPage.Resources>
-    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
-    <cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
-  </ContentPage.Resources>
+    <ContentPage.Resources>
+        <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+        <cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+    </ContentPage.Resources>
 
-  <ContentPage.Styles>
-    <Style Selector="Border.Total">
-      <Setter Property="Margin" Value="8 8 8 0" />
-      <Setter Property="MinHeight" Value="32" />
-      <Setter Property="CornerRadius" Value="5" />
-      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Padding" Value="10 5" />
-    </Style>
-    <Style Selector="Border.Total TextBlock">
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Border.Transaction">
-      <Setter Property="MinHeight" Value="36" />
-      <Setter Property="Margin" Value="16 -1 16 0" />
-      <Setter Property="CornerRadius" Value="1" />
-      <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Padding" Value="8 4" />
-    </Style>
-    <Style Selector="Border.TransactionTag">
-      <Setter Property="CornerRadius" Value="6" />
-      <Setter Property="Padding" Value="6 2" />
-      <Setter Property="Margin" Value="0 1 2 0" />
-      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
-    </Style>
-    <Style Selector="Border.TransactionTag TextBlock">
-      <Setter Property="FontSize" Value="11" />
-      <Setter Property="Opacity" Value="0.85" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="TextBlock.Name">
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-    </Style>
-    <Style Selector="TextBlock.Comment">
-      <Setter Property="FontSize" Value="12" />
-      <Setter Property="Opacity" Value="0.7" />
-      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-    </Style>
-    <Style Selector="SelectableTextBlock.Sum">
-      <Setter Property="FontFamily" Value="Verdana" />
-      <Setter Property="HorizontalAlignment" Value="Right" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="Margin" Value="8 0 0 0" />
-    </Style>
-    <Style Selector="SelectableTextBlock.Debet">
-      <Setter Property="Foreground" Value="#3BCE5E" />
-    </Style>
-    <Style Selector="SelectableTextBlock.Negative">
-      <Setter Property="Foreground" Value="Red" />
-    </Style>
-    <Style Selector="Image.Category">
-      <Setter Property="Margin" Value="0 0 8 0" />
-      <Setter Property="Height" Value="20" />
-      <Setter Property="Width" Value="20" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Button.Period">
-      <Setter Property="Height" Value="32" />
-      <Setter Property="Padding" Value="10 0" />
-    </Style>
-    <Style Selector="mi|MaterialIcon">
-      <Setter Property="Height" Value="14" />
-      <Setter Property="Width" Value="14" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="HorizontalAlignment" Value="Center" />
-    </Style>
-  </ContentPage.Styles>
+    <ContentPage.Styles>
+        <Style Selector="Border.Total">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+            <Setter Property="BorderThickness" Value="0 0 1 0" />
+            <Setter Property="Padding" Value="16 8" />
+        </Style>
+        <Style Selector="Border.Total TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.Transaction">
+            <Setter Property="MinHeight" Value="52" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+            <Setter Property="BorderThickness" Value="1 0 1 1" />
+            <Setter Property="Padding" Value="16 8" />
+        </Style>
+        <Style Selector="Border.Transaction:pointerover">
+            <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+        </Style>
+        <Style Selector="Border.TransactionTag">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="6 2" />
+            <Setter Property="Margin" Value="0 1 2 0" />
+            <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+        </Style>
+        <Style Selector="Border.TransactionTag TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.85" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.Name">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style Selector="TextBlock.Comment">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style Selector="SelectableTextBlock.Sum">
+            <Setter Property="FontFamily" Value="Verdana" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="8 0 0 0" />
+        </Style>
+        <Style Selector="SelectableTextBlock.Debet">
+            <Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
+        </Style>
+        <Style Selector="SelectableTextBlock.Negative">
+            <Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
+        </Style>
+        <Style Selector="Image.Category">
+            <Setter Property="Margin" Value="0 0 8 0" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.Period">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="10 0" />
+        </Style>
+        <Style Selector="mi|MaterialIcon">
+            <Setter Property="Height" Value="14" />
+            <Setter Property="Width" Value="14" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </ContentPage.Styles>
 
-  <Grid RowDefinitions="Auto *">
-    <Grid ColumnDefinitions="Auto * Auto" Margin="8 8 8 0">
-      <Button Classes="Period"
-              CornerRadius="12 0 0 12"
-              Command="{Binding Period.PrevCommand}">
-        <mi:MaterialIcon Kind="ChevronLeft" />
-      </Button>
-      <Button Grid.Column="1"
-              Classes="Period"
-              CornerRadius="0"
-              HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Center"
-              Command="{Binding Period.ToMonthCommand}">
-        <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-      </Button>
-      <Button Grid.Column="2"
-              Classes="Period"
-              CornerRadius="0 12 12 0"
-              Command="{Binding Period.NextCommand}">
-        <mi:MaterialIcon Kind="ChevronRight" />
-      </Button>
-    </Grid>
+    <Grid RowDefinitions="Auto *" Background="{DynamicResource SidebarBackBrush}">
+        <Grid ColumnDefinitions="Auto * Auto" Margin="8 8 8 0">
+            <Button Classes="Period"
+                    CornerRadius="12 0 0 12"
+                    Command="{Binding Period.PrevCommand}">
+                <mi:MaterialIcon Kind="ChevronLeft" />
+            </Button>
+            <Button Grid.Column="1"
+                    Classes="Period"
+                    CornerRadius="0"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding Period.ToMonthCommand}">
+                <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+            <Button Grid.Column="2"
+                    Classes="Period"
+                    CornerRadius="0 12 12 0"
+                    Command="{Binding Period.NextCommand}">
+                <mi:MaterialIcon Kind="ChevronRight" />
+            </Button>
+        </Grid>
 
-    <ScrollViewer Grid.Row="1">
-      <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" Margin="0 0 0 88">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Orientation="Vertical" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel>
-              <Border Classes="Total">
-                <Grid ColumnDefinitions="* Auto">
-                  <TextBlock Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-                  <SelectableTextBlock Grid.Column="1"
-                                       Classes="Sum"
-                                       Classes.Debet="{Binding IsDebet}"
-                                       Classes.Negative="{Binding !IsDebet}"
-                                       Text="{Binding Sum, StringFormat='#,##0.00'}" />
-                </Grid>
-              </Border>
-
-              <ItemsControl ItemsSource="{Binding Transactions}">
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" 
+                          Margin="5 5 5 88">
                 <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" />
-                  </ItemsPanelTemplate>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
 
                 <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border Classes="Transaction" Tapped="OnTransactionTapped">
-                      <Grid ColumnDefinitions="Auto * Auto">
-                        <Image Classes="Category"
-                               Stretch="Uniform"
-                               Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                               IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <DataTemplate>
+                        <StackPanel>
+                            <Border Classes="Total">
+                                <Grid ColumnDefinitions="* Auto">
+                                    <TextBlock Text="{Binding Date, StringFormat=dd MMMM yyyy}" HorizontalAlignment="Center" />
+                                    <SelectableTextBlock Grid.Column="1"
+                                                         Classes="Sum"
+                                                         Classes.Debet="{Binding IsDebet}"
+                                                         Classes.Negative="{Binding !IsDebet}"
+                                                         Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                                </Grid>
+                            </Border>
 
-                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                          <WrapPanel Orientation="Horizontal" ItemSpacing="6">
-                            <TextBlock Classes="Name" Text="{Binding Category.Name}" />
-                            <TextBlock Classes="Name"
-                                       Opacity="0.8"
-                                       Text="{Binding SubCategory.Name}"
-                                       IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                          </WrapPanel>
-                          <TextBlock Classes="Comment"
-                                     Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
-                                     IsVisible="{Binding Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                          <ItemsControl ItemsSource="{Binding Tags}" IsVisible="{Binding HasTags}">
-                            <ItemsControl.ItemsPanel>
-                              <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" />
-                              </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                              <DataTemplate>
-                                <Border Classes="TransactionTag">
-                                  <TextBlock Text="{Binding}" />
-                                </Border>
-                              </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Transactions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Classes="Transaction" Tapped="OnTransactionTapped">
+                                            <Grid ColumnDefinitions="Auto * Auto">
+                                                <Image Classes="Category"
+                                                       Stretch="Uniform"
+                                                       Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                                                       IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <WrapPanel Orientation="Horizontal" ItemSpacing="6">
+                                                        <TextBlock Classes="Name" Text="{Binding Category.Name}" />
+                                                        <TextBlock Classes="Name"
+                                                                   Opacity="0.8"
+                                                                   Text="{Binding SubCategory.Name}"
+                                                                   IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                                    </WrapPanel>
+                                                    <TextBlock Classes="Comment"
+                                                               Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+                                                               IsVisible="{Binding Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                    <ItemsControl ItemsSource="{Binding Tags}" IsVisible="{Binding HasTags}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Classes="TransactionTag">
+                                                                    <TextBlock Text="{Binding}" />
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+
+                                                <SelectableTextBlock Grid.Column="2"
+                                                                     Classes="Sum"
+                                                                     Classes.Debet="{Binding IsDebet}"
+                                                                     Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
-
-                        <SelectableTextBlock Grid.Column="2"
-                                             Classes="Sum"
-                                             Classes.Debet="{Binding IsDebet}"
-                                             Text="{Binding Sum, StringFormat='#,##0.00'}" />
-                      </Grid>
-                    </Border>
-                  </DataTemplate>
+                    </DataTemplate>
                 </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
+            </ItemsControl>
+        </ScrollViewer>
 
-    <Border Grid.Row="1"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Center"
-            Margin="16 0 16 16"
-            Padding="10 2"
-            CornerRadius="24"
-            BorderBrush="{DynamicResource LikeGridLinesBrush}"
-            BorderThickness="1"
-            BoxShadow="0 4 16 0 #40000000">
-      <Border.Background>
-        <SolidColorBrush Color="{DynamicResource SystemAltHighColor}" Opacity="0.75" />
-      </Border.Background>
-      <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
-        <CommandBar.PrimaryCommands>
-          <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="CashMinus" Foreground="Red" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-          <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="CashPlus" Foreground="#3BCE5E" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-          <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-          <CommandBarButton Label="Синхронизация"
-                            CornerRadius="20"
-                            Command="{Binding Settings.SyncNowCommand}"
-                            IsVisible="{Binding Settings.IsSyncAvailable}"
-                            IsEnabled="{Binding !Settings.IsSyncing}">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="Sync"
-                               Width="20"
-                               Height="20"
-                               Classes.SyncSpin="{Binding Settings.IsSyncing}">
-                <mi:MaterialIcon.RenderTransform>
-                  <RotateTransform />
-                </mi:MaterialIcon.RenderTransform>
-              </mi:MaterialIcon>
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-        </CommandBar.PrimaryCommands>
-      </CommandBar>
-    </Border>
-  </Grid>
+        <Border Grid.Row="1"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="16 0 16 16"
+                Padding="10 2"
+                CornerRadius="24"
+                BorderBrush="{DynamicResource LikeGridLinesBrush}"
+                BorderThickness="1"
+                BoxShadow="0 2 12 0 #20000000">
+            <Border.Background>
+                <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
+            </Border.Background>
+            <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
+                <CommandBar.PrimaryCommands>
+                    <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
+                        <CommandBarButton.Icon>
+                            <mi:MaterialIcon Kind="CashMinus" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
+                        </CommandBarButton.Icon>
+                    </CommandBarButton>
+                    <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
+                        <CommandBarButton.Icon>
+                            <mi:MaterialIcon Kind="CashPlus" Foreground="{DynamicResource PositiveBrush}" Width="20" Height="20" />
+                        </CommandBarButton.Icon>
+                    </CommandBarButton>
+                    <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
+                        <CommandBarButton.Icon>
+                            <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
+                        </CommandBarButton.Icon>
+                    </CommandBarButton>
+                    <CommandBarButton Label="Синхронизация"
+                                      CornerRadius="20"
+                                      Command="{Binding Settings.SyncNowCommand}"
+                                      IsVisible="{Binding Settings.IsSyncAvailable}"
+                                      IsEnabled="{Binding !Settings.IsSyncing}">
+                        <CommandBarButton.Icon>
+                            <mi:MaterialIcon Kind="Sync"
+                                             Width="20"
+                                             Height="20"
+                                             Classes.SyncSpin="{Binding Settings.IsSyncing}">
+                                <mi:MaterialIcon.RenderTransform>
+                                    <RotateTransform />
+                                </mi:MaterialIcon.RenderTransform>
+                            </mi:MaterialIcon>
+                        </CommandBarButton.Icon>
+                    </CommandBarButton>
+                </CommandBar.PrimaryCommands>
+            </CommandBar>
+        </Border>
+    </Grid>
 </ContentPage>
