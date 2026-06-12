@@ -30,5 +30,19 @@
   <Application.Styles>
     <FluentTheme />
     <mi:MaterialIconStyles />
+
+    <Style Selector="mi|MaterialIcon.SyncSpin">
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Style.Animations>
+        <Animation Duration="0:0:1.2" IterationCount="Infinite">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
   </Application.Styles>
 </Application>

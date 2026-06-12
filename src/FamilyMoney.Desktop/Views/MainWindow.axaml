@@ -233,6 +233,22 @@
 								HotKey="Alt+T"
 								Command="{Binding Transactions.AddTransferCommand}">Перевод</Button>
 
+							<Button Classes="AddButton"
+									Command="{Binding Settings.SyncNowCommand}"
+									IsVisible="{Binding Settings.IsSyncAvailable}"
+									IsEnabled="{Binding !Settings.IsSyncing}"
+									ToolTip.Tip="Синхронизировать">
+								<StackPanel Orientation="Horizontal" Spacing="6">
+									<mi:MaterialIcon Kind="Sync"
+													 Classes.SyncSpin="{Binding Settings.IsSyncing}">
+										<mi:MaterialIcon.RenderTransform>
+											<RotateTransform />
+										</mi:MaterialIcon.RenderTransform>
+									</mi:MaterialIcon>
+									<TextBlock Text="Синхронизация" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
 							<Button IsVisible="False"
 								HotKey="Escape"
 								Command="{Binding Transactions.ClearSelectionCommand}" />

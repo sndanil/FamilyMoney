@@ -215,6 +215,22 @@
               <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
             </CommandBarButton.Icon>
           </CommandBarButton>
+          <CommandBarButton Label="Синхронизация"
+                            CornerRadius="20"
+                            Command="{Binding Settings.SyncNowCommand}"
+                            IsVisible="{Binding Settings.IsSyncAvailable}"
+                            IsEnabled="{Binding !Settings.IsSyncing}">
+            <CommandBarButton.Icon>
+              <mi:MaterialIcon Kind="Sync"
+                               Width="20"
+                               Height="20"
+                               Classes.SyncSpin="{Binding Settings.IsSyncing}">
+                <mi:MaterialIcon.RenderTransform>
+                  <RotateTransform />
+                </mi:MaterialIcon.RenderTransform>
+              </mi:MaterialIcon>
+            </CommandBarButton.Icon>
+          </CommandBarButton>
         </CommandBar.PrimaryCommands>
       </CommandBar>
     </Border>
