@@ -23,13 +23,23 @@ public static class SyncEntitySerializer
 
     public static SyncEntityRecord CreateRecord(ISyncable entity)
     {
+        string? dataJson = null;
+        if (entity.DeletedAt == null)
+        {
+            dataJson = entity switch
+            {
+                Account account => JsonSerializer.Serialize(ToAccountSyncModel(account), JsonDefaults.CamelCaseCompact),
+                _ => JsonSerializer.Serialize(entity, entity.GetType(), JsonDefaults.CamelCaseCompact),
+            };
+        }
+
         return new SyncEntityRecord
         {
             Id = entity.Id,
             EntityType = entity.GetType().Name,
             LastChange = entity.LastChange,
             DeletedAt = entity.DeletedAt,
-            DataJson = entity.DeletedAt == null ? JsonSerializer.Serialize(entity, entity.GetType(), JsonDefaults.CamelCaseCompact) : null,
+            DataJson = dataJson,
         };
     }
 
@@ -52,6 +62,12 @@ public static class SyncEntitySerializer
             return null;
         }
 
+        if (record.EntityType == nameof(Account))
+        {
+            var syncModel = JsonSerializer.Deserialize<AccountSyncModel>(record.DataJson, JsonDefaults.CamelCaseCompact);
+            return syncModel == null ? null : FromAccountSyncModel(syncModel);
+        }
+
         if (!EntityTypes.TryGetValue(record.EntityType, out var type))
         {
             throw new InvalidOperationException($"Unknown sync entity type: {record.EntityType}");
@@ -67,5 +83,30 @@ public static class SyncEntitySerializer
         nameof(DebetSubCategory) or nameof(CreditSubCategory) or nameof(TransferSubCategory) => nameof(SubCategory),
         nameof(DebetTransaction) or nameof(CreditTransaction) or nameof(TransferTransaction) => nameof(Transaction),
         _ => throw new InvalidOperationException($"Unknown sync entity type: {entityType}"),
+    };
+
+    private static AccountSyncModel ToAccountSyncModel(Account account) => new()
+    {
+        Id = account.Id,
+        LastChange = account.LastChange,
+        DeletedAt = account.DeletedAt,
+        ParentId = account.ParentId,
+        Name = account.Name,
+        Order = account.Order,
+        IsGroup = account.IsGroup,
+        IsNotSummable = account.IsNotSummable,
+    };
+
+    private static Account FromAccountSyncModel(AccountSyncModel model) => new()
+    {
+        Id = model.Id,
+        LastChange = model.LastChange,
+        DeletedAt = model.DeletedAt,
+        ParentId = model.ParentId,
+        Name = model.Name,
+        Order = model.Order,
+        IsGroup = model.IsGroup,
+        IsNotSummable = model.IsNotSummable,
+        Sum = 0,
     };
 }

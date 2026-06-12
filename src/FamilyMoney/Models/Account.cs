@@ -20,6 +20,8 @@ public sealed class Account : ISyncable
 
     public decimal Sum { get; set; }
 
+    // Sum вычисляется локально из транзакций (RecalculateAccountBalances) и не синхронизируется.
+
     // Видимость и свёрнутость хранятся локально для каждого устройства
     // (IAccountLocalSettingsStore) и не синхронизируются между устройствами.
 

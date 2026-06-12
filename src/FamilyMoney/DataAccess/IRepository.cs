@@ -30,6 +30,11 @@ public interface IRepository
     void UpdateAccount(Account account);
     void DeleteAccount(Guid id);
 
+    /// <summary>
+    /// Пересчитывает балансы счетов из транзакций и сохраняет локально без постановки в outbox синхронизации.
+    /// </summary>
+    void RecalculateAccountBalances();
+
     Category GetCategory(Guid id);
     IEnumerable<Category> GetCategories();
     void UpdateCategroty(Category category);

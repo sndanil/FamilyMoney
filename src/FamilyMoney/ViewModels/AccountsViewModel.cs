@@ -120,6 +120,8 @@ public partial class AccountsViewModel : ViewModelBase
 
     public IReadOnlyList<AccountViewModel> LoadAccounts()
     {
+        _repository!.RecalculateAccountBalances();
+
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
         _total.AddFromAccount(_repository, _localSettings, accounts);
@@ -177,51 +179,37 @@ public partial class AccountsViewModel : ViewModelBase
         {
             if (m != null)
             {
-                if (m.Before != null)
-                {
-                    ProcessAccounts(m.Before, -1);
-                }
-                if (m.After != null)
-                {
-                    ProcessAccounts(m.After, 1);
-                }
+                a._repository.RecalculateAccountBalances();
+                a.RefreshAccountSumsFromRepository();
             }
         });
     }
 
-    private void ProcessAccounts(Transaction transaction, int direction)
+    private void RefreshAccountSumsFromRepository()
     {
-        var flatAccounts = _stateManager.GetMainState().FlatAccounts;
-        var account = flatAccounts.FirstOrDefault(a => a.Id == transaction.AccountId);
-        if (account != null)
-        {
-            if (transaction is DebetTransaction)
-            {
-                UpdateAccountSum(account, transaction.Sum * direction);
-            }
-            else if (transaction is CreditTransaction)
-            {
-                UpdateAccountSum(account, -transaction.Sum * direction);
-            }
-            else if (transaction is TransferTransaction transfer)
-            {
-                UpdateAccountSum(account, -transaction.Sum * direction);
-                var toAccount = flatAccounts.FirstOrDefault(a => a.Id == transfer.ToAccountId);
-                if (toAccount != null)
-                {
-                    UpdateAccountSum(toAccount, transfer.ToSum * direction);
-                }
-            }
-        }
-    }
+        var accounts = _repository.GetAccounts().ToDictionary(a => a.Id);
 
-    private void UpdateAccountSum(AccountViewModel account, decimal sum)
-    {
-        account.Sum += sum;
-        if (!account.IsGroup)
+        void UpdateRecursive(AccountViewModel viewModel)
         {
-            Save(null, account);
+            foreach (var child in viewModel.Children)
+            {
+                UpdateRecursive(child);
+            }
+
+            if (viewModel.Id.HasValue && accounts.TryGetValue(viewModel.Id.Value, out var account))
+            {
+                viewModel.Sum = account.IsGroup
+                    ? viewModel.Children.Where(c => !c.IsNotSummable).Sum(c => c.Sum)
+                    : account.Sum;
+            }
         }
+
+        foreach (var child in Total.Children)
+        {
+            UpdateRecursive(child);
+        }
+
+        Total.RecalcByChildren();
     }
 
     [RelayCommand]
@@ -398,6 +386,8 @@ public partial class AccountsViewModel : ViewModelBase
 
         var state = _stateManager.GetMainState();
         _stateManager.SetMainState(state with { Accounts = [.. Total.Children] });
+
+        var existingAccount = _repository!.GetAccount(other.Id.Value);
         _repository!.UpdateAccount(new Models.Account
         {
             Id = other.Id.Value,
@@ -405,7 +395,7 @@ public partial class AccountsViewModel : ViewModelBase
             Name = other.Name,
             IsGroup = other.IsGroup,
             IsNotSummable = other.IsNotSummable,
-            Sum = other.IsGroup ? 0 : other.Sum,
+            Sum = other.IsGroup ? 0 : existingAccount.Sum,
             Order = (other.Parent ?? Total).Children
                         .Select((account, index) => (account, index))
                         .Where(i => i.account.Id == other.Id)

@@ -100,6 +100,10 @@ public class DesignerRepository : IRepository
         return null;
     }
 
+    public void RecalculateAccountBalances()
+    {
+    }
+
     public void UpdateAccount(Account account)
     {            
     }

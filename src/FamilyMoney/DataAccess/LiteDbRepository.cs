@@ -81,6 +81,8 @@ public class LiteDbRepository : IRepository
             ApplySyncRecord(db.GetCollection<Transaction>(nameof(Transaction)), record);
         }
 
+        RecalculateAccountBalances(db);
+
         _logger.LogInformation(
             "Applied sync delta {Revision} from device {DeviceId}",
             delta.Revision,
@@ -158,6 +160,7 @@ public class LiteDbRepository : IRepository
         transactions.EnsureIndex(t => t.SubCategoryId);
 
         MigrateAccountLocalFlags(db);
+        RecalculateAccountBalances(db);
 
         _logger.LogInformation("End update schema");
     }
@@ -256,6 +259,12 @@ public class LiteDbRepository : IRepository
         using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
         return collection.Find(a => a.DeletedAt == null).ToList();
+    }
+
+    public void RecalculateAccountBalances()
+    {
+        using var db = OpenDatabase();
+        RecalculateAccountBalances(db);
     }
 
     public void UpdateAccount(Account account)
@@ -499,6 +508,39 @@ public class LiteDbRepository : IRepository
     }
 
     private LiteDatabase OpenDatabase() => new(DatabasePath);
+
+    private void RecalculateAccountBalances(LiteDatabase db)
+    {
+        var accounts = db.GetCollection<Account>(nameof(Account)).Find(a => a.DeletedAt == null).ToList();
+        var transactions = db.GetCollection<Transaction>(nameof(Transaction)).Find(t => t.DeletedAt == null).ToList();
+        var sums = AccountBalanceCalculator.Calculate(accounts, transactions);
+        var collection = db.GetCollection<Account>(nameof(Account));
+
+        foreach (var account in accounts)
+        {
+            if (account.IsGroup)
+            {
+                if (account.Sum != 0m)
+                {
+                    account.Sum = 0m;
+                    collection.Update(account);
+                }
+
+                continue;
+            }
+
+            if (!sums.TryGetValue(account.Id, out var sum))
+            {
+                continue;
+            }
+
+            if (account.Sum != sum)
+            {
+                account.Sum = sum;
+                collection.Update(account);
+            }
+        }
+    }
 
     private static void EnqueueEntity(LiteDatabase db, ISyncable entity)
     {
