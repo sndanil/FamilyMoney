@@ -1,6 +1,7 @@
 ﻿using FamilyMoney.Configuration;
 using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
+using FamilyMoney.State;
 using FamilyMoney.Sync;
 using LiteDB;
 using Microsoft.Extensions.Logging;
@@ -19,11 +20,16 @@ public class LiteDbRepository : IRepository
     private const string SyncImageMetaCollectionName = "_SyncImageMeta";
 
     private readonly IGlobalConfiguration _configuration;
+    private readonly IAccountLocalSettingsStore _accountLocalSettings;
     private readonly ILogger<LiteDbRepository> _logger;
 
-    public LiteDbRepository(IGlobalConfiguration configuration, ILogger<LiteDbRepository> logger)
+    public LiteDbRepository(
+        IGlobalConfiguration configuration,
+        IAccountLocalSettingsStore accountLocalSettings,
+        ILogger<LiteDbRepository> logger)
     {
         _configuration = configuration;
+        _accountLocalSettings = accountLocalSettings;
         _logger = logger;
     }
 
@@ -151,7 +157,32 @@ public class LiteDbRepository : IRepository
         transactions.EnsureIndex(t => t.AccountId);
         transactions.EnsureIndex(t => t.SubCategoryId);
 
+        MigrateAccountLocalFlags(db);
+
         _logger.LogInformation("End update schema");
+    }
+
+    /// <summary>
+    /// Одноразовый перенос IsHidden/IsExpanded из документов Account в локальные
+    /// настройки устройства: раньше флаги хранились в базе и синхронизировались.
+    /// </summary>
+    private void MigrateAccountLocalFlags(LiteDatabase db)
+    {
+        if (_accountLocalSettings.IsSeeded)
+        {
+            return;
+        }
+
+        var flags = db.GetCollection(nameof(Account)).FindAll()
+            .Select(doc => new AccountLocalFlags(
+                doc["_id"].AsGuid,
+                doc.TryGetValue("IsHidden", out var hidden) && hidden.AsBoolean,
+                doc.TryGetValue("IsExpanded", out var expanded) && expanded.AsBoolean))
+            .Where(f => f.IsHidden || f.IsExpanded)
+            .ToList();
+
+        _accountLocalSettings.Seed(flags);
+        _logger.LogInformation("Migrated local account flags for {Count} accounts", flags.Count);
     }
 
     public void DoBackup()

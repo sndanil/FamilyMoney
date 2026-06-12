@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
+using FamilyMoney.State;
 using FamilyMoney.Utils;
 using System.Collections.ObjectModel;
 
@@ -61,6 +62,13 @@ public partial class AccountViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new AccountExpandMessage(Id, IsExpanded));
     }
 
+    [RelayCommand]
+    public void ToggleHideCommand()
+    {
+        IsHidden = !IsHidden;
+        WeakReferenceMessenger.Default.Send(new AccountHideMessage(Id, IsHidden));
+    }
+
     private bool CanOkCommand() => !string.IsNullOrEmpty(Name);
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
@@ -75,12 +83,12 @@ public partial class AccountViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(null));
     }
 
-    public void AddFromAccount(IRepository repository, IEnumerable<Account> accounts)
+    public void AddFromAccount(IRepository repository, IAccountLocalSettingsStore localSettings, IEnumerable<Account> accounts)
     {
         var viewModels = accounts.Where(a => a.ParentId == Id).OrderBy(a => a.Order).Select(a =>
         {
             var account = new AccountViewModel();
-            account.FillFrom(a, repository);
+            account.FillFrom(a, repository, localSettings);
             account.Parent = this;
             return account;
         });
@@ -92,7 +100,7 @@ public partial class AccountViewModel : ViewModelBase
 
         foreach (var account in Children)
         {
-            account.AddFromAccount(repository, accounts);
+            account.AddFromAccount(repository, localSettings, accounts);
         }
 
         RecalcByChildren();
@@ -106,14 +114,14 @@ public partial class AccountViewModel : ViewModelBase
         }
     }
 
-    public void FillFrom(Account account, IRepository repository)
+    public void FillFrom(Account account, IRepository repository, IAccountLocalSettingsStore localSettings)
     {
         Id = account.Id;
         Name = account.Name;
         Sum = account.Sum;
         IsGroup = account.IsGroup;
-        IsHidden = account.IsHidden;
-        IsExpanded = account.IsExpanded;
+        IsHidden = localSettings.IsHidden(account.Id);
+        IsExpanded = localSettings.IsExpanded(account.Id);
         IsNotSummable = account.IsNotSummable;
         ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(account.Id));
     }

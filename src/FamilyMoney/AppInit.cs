@@ -41,6 +41,7 @@ public static class AppInit
     private static void ConfigureServices(IServiceCollection services, bool isDesignMode)
     {
         services.AddSingleton<IGlobalConfiguration, GlobalConfiguration>();
+        services.AddSingleton<IAccountLocalSettingsStore, AccountLocalSettingsStore>();
 
         if (isDesignMode)
         {

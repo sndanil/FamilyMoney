@@ -27,10 +27,7 @@
 		<TextBlock Text="Счёт" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding !IsGroup}"/>
 
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" PlaceholderText="Наименование" HorizontalAlignment="Stretch"/>
-		<StackPanel Grid.Row="1" Orientation="Horizontal">
-			<CheckBox IsChecked="{Binding IsHidden}">Скрытый</CheckBox>
-			<CheckBox IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
-		</StackPanel>
+		<CheckBox Grid.Row="1" IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
 		<Image Grid.Row="2"
 			Name="ImageControl"
 			DragDrop.AllowDrop="True"

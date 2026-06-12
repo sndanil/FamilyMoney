@@ -24,6 +24,7 @@ public partial class AccountsViewModel : ViewModelBase
 
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
+    private readonly IAccountLocalSettingsStore _localSettings;
 
     [ObservableProperty]
     public partial AccountViewModel? DraggingAccount { get; set; }
@@ -53,10 +54,11 @@ public partial class AccountsViewModel : ViewModelBase
         }
     }
 
-    public AccountsViewModel(IRepository repository, IStateManager stateManager)
+    public AccountsViewModel(IRepository repository, IStateManager stateManager, IAccountLocalSettingsStore localSettings)
     {
         _repository = repository;
         _stateManager = stateManager;
+        _localSettings = localSettings;
 
         SubscribeMessages();
     }
@@ -120,7 +122,7 @@ public partial class AccountsViewModel : ViewModelBase
     {
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
-        _total.AddFromAccount(_repository, accounts);
+        _total.AddFromAccount(_repository, _localSettings, accounts);
 
         return [.. _total.Children];
     }
@@ -156,14 +158,18 @@ public partial class AccountsViewModel : ViewModelBase
 
         WeakReferenceMessenger.Default.Register<AccountsViewModel, AccountExpandMessage>(this, (a, m) =>
         {
-            if (m != null)
+            // Свёрнутость — локальная настройка устройства, в базу не пишем.
+            if (m?.AccountId != null)
             {
-                var flatAccounts = _stateManager.GetMainState().FlatAccounts;
-                var account = flatAccounts.FirstOrDefault(a => a.Id == m.AccountId);
-                if (account != null)
-                {
-                    Save(null, account);
-                }
+                a._localSettings.SetExpanded(m.AccountId.Value, m.IsExpanded);
+            }
+        });
+
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, AccountHideMessage>(this, (a, m) =>
+        {
+            if (m?.AccountId != null)
+            {
+                a._localSettings.SetHidden(m.AccountId.Value, m.IsHidden);
             }
         });
 
@@ -263,7 +269,6 @@ public partial class AccountsViewModel : ViewModelBase
             Sum = editAccount.Sum,
             IsGroup = editAccount.IsGroup,
             ImageData = editAccount.ImageData,
-            IsHidden = editAccount.IsHidden,
             IsNotSummable = editAccount.IsNotSummable,
         };
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
@@ -388,7 +393,6 @@ public partial class AccountsViewModel : ViewModelBase
         {
             one.Name = other.Name;
             one.ImageData = other.ImageData;
-            one.IsHidden = other.IsHidden;
             one.IsNotSummable = other.IsNotSummable;
         }
 
@@ -400,8 +404,6 @@ public partial class AccountsViewModel : ViewModelBase
             ParentId = other.Parent?.Id,
             Name = other.Name,
             IsGroup = other.IsGroup,
-            IsHidden = other.IsHidden,
-            IsExpanded = other.IsExpanded,
             IsNotSummable = other.IsNotSummable,
             Sum = other.IsGroup ? 0 : other.Sum,
             Order = (other.Parent ?? Total).Children

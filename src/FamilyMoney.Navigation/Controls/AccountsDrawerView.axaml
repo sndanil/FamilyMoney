@@ -49,6 +49,9 @@
     <Style Selector="Border.Account.Selected">
       <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
     </Style>
+    <Style Selector="Border.Account.Hidden">
+      <Setter Property="Opacity" Value="0.55" />
+    </Style>
     <Style Selector="Border.Account Image">
       <Setter Property="Width" Value="32" />
       <Setter Property="Margin" Value="10 4 0 4" />
@@ -77,12 +80,29 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="Margin" Value="8 0 0 0" />
     </Style>
+    <Style Selector="Button.ShowHidden">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="8 6" />
+    </Style>
+    <Style Selector="Button.ShowHidden:checked">
+      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+    </Style>
     <Style Selector="mi|MaterialIcon">
       <Setter Property="Height" Value="14" />
       <Setter Property="Width" Value="14" />
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="Foreground" Value="Gray" />
+    </Style>
+    <Style Selector="mi|MaterialIcon.HiddenIndicator">
+      <Setter Property="Height" Value="14" />
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Margin" Value="4 0 0 0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="Gray" />
+      <Setter Property="Opacity" Value="0.75" />
     </Style>
     <Style Selector="Border.AllTotal">
       <Setter Property="CornerRadius" Value="12" />
@@ -93,7 +113,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="Auto Auto *">
+  <Grid RowDefinitions="Auto Auto * Auto">
     <Border Classes="Account Group AllTotal"
             DataContext="{Binding Total}"
             Classes.Selected="{Binding IsSelected}"
@@ -122,11 +142,12 @@
 
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:AccountViewModel">
-            <StackPanel Orientation="Vertical" IsVisible="{Binding !IsHidden}">
+            <StackPanel Orientation="Vertical">
               <Border Classes="Account"
                       Classes.Element="{Binding !IsGroup}"
                       Classes.Group="{Binding IsGroup}"
                       Classes.Selected="{Binding IsSelected}"
+                      Classes.Hidden="{Binding IsHidden}"
                       Tapped="OnAccountTapped">
                 <Classes.AloneElement>
                   <MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -135,6 +156,22 @@
                     <Binding Path="!Children.Count" />
                   </MultiBinding>
                 </Classes.AloneElement>
+                <Border.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                    <Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden" />
+                    <Binding Path="!IsHidden" />
+                  </MultiBinding>
+                </Border.IsVisible>
+                <Border.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Скрыть"
+                              Command="{Binding ToggleHideCommand}"
+                              IsVisible="{Binding !IsHidden}" />
+                    <MenuItem Header="Показать"
+                              Command="{Binding ToggleHideCommand}"
+                              IsVisible="{Binding IsHidden}" />
+                  </ContextMenu>
+                </Border.ContextMenu>
 
                 <Grid ColumnDefinitions="Auto Auto * Auto">
                   <Button Classes="Expander"
@@ -149,11 +186,16 @@
                          Stretch="Uniform"
                          Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
                          IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                  <TextBlock Grid.Column="2"
-                             Classes="Name"
-                             Classes.Group="{Binding IsGroup}"
-                             TextTrimming="CharacterEllipsis"
-                             Text="{Binding Name}" />
+                  <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <TextBlock Classes="Name"
+                               Classes.Group="{Binding IsGroup}"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Name}" />
+                    <mi:MaterialIcon Classes="HiddenIndicator"
+                                     Kind="EyeOff"
+                                     ToolTip.Tip="Скрытый"
+                                     IsVisible="{Binding IsHidden}" />
+                  </StackPanel>
                   <TextBlock Grid.Column="3"
                              Classes="Sum"
                              Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
@@ -164,6 +206,7 @@
               <ItemsControl ItemsSource="{Binding Children}"
                             Classes="Children"
                             IsVisible="{Binding IsExpanded}">
+
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" />
@@ -174,16 +217,38 @@
                   <DataTemplate x:DataType="vm:AccountViewModel">
                     <Border Classes="Account Element"
                             Classes.Selected="{Binding IsSelected}"
-                            IsVisible="{Binding !IsHidden}"
+                            Classes.Hidden="{Binding IsHidden}"
                             Tapped="OnAccountTapped">
+                      <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                          <Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden" />
+                          <Binding Path="!IsHidden" />
+                        </MultiBinding>
+                      </Border.IsVisible>
+                      <Border.ContextMenu>
+                        <ContextMenu>
+                          <MenuItem Header="Скрыть"
+                                    Command="{Binding ToggleHideCommand}"
+                                    IsVisible="{Binding !IsHidden}" />
+                          <MenuItem Header="Показать"
+                                    Command="{Binding ToggleHideCommand}"
+                                    IsVisible="{Binding IsHidden}" />
+                        </ContextMenu>
+                      </Border.ContextMenu>
+
                       <Grid ColumnDefinitions="Auto * Auto">
                         <Image Stretch="Uniform"
                                Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
                                IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <TextBlock Grid.Column="1"
-                                   Classes="Name"
-                                   TextTrimming="CharacterEllipsis"
-                                   Text="{Binding Name}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                          <TextBlock Classes="Name"
+                                     TextTrimming="CharacterEllipsis"
+                                     Text="{Binding Name}" />
+                          <mi:MaterialIcon Classes="HiddenIndicator"
+                                           Kind="EyeOff"
+                                           ToolTip.Tip="Скрытый"
+                                           IsVisible="{Binding IsHidden}" />
+                        </StackPanel>
                         <TextBlock Grid.Column="2"
                                    Classes="Sum"
                                    Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
@@ -198,5 +263,16 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
+
+    <Button Grid.Row="3"
+            Classes="ShowHidden"
+            Classes.Checked="{Binding ShowHidden}"
+            Command="{Binding ShowHiddenCommand}"
+            Margin="1 4 1 0">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <mi:MaterialIcon Kind="EyeOff" />
+        <TextBlock Text="Показать скрытые" VerticalAlignment="Center" />
+      </StackPanel>
+    </Button>
   </Grid>
 </UserControl>

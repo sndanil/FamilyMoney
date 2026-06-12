@@ -81,6 +81,17 @@
 		<Style Selector="Border.Account.Selected">
 			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
 		</Style>
+		<Style Selector="Border.Account.Hidden">
+			<Setter Property="Opacity" Value="0.55" />
+		</Style>
+		<Style Selector="mi|MaterialIcon.HiddenIndicator">
+			<Setter Property="Height" Value="14"/>
+			<Setter Property="Width" Value="14"/>
+			<Setter Property="Margin" Value="4 0 0 0"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Foreground" Value="Gray"/>
+			<Setter Property="Opacity" Value="0.75"/>
+		</Style>
 		<Style Selector="PathIcon">
 			<Setter Property="Height" Value="11"/>
 			<Setter Property="Foreground" Value="Gray"/>
@@ -192,6 +203,7 @@
 									Classes.Element="{Binding !IsGroup}" 
 									Classes.Group="{Binding IsGroup}" 
 									Classes.Selected="{Binding IsSelected}"
+									Classes.Hidden="{Binding IsHidden}"
 									>
 								<Classes.AloneElement>
 									<MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -215,6 +227,16 @@
 															 CommandParameter="{Binding}"/>
 									</EventTriggerBehavior>
 								</Interaction.Behaviors>
+								<Border.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Скрыть"
+												  Command="{Binding ToggleHideCommand}"
+												  IsVisible="{Binding !IsHidden}" />
+										<MenuItem Header="Показать"
+												  Command="{Binding ToggleHideCommand}"
+												  IsVisible="{Binding IsHidden}" />
+									</ContextMenu>
+								</Border.ContextMenu>
 								<Grid ColumnDefinitions="auto auto * auto">
 									<Grid
 										Classes="Mover"
@@ -246,6 +268,10 @@
 												   Classes.Group="{Binding IsGroup}" 
 												   Text="{Binding Name}" 
 												   Name="AccountName"/>
+										<mi:MaterialIcon Classes="HiddenIndicator"
+														 Kind="EyeOff"
+														 ToolTip.Tip="Скрытый"
+														 IsVisible="{Binding IsHidden}" />
 									</StackPanel>
 									<SelectableTextBlock Grid.Column="3" 											   
 												Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
@@ -280,6 +306,7 @@
 									<DataTemplate>
 										<Border Classes="Account Element" 
 												Classes.Selected="{Binding IsSelected}"
+												Classes.Hidden="{Binding IsHidden}"
 												>
 											<Border.IsVisible>
 												<MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -296,6 +323,16 @@
 																		 CommandParameter="{Binding}"/>
 												</EventTriggerBehavior>
 											</Interaction.Behaviors>
+											<Border.ContextMenu>
+												<ContextMenu>
+													<MenuItem Header="Скрыть"
+															  Command="{Binding ToggleHideCommand}"
+															  IsVisible="{Binding !IsHidden}" />
+													<MenuItem Header="Показать"
+															  Command="{Binding ToggleHideCommand}"
+															  IsVisible="{Binding IsHidden}" />
+												</ContextMenu>
+											</Border.ContextMenu>
 
 											<Grid ColumnDefinitions="auto auto * auto">
 												<Grid
@@ -310,7 +347,13 @@
 														Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
 														IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
 													/>
-												<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" />
+												<StackPanel Grid.Column="2" Orientation="Horizontal">
+													<TextBlock TextTrimming="CharacterEllipsis" Text="{Binding Name}" Name="AccountName" VerticalAlignment="Center" />
+													<mi:MaterialIcon Classes="HiddenIndicator"
+																	 Kind="EyeOff"
+																	 ToolTip.Tip="Скрытый"
+																	 IsVisible="{Binding IsHidden}" />
+												</StackPanel>
 												<SelectableTextBlock Grid.Column="3" 
 															Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
 														   Text="{Binding Sum, StringFormat='#,##0.00'}" 

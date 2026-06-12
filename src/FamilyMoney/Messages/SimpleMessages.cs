@@ -8,6 +8,8 @@ public record AccountSelectMessage(Guid? AccountId);
 
 public record AccountExpandMessage(Guid? AccountId, bool IsExpanded);
 
+public record AccountHideMessage(Guid? AccountId, bool IsHidden);
+
 public record MainStateChangedMessage(MainState State);
 
 public record DatabaseChangedMessage;

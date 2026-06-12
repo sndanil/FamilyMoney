@@ -20,9 +20,8 @@ public sealed class Account : ISyncable
 
     public decimal Sum { get; set; }
 
-    public bool IsHidden { get; set; }
-
-    public bool IsExpanded { get; set; }
+    // Видимость и свёрнутость хранятся локально для каждого устройства
+    // (IAccountLocalSettingsStore) и не синхронизируются между устройствами.
 
     public bool IsNotSummable { get; set; }
 }
