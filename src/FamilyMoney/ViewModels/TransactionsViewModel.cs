@@ -28,6 +28,13 @@ public partial class TransactionsViewModel : ViewModelBase
     private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = [];
     private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = [];
 
+    // Кэш готовых списков для страницы/окна редактирования транзакции: их построение
+    // требует нескольких проходов по базе и выполняется заметно долго на Android.
+    // Доступ под блокировкой — списки строятся в фоновом потоке (Task.Run).
+    private readonly object _listsCacheLock = new();
+    private readonly Dictionary<Type, List<BaseCategoryViewModel>> _categoryListsCache = [];
+    private readonly Dictionary<Type, List<BaseSubCategoryViewModel>> _subCategoryListsCache = [];
+
     private readonly ObservableCollection<BaseTransactionsGroupViewModel> _selectedTransactionGroups = [];
 
     [ObservableProperty]
@@ -150,15 +157,32 @@ public partial class TransactionsViewModel : ViewModelBase
         {
             if (m?.CategoryId != null)
             {
-                _categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
+                lock (t._listsCacheLock)
+                {
+                    t._categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
+                }
             }
+
+            t.InvalidateListsCache(categories: true, subCategories: true);
         });
 
-        WeakReferenceMessenger.Default.Register<TransactionsViewModel, DatabaseChangedMessage>(this, async (_, _) =>
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, TransactionChangedMessage>(this, async (t, _) =>
         {
-            _categoriesCache.Clear();
-            _subCategoriesCache.Clear();
-            _openedNodes.Clear();
+            // Суммы, комментарии и теги подкатегорий выводятся из транзакций.
+            t.InvalidateListsCache(categories: false, subCategories: true);
+            await Task.CompletedTask;
+        });
+
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, DatabaseChangedMessage>(this, async (t, _) =>
+        {
+            lock (t._listsCacheLock)
+            {
+                t._categoriesCache.Clear();
+                t._subCategoriesCache.Clear();
+            }
+
+            t.InvalidateListsCache(categories: true, subCategories: true);
+            t._openedNodes.Clear();
             await Task.CompletedTask;
         });
     }
@@ -166,12 +190,17 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddTransferAsync()
     {
-        var transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
-            GetCategories<TransferCategory, TransferCategoryViewModel>(),
-            GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-            null
-            );
-        transactionViewModel.IsTransfer = true;
+        // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
+        var transactionViewModel = await Task.Run(() =>
+        {
+            var viewModel = CreateNewTransaction<TransferTransactionViewModel>(
+                GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
+                null
+                );
+            viewModel.IsTransfer = true;
+            return viewModel;
+        });
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
@@ -183,11 +212,11 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddCreditAsync()
     {
-        var transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
+        var transactionViewModel = await Task.Run(() => CreateNewTransaction<CreditTransactionViewModel>(
             GetCategories<CreditCategory, CreditCategoryViewModel>(),
             GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
             null
-            );
+            ));
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
@@ -199,11 +228,11 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddDebetAsync()
     {
-        var transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
+        var transactionViewModel = await Task.Run(() => CreateNewTransaction<DebetTransactionViewModel>(
             GetCategories<DebetCategory, DebetCategoryViewModel>(),
             GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
             null
-            );
+            ));
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
@@ -223,41 +252,52 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private async Task CopyTransaction(TransactionRowViewModel transactionGroupViewModel)
     {
-        var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
+        // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
+        var (transaction, transactionViewModel) = await Task.Run<(Transaction?, BaseTransactionViewModel?)>(() =>
+        {
+            var entity = _repository.GetTransaction(transactionGroupViewModel.Id);
 
-        BaseTransactionViewModel? transactionViewModel;
-        if (transaction is DebetTransaction)
-        {
-            transactionViewModel = CreateNewTransaction<DebetTransactionViewModel>(
-                GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-                transactionGroupViewModel
-                );
-        }
-        else if (transaction is CreditTransaction)
-        {
-            transactionViewModel = CreateNewTransaction<CreditTransactionViewModel>(
-                GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-                transactionGroupViewModel
-                );
-        }
-        else if (transaction is TransferTransaction)
-        {
-            transactionViewModel = CreateNewTransaction<TransferTransactionViewModel>(
-                GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-                transactionGroupViewModel
-                );
-            transactionViewModel.IsTransfer = true;
-        }
-        else
+            BaseTransactionViewModel? viewModel;
+            if (entity is DebetTransaction)
+            {
+                viewModel = CreateNewTransaction<DebetTransactionViewModel>(
+                    GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                    GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
+                    transactionGroupViewModel
+                    );
+            }
+            else if (entity is CreditTransaction)
+            {
+                viewModel = CreateNewTransaction<CreditTransactionViewModel>(
+                    GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                    GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
+                    transactionGroupViewModel
+                    );
+            }
+            else if (entity is TransferTransaction)
+            {
+                viewModel = CreateNewTransaction<TransferTransactionViewModel>(
+                    GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                    GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
+                    transactionGroupViewModel
+                    );
+                viewModel.IsTransfer = true;
+            }
+            else
+            {
+                return (null, null);
+            }
+
+            viewModel.Sum = entity!.Sum;
+            viewModel.Comment = entity.Comment;
+
+            return (entity, viewModel);
+        });
+
+        if (transaction == null || transactionViewModel == null)
         {
             return;
         }
-
-        transactionViewModel.Sum = transaction.Sum;
-        transactionViewModel.Comment = transaction.Comment;
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
         if (result != null)
@@ -349,58 +389,64 @@ public partial class TransactionsViewModel : ViewModelBase
             return;
         }
 
-        var transaction = _repository.GetTransaction(transactionGroupViewModel.Id);
-        if (transaction == null)
+        // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
+        var (transaction, transactionViewModel) = await Task.Run<(Transaction?, BaseTransactionViewModel?)>(() =>
         {
-            return;
-        }
+            var entity = _repository.GetTransaction(transactionGroupViewModel.Id);
+            if (entity == null)
+            {
+                return (null, null);
+            }
 
-        var flatAccounts = _stateManager.GetMainState().FlatAccounts;
+            var flatAccounts = _stateManager.GetMainState().FlatAccounts;
 
-        BaseTransactionViewModel transactionViewModel;
-        switch(transaction)
-        {
-            case DebetTransaction:
-                transactionViewModel = new DebetTransactionViewModel
-                {
-                    Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
-                    SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-                };
-                break;
-            case CreditTransaction:
-                transactionViewModel = new CreditTransactionViewModel
-                {
-                    Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
-                    SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-                };
-                break;
-            case TransferTransaction transfer:
-                transactionViewModel = new TransferTransactionViewModel
-                {
-                    Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                    SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-                    ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
-                    ToSum = transfer.ToSum,
-                    IsTransfer = true,
-                };
-                break;
-            default:
-                throw new ApplicationException("Unknown type of transaction " + transaction);
-        }
+            BaseTransactionViewModel viewModel;
+            switch (entity)
+            {
+                case DebetTransaction:
+                    viewModel = new DebetTransactionViewModel
+                    {
+                        Categories = GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                        SubCategories = GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
+                    };
+                    break;
+                case CreditTransaction:
+                    viewModel = new CreditTransactionViewModel
+                    {
+                        Categories = GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                        SubCategories = GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
+                    };
+                    break;
+                case TransferTransaction transfer:
+                    viewModel = new TransferTransactionViewModel
+                    {
+                        Categories = GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                        SubCategories = GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
+                        ToAccount = flatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId),
+                        ToSum = transfer.ToSum,
+                        IsTransfer = true,
+                    };
+                    break;
+                default:
+                    throw new ApplicationException("Unknown type of transaction " + entity);
+            }
 
-        transactionViewModel.FillFrom(transaction, _repository);
-        transactionViewModel.FlatAccounts = flatAccounts?.Where(c => !c.IsHidden).ToList();
-        transactionViewModel.Account = flatAccounts?.FirstOrDefault(a => a.Id == transaction.AccountId);
-        transactionViewModel.Category = transactionViewModel.Categories.FirstOrDefault(c => c.Id == transaction.CategoryId);
-        transactionViewModel.SubCategory = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId);
-        transactionViewModel.SubCategoryText = transactionViewModel.SubCategories.FirstOrDefault(c => c.Id == transaction.SubCategoryId)?.Name;
-        transactionViewModel.Comments = transactionViewModel.SubCategory?.Comments ?? [];
-        transactionViewModel.RefreshSuggestedTags();
+            viewModel.FillFrom(entity, _repository);
+            viewModel.FlatAccounts = flatAccounts?.Where(c => !c.IsHidden).ToList();
+            viewModel.Account = flatAccounts?.FirstOrDefault(a => a.Id == entity.AccountId);
+            viewModel.Category = viewModel.Categories.FirstOrDefault(c => c.Id == entity.CategoryId);
+            viewModel.SubCategory = viewModel.SubCategories.FirstOrDefault(c => c.Id == entity.SubCategoryId);
+            viewModel.SubCategoryText = viewModel.SubCategory?.Name;
+            viewModel.Comments = viewModel.SubCategory?.Comments ?? [];
+            viewModel.RefreshSuggestedTags();
 
-        transactionViewModel.Categories = transactionViewModel.Categories.Where(c => !c.IsHidden).ToList();
-        transactionViewModel.SubCategories = transactionViewModel.SubCategories.Where(c => c.Category?.IsHidden == false).ToList();
+            viewModel.Categories = viewModel.Categories.Where(c => !c.IsHidden).ToList();
+            viewModel.SubCategories = viewModel.SubCategories.Where(c => c.Category?.IsHidden == false).ToList();
 
-        if (transactionViewModel == null)
+            return (entity, viewModel);
+        });
+
+        if (transaction == null || transactionViewModel == null)
         {
             return;
         }
@@ -640,12 +686,20 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private BaseCategoryViewModel GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()
     {
-        if (!_categoriesCache.TryGetValue(id, out var category))
+        lock (_listsCacheLock)
         {
-            category = new C();
-            category.FillFrom(id, _repository);
+            if (_categoriesCache.TryGetValue(id, out var cached))
+            {
+                return cached;
+            }
+        }
 
-            _categoriesCache.Add(id, category);
+        var category = new C();
+        category.FillFrom(id, _repository);
+
+        lock (_listsCacheLock)
+        {
+            _categoriesCache[id] = category;
         }
 
         return category;
@@ -653,12 +707,20 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private BaseSubCategoryViewModel GetSubCategory<C>(Guid id) where C : BaseSubCategoryViewModel, new()
     {
-        if (!_subCategoriesCache.TryGetValue(id, out var subCategory))
+        lock (_listsCacheLock)
         {
-            subCategory = new C();
-            subCategory.FillFrom(id, _repository);
+            if (_subCategoriesCache.TryGetValue(id, out var cached))
+            {
+                return cached;
+            }
+        }
 
-            _subCategoriesCache.Add(id, subCategory);
+        var subCategory = new C();
+        subCategory.FillFrom(id, _repository);
+
+        lock (_listsCacheLock)
+        {
+            _subCategoriesCache[id] = subCategory;
         }
 
         return subCategory;
@@ -666,6 +728,14 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private List<BaseCategoryViewModel> GetCategories<T, N>() where T : Category where N : BaseCategoryViewModel, new()
     {
+        lock (_listsCacheLock)
+        {
+            if (_categoryListsCache.TryGetValue(typeof(T), out var cached))
+            {
+                return cached;
+            }
+        }
+
         var categories = _repository.GetCategories().OfType<T>().OrderBy(c => c.Name).Select(c =>
         {
             var category = new N();
@@ -673,18 +743,37 @@ public partial class TransactionsViewModel : ViewModelBase
             return category;
         });
 
-        return categories.Select(c => (BaseCategoryViewModel)c).ToList();
+        var result = categories.Select(c => (BaseCategoryViewModel)c).ToList();
+
+        lock (_listsCacheLock)
+        {
+            _categoryListsCache[typeof(T)] = result;
+        }
+
+        return result;
     }
 
-    private List<BaseSubCategoryViewModel> GetSubCategories<T, N, C>() 
-        where T : SubCategory 
+    private List<BaseSubCategoryViewModel> GetSubCategories<T, N, C>()
+        where T : SubCategory
         where N : BaseSubCategoryViewModel, new()
         where C: BaseCategoryViewModel, new()
     {
-        var typedSubCategories = _repository.GetSubCategories().OfType<T>();
-        var subCategoriesBySums = _repository.GetLastSumsBySubCategories(DateTime.Today.AddYears(-1), typedSubCategories.Select(c => c.Id));
-        var subCategoriesByComments = _repository.GetCommentsBySubCategories(DateTime.Today.AddYears(-1));
-        var subCategoriesByTags = _repository.GetTagsBySubCategories(DateTime.Today.AddYears(-1));
+        lock (_listsCacheLock)
+        {
+            if (_subCategoryListsCache.TryGetValue(typeof(T), out var cached))
+            {
+                return cached;
+            }
+        }
+
+        var typedSubCategories = _repository.GetSubCategories().OfType<T>().ToList();
+        var from = DateTime.Today.AddYears(-1);
+        var subCategoriesBySums = _repository.GetLastSumsBySubCategories(from, typedSubCategories.Select(c => c.Id))
+            .ToDictionary(s => s.SubCategoryId);
+        var subCategoriesByComments = _repository.GetCommentsBySubCategories(from)
+            .ToDictionary(s => s.SubCategoryId);
+        var subCategoriesByTags = _repository.GetTagsBySubCategories(from)
+            .ToDictionary(s => (s.SubCategoryId, s.CategoryId));
 
         var subCategories = typedSubCategories.OrderBy(c => c.Name).Select(c => new N
         {
@@ -692,11 +781,34 @@ public partial class TransactionsViewModel : ViewModelBase
             Name = c.Name,
             CategoryId = c.CategoryId,
             Category = GetCategory<C>(c.CategoryId.GetValueOrDefault()),
-            LastSum = subCategoriesBySums.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Sum ?? 0m,
-            Comments = subCategoriesByComments.FirstOrDefault(s => s.SubCategoryId == c.Id)?.Comments ?? [],
-            Tags = subCategoriesByTags.FirstOrDefault(s => s.SubCategoryId == c.Id && s.CategoryId == c.CategoryId.GetValueOrDefault())?.Tags ?? [],
+            LastSum = subCategoriesBySums.TryGetValue(c.Id, out var sum) ? sum.Sum : 0m,
+            Comments = subCategoriesByComments.TryGetValue(c.Id, out var comments) ? comments.Comments : [],
+            Tags = subCategoriesByTags.TryGetValue((c.Id, c.CategoryId.GetValueOrDefault()), out var tags) ? tags.Tags : [],
         });
 
-        return subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
+        var result = subCategories.Select(c => (BaseSubCategoryViewModel)c).ToList();
+
+        lock (_listsCacheLock)
+        {
+            _subCategoryListsCache[typeof(T)] = result;
+        }
+
+        return result;
+    }
+
+    private void InvalidateListsCache(bool categories, bool subCategories)
+    {
+        lock (_listsCacheLock)
+        {
+            if (categories)
+            {
+                _categoryListsCache.Clear();
+            }
+
+            if (subCategories)
+            {
+                _subCategoryListsCache.Clear();
+            }
+        }
     }
 }
