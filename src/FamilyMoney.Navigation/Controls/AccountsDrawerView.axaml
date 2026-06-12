@@ -80,15 +80,6 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="Margin" Value="8 0 0 0" />
     </Style>
-    <Style Selector="Button.ShowHidden">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Left" />
-      <Setter Property="Padding" Value="8 6" />
-    </Style>
-    <Style Selector="Button.ShowHidden:checked">
-      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
-    </Style>
     <Style Selector="mi|MaterialIcon">
       <Setter Property="Height" Value="14" />
       <Setter Property="Width" Value="14" />
@@ -113,7 +104,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="Auto Auto * Auto">
+  <Grid RowDefinitions="Auto Auto *">
     <Border Classes="Account Group AllTotal"
             DataContext="{Binding Total}"
             Classes.Selected="{Binding IsSelected}"
@@ -263,16 +254,5 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </ScrollViewer>
-
-    <Button Grid.Row="3"
-            Classes="ShowHidden"
-            Classes.Checked="{Binding ShowHidden}"
-            Command="{Binding ShowHiddenCommand}"
-            Margin="1 4 1 0">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <mi:MaterialIcon Kind="EyeOff" />
-        <TextBlock Text="Показать скрытые" VerticalAlignment="Center" />
-      </StackPanel>
-    </Button>
   </Grid>
 </UserControl>

@@ -7,14 +7,44 @@
              x:DataType="vm:MainViewModel"
              Header="Меню"
              NavigationPage.HasNavigationBar="False">
+  <ContentPage.Styles>
+    <Style Selector="Button.MenuAction">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="12 10" />
+    </Style>
+    <Style Selector="Button.MenuAction:checked">
+      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+    </Style>
+    <Style Selector="Button.MenuAction mi|MaterialIcon">
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </ContentPage.Styles>
+
   <Grid RowDefinitions="* Auto">
 
-    <controls:AccountsDrawerView
-                                 Margin="8 0 8 8"
+    <controls:AccountsDrawerView Margin="8 0 8 8"
                                  DataContext="{Binding Accounts}" />
 
     <StackPanel Spacing="4" Margin="8" Grid.Row="1">
-      <Button Click="OnSettingsClick" HorizontalAlignment="Stretch">
+      <Button Classes="MenuAction"
+              Classes.Checked="{Binding Accounts.ShowHidden}"
+              Command="{Binding Accounts.ShowHiddenCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <mi:MaterialIcon Kind="EyeOff" />
+          <TextBlock Text="Показать скрытые"
+                     VerticalAlignment="Center"
+                     IsVisible="{Binding !Accounts.ShowHidden}" />
+          <TextBlock Text="Скрыть скрытые"
+                     VerticalAlignment="Center"
+                     IsVisible="{Binding Accounts.ShowHidden}" />
+        </StackPanel>
+      </Button>
+
+      <Button Classes="MenuAction"
+              Click="OnSettingsClick">
         <StackPanel Orientation="Horizontal" Spacing="12">
           <mi:MaterialIcon Kind="Cog" />
           <TextBlock Text="Параметры" VerticalAlignment="Center" />
