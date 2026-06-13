@@ -1,11 +1,11 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
       <SolidColorBrush x:Key="AccentBrush" Color="#3390EC" />
       <SolidColorBrush x:Key="MainBackBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="SidebarBackBrush" Color="#F4F4F5" />
-      <SolidColorBrush x:Key="GroupBackBrush" Color="#F4F4F5" />
+      <SolidColorBrush x:Key="GroupBackBrush" Color="#C3C3C4" />
       <SolidColorBrush x:Key="CardBackBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="DialogBackBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="SelectedBackBrush" Color="#E8F4FD" />
