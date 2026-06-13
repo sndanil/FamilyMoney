@@ -43,9 +43,9 @@
 
 - .NET 10
 - [Avalonia UI](https://avaloniaui.net/) 12 + Fluent Theme
-- LiteDB
-- CommunityToolkit.Mvvm
-- Синхронизация: S3-совместимое API (FluentStorage)
+- [LiteDB](https://www.litedb.org/)
+- [CommunityToolkit.Mvvm](https://github.com/communitytoolkit)
+- Синхронизация: S3-совместимое API ([FluentStorage](https://github.com/robinrodricks/FluentStorage))
 
 ## Сборка и запуск
 
