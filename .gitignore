@@ -396,3 +396,11 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# FamilyMoney — local secrets and signing (never commit)
+*.keystore
+**/fm.keystore
+**/FamilyMoney.Android.Signing.props
+Directory.Build.props.user
+**/appsettings.local.json
+**/appsettings.*.local.json

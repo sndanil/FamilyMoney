@@ -10,8 +10,19 @@
     <ApplicationId>com.familymoney.app</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+	<AndroidPackageFormat>apk</AndroidPackageFormat>
+	<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+	<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+	<AndroidUseAapt2>True</AndroidUseAapt2>
+	<RunAOTCompilation>False</RunAOTCompilation>
+  </PropertyGroup>
+
+  <Import Project="FamilyMoney.Android.Signing.props" Condition="Exists('FamilyMoney.Android.Signing.props')" />
+
+  <PropertyGroup Condition="Exists('fm.keystore') And '$(AndroidSigningStorePass)' != ''">
+	<AndroidKeyStore>True</AndroidKeyStore>
+	<AndroidSigningKeyStore>fm.keystore</AndroidSigningKeyStore>
+	<AndroidSigningKeyAlias>fm</AndroidSigningKeyAlias>
   </PropertyGroup>
 
   <ItemGroup>

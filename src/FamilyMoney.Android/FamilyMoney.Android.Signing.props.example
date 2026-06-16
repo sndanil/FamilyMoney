@@ -1,0 +1,10 @@
+﻿<Project>
+  <!--
+    Copy to FamilyMoney.Android.Signing.props (same folder) and fill in your values.
+    FamilyMoney.Android.Signing.props is gitignored and must not be committed.
+  -->
+  <PropertyGroup>
+    <AndroidSigningStorePass>YOUR_KEYSTORE_PASSWORD</AndroidSigningStorePass>
+    <AndroidSigningKeyPass>YOUR_KEY_PASSWORD</AndroidSigningKeyPass>
+  </PropertyGroup>
+</Project>
