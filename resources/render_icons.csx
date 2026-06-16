@@ -23,3 +23,34 @@ foreach (var size in pngSizes)
 var icoPath = Path.Combine(root, "wallet.ico");
 SaveIco(icoPath, icoImages);
 Console.WriteLine($"Saved wallet.ico: {string.Join(", ", icoSizes.Select(s => $"{s}x{s}"))}");
+
+foreach (var target in new[]
+         {
+             Path.Combine(root, "..", "src", "FamilyMoney.Desktop", "wallet.ico"),
+             Path.Combine(root, "..", "src", "FamilyMoney.Desktop", "Assets", "wallet.ico"),
+             Path.Combine(root, "..", "src", "FamilyMoney.Navigation.Desktop", "wallet.ico"),
+             Path.Combine(root, "..", "src", "FamilyMoney.Navigation.Desktop", "Assets", "wallet.ico"),
+         })
+{
+    File.Copy(icoPath, target, overwrite: true);
+    Console.WriteLine($"Copied wallet.ico -> {Path.GetRelativePath(root, target)}");
+}
+
+var androidRoot = Path.Combine(root, "..", "src", "FamilyMoney.Android", "Resources");
+(int Size, string Folder)[] androidMipmaps =
+[
+    (48, "mipmap-mdpi"),
+    (72, "mipmap-hdpi"),
+    (96, "mipmap-xhdpi"),
+    (144, "mipmap-xxhdpi"),
+    (192, "mipmap-xxxhdpi"),
+];
+
+foreach (var (size, folder) in androidMipmaps)
+{
+    using var icon = RenderSvg(source, size, size);
+    var outputDir = Path.Combine(androidRoot, folder);
+    SavePng(icon, Path.Combine(outputDir, "ic_launcher.png"));
+    SavePng(icon, Path.Combine(outputDir, "ic_launcher_round.png"));
+    Console.WriteLine($"Saved {folder}/ic_launcher*.png: {size}x{size}");
+}
