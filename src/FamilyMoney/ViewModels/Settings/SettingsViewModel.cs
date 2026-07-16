@@ -69,6 +69,12 @@ public partial class SettingsViewModel : ViewModelBase
         SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
     }
 
+    public void UpdateSyncStatus()
+    {
+        OnPropertyChanged(nameof(IsSyncAvailable));
+        SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
+    }
+
     [RelayCommand]
     public async Task AddDatabaseAsync()
     {

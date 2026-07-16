@@ -1,4 +1,4 @@
-using FamilyMoney.Configuration;
+﻿using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Utils;
@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FamilyMoney.Sync;
 

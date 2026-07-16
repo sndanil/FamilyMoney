@@ -79,6 +79,7 @@ public partial class MainViewModel : ViewModelBase
         {
             UpdateTitle();
             MainInit(resetAccountSelection: true);
+            Settings.UpdateSyncStatus();
         });
 
         UpdateTitle();
