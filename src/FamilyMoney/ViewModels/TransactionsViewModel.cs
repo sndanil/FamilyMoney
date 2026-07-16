@@ -61,6 +61,19 @@ public partial class TransactionsViewModel : ViewModelBase
     [ObservableProperty]
     public partial BaseTransactionsGroupViewModel? SelectedTransactionGroup { get; set; }
 
+    [ObservableProperty]
+    public partial string FilterCommentText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsFilterActive { get; set; }
+
+    public ObservableCollection<FilterTagViewModel> FilterTags { get; } = [];
+
+    // Применённый фильтр хранится отдельно от полей ввода, чтобы набор текста
+    // и клики по тегам не перефильтровывали список до нажатия «Применить».
+    private string[] _appliedCommentParts = [];
+    private readonly HashSet<string> _appliedTags = new(StringComparer.OrdinalIgnoreCase);
+
     public ObservableCollection<BaseTransactionsGroupViewModel> SelectedTransactionGroups
     {
         get => _selectedTransactionGroups;
@@ -517,6 +530,86 @@ public partial class TransactionsViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task ApplyFilterAsync()
+    {
+        _appliedCommentParts = (FilterCommentText ?? string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        _appliedTags.Clear();
+        foreach (var tag in FilterTags.Where(t => t.IsChecked))
+        {
+            _appliedTags.Add(tag.Name);
+        }
+
+        IsFilterActive = _appliedCommentParts.Length > 0 || _appliedTags.Count > 0;
+        await RefreshTransactions(_stateManager.GetMainState());
+    }
+
+    [RelayCommand]
+    public async Task ResetFilterAsync()
+    {
+        FilterCommentText = string.Empty;
+        _appliedCommentParts = [];
+        _appliedTags.Clear();
+        foreach (var tag in FilterTags)
+        {
+            tag.IsChecked = false;
+        }
+
+        IsFilterActive = false;
+        await RefreshTransactions(_stateManager.GetMainState());
+    }
+
+    private bool MatchesFilter(Transaction transaction)
+    {
+        if (_appliedCommentParts.Length > 0)
+        {
+            var comment = transaction.Comment ?? string.Empty;
+            foreach (var part in _appliedCommentParts)
+            {
+                if (!comment.Contains(part, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (_appliedTags.Count > 0)
+        {
+            if (transaction.Tags == null || !transaction.Tags.Any(t => _appliedTags.Contains(t.Trim())))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void UpdateAvailableFilterTags(IReadOnlyCollection<Transaction> transactions)
+    {
+        var tags = transactions
+            .SelectMany(t => t.Tags ?? [])
+            .Select(t => t.Trim())
+            .Where(t => t.Length > 0)
+            .Union(_appliedTags, StringComparer.OrdinalIgnoreCase)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var checkedTags = FilterTags
+            .Where(t => t.IsChecked)
+            .Select(t => t.Name)
+            .Union(_appliedTags, StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        FilterTags.Clear();
+        foreach (var tag in tags)
+        {
+            FilterTags.Add(new FilterTagViewModel { Name = tag, IsChecked = checkedTags.Contains(tag) });
+        }
+    }
+
+    [RelayCommand]
     public async Task ClearSelectionAsync()
     {
         if (SelectedTransactionGroup != null)
@@ -537,12 +630,18 @@ public partial class TransactionsViewModel : ViewModelBase
         var selected = SelectedTransactionGroup;
         await ClearSelectionAsync();
 
-        var transactions = _repository.GetTransactions(new TransactionsFilter
+        var allTransactions = _repository.GetTransactions(new TransactionsFilter
         {
             AccountId = state.SelectedAccountId,
             PeriodFrom = state.PeriodFrom,
             PeriodTo = state.PeriodTo
-        });
+        }).ToList();
+
+        UpdateAvailableFilterTags(allTransactions);
+
+        var transactions = IsFilterActive
+            ? allTransactions.Where(MatchesFilter)
+            : allTransactions;
 
         var debetTransactionsTemp = new SummaryTransactionsGroup { IsDebet = true };
         var creditTransactionsTemp = new SummaryTransactionsGroup { IsDebet = false };

@@ -244,6 +244,63 @@
 								</StackPanel>
 							</Button>
 
+							<Button Name="FilterButton"
+									Classes="AddButton"
+									ToolTip.Tip="Фильтр транзакций">
+								<StackPanel Orientation="Horizontal" Spacing="6">
+									<mi:MaterialIcon Kind="FilterVariant" />
+									<TextBlock Text="Фильтр" VerticalAlignment="Center" />
+								</StackPanel>
+								<Button.Flyout>
+									<Flyout Placement="BottomEdgeAlignedLeft">
+										<StackPanel Width="320" Spacing="8" Margin="4">
+											<TextBlock Text="Части комментария (через пробел)" FontSize="12" Opacity="0.8" />
+											<TextBox Text="{Binding Transactions.FilterCommentText}"
+													 PlaceholderText="например: метро такси" />
+
+											<TextBlock Text="Теги"
+													   FontSize="12"
+													   Opacity="0.8"
+													   IsVisible="{Binding Transactions.FilterTags.Count}" />
+											<ItemsControl ItemsSource="{Binding Transactions.FilterTags}"
+														  MaxHeight="180">
+												<ItemsControl.ItemsPanel>
+													<ItemsPanelTemplate>
+														<WrapPanel />
+													</ItemsPanelTemplate>
+												</ItemsControl.ItemsPanel>
+												<ItemsControl.ItemTemplate>
+													<DataTemplate x:DataType="vm:FilterTagViewModel">
+														<ToggleButton IsChecked="{Binding IsChecked}"
+																	  Content="{Binding Name}"
+																	  FontSize="12"
+																	  Padding="8 4"
+																	  Margin="0 0 6 6"
+																	  CornerRadius="10" />
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+
+											<StackPanel Orientation="Horizontal" Spacing="8">
+												<Button Content="Применить"
+														Command="{Binding Transactions.ApplyFilterCommand}"
+														 />
+												<Button Content="Сбросить"
+														Command="{Binding Transactions.ResetFilterCommand}"
+														 />
+											</StackPanel>
+										</StackPanel>
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+
+							<Button Classes="AddButton"
+									Command="{Binding Transactions.ResetFilterCommand}"
+									IsVisible="{Binding Transactions.IsFilterActive}"
+									ToolTip.Tip="Сбросить фильтр">
+								<mi:MaterialIcon Kind="FilterRemove" />
+							</Button>
+
 							<Button IsVisible="False"
 								HotKey="Escape"
 								Command="{Binding Transactions.ClearSelectionCommand}" />
