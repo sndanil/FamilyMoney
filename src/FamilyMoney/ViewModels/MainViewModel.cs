@@ -83,17 +83,6 @@ public partial class MainViewModel : ViewModelBase
 
         UpdateTitle();
         MainInit();
-        _ = TrySyncOnStartupAsync();
-    }
-
-    private async Task TrySyncOnStartupAsync()
-    {
-        if (!_syncService.IsEnabled)
-        {
-            return;
-        }
-
-        await _syncService.SyncAsync();
     }
 
     private void UpdateTitle()
