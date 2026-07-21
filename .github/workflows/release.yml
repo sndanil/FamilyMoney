@@ -6,27 +6,33 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.0.x
-    - name: Set current date as env variable
+
+    - name: Publish
+      run: dotnet publish ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj -c Release -r win-x64
+
+    - name: Create archive
       run: |
-        $NOW=& Get-Date -format yyMMdd
-        echo "NOW=v0.$NOW" >> $env:GITHUB_ENV
-    - name: Release
+        $publishDir = "./src/FamilyMoney.Desktop/bin/Release/net10.0/win-x64/publish"
+        Compress-Archive -Path "$publishDir/*" -DestinationPath FamilyMoney.Desktop.zip -Force
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        dotnet restore ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj
-        dotnet pack ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj --no-restore
-        Compress-Archive ./src/FamilyMoney.Desktop/bin/Release/net10.0/win-x64/ ./FamilyMoney.Desktop.zip 
-        echo ${{ env.NOW }}
-        gh release create ${{ env.NOW }} ./FamilyMoney.Desktop.zip 
+        $version = "v0.$(Get-Date -Format yyMMdd)"
+        gh release create $version FamilyMoney.Desktop.zip --title $version --generate-notes
