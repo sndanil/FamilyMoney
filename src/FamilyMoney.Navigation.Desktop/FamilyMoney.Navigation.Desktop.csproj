@@ -10,6 +10,8 @@
     <ApplicationIcon>wallet.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <Import Project="..\Desktop.Publish.props" />
+
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>

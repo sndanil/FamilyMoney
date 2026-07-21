@@ -1,0 +1,11 @@
+<Project>
+  <!-- Release publish: framework-dependent single-file + ReadyToRun (быстрее холодный старт).
+       Требуется установленный .NET 10 runtime на машине пользователя.
+       Сборка: dotnet publish -c Release -r win-x64 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <SelfContained>false</SelfContained>
+    <PublishSelfContained>false</PublishSelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+</Project>
