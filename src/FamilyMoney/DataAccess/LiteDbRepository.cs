@@ -160,7 +160,6 @@ public class LiteDbRepository : IRepository
         transactions.EnsureIndex(t => t.SubCategoryId);
 
         MigrateAccountLocalFlags(db);
-        RecalculateAccountBalances(db);
 
         _logger.LogInformation("End update schema");
     }

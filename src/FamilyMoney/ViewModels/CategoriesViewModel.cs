@@ -25,9 +25,27 @@ public partial class CategoriesViewModel : ViewModelBase
     public ObservableCollection<CreditCategoryViewModel> CreditCategories { get => _creditCategories; set => _creditCategories = value; }
     public ObservableCollection<TransferCategoryViewModel> TransferCategories { get => _transferCategories; set => _transferCategories = value; }
 
+    private bool _isLoaded;
+
     public CategoriesViewModel(IRepository repository)
     {
         _repository = repository;
+    }
+
+    public void Invalidate()
+    {
+        _isLoaded = false;
+    }
+
+    public void EnsureLoaded()
+    {
+        if (_isLoaded)
+        {
+            return;
+        }
+
+        Reload();
+        _isLoaded = true;
     }
 
     public void Reload()

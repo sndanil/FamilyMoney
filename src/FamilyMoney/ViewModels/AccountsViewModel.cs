@@ -121,7 +121,6 @@ public partial class AccountsViewModel : ViewModelBase
     public IReadOnlyList<AccountViewModel> LoadAccounts()
     {
         _repository!.RecalculateAccountBalances();
-
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
         _total.AddFromAccount(_repository, _localSettings, accounts);

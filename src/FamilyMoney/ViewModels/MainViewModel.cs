@@ -96,16 +96,25 @@ public partial class MainViewModel : ViewModelBase
 
     private void MainViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(CurrentPanel) && CurrentPanel == MainPanel.Transactions)
+        if (e.PropertyName != nameof(CurrentPanel))
+        {
+            return;
+        }
+
+        if (CurrentPanel == MainPanel.Transactions)
         {
             MainInit();
+        }
+        else if (CurrentPanel == MainPanel.Categories)
+        {
+            _categoriesViewModel.EnsureLoaded();
         }
     }
 
     private void MainInit(bool resetAccountSelection = false)
     {
         _repository.UpdateDbSchema();
-        _categoriesViewModel.Reload();
+        _categoriesViewModel.Invalidate();
 
         var accounts = _accountsViewModel.LoadAccounts();
         var state = _stateManager.GetMainState();
@@ -117,6 +126,11 @@ public partial class MainViewModel : ViewModelBase
             SelectedAccountId = resetAccountSelection ? null : state.SelectedAccountId,
         };
         _stateManager.SetMainState(newState);
+
+        if (CurrentPanel == MainPanel.Categories)
+        {
+            _categoriesViewModel.EnsureLoaded();
+        }
     }
 
     [RelayCommand]
