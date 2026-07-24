@@ -1,0 +1,96 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="FamilyMoney.Controls.CalculatorAmountBox"
+             x:Name="Root"
+             Focusable="True">
+	<UserControl.Styles>
+		<Style Selector="Button.CalcKey">
+			<Setter Property="MinHeight" Value="36" />
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+		</Style>
+		<Style Selector="Button.CalcOp">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Foreground" Value="White" />
+		</Style>
+		<Style Selector="Button.CalcAction">
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid ColumnDefinitions="* Auto">
+		<TextBox Name="AmountTextBox"
+				 Text="{Binding #Root.DisplayText, Mode=TwoWay}"
+				 HorizontalContentAlignment="Right"
+				 VerticalContentAlignment="Center"
+				 Height="30"
+				 PlaceholderText="0,00"
+				 LostFocus="AmountTextBox_OnLostFocus"
+				 KeyDown="AmountTextBox_OnKeyDown" />
+
+		<Button Grid.Column="1"
+				Name="CalculatorButton"
+				Classes="DialogToolButton"
+				Margin="4 0 0 0"
+				ToolTip.Tip="Калькулятор"
+				Click="CalculatorButton_OnClick">
+			<mi:MaterialIcon Kind="Calculator" />
+			<Button.Flyout>
+				<Flyout Placement="BottomEdgeAlignedRight">
+					<Border Padding="8"
+							Width="232"
+							Background="{DynamicResource DialogBackBrush}">
+						<StackPanel Spacing="4">
+							<TextBlock Text="{Binding #Root.CalculatorDisplayText}"
+									   FontSize="20"
+									   FontWeight="SemiBold"
+									   HorizontalAlignment="Right"
+									   Margin="4 4 4 8"
+									   TextTrimming="CharacterEllipsis" />
+
+							<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+								  ColumnDefinitions="*,*,*,*">
+								<Button Grid.Row="0" Grid.Column="0" Classes="CalcKey CalcAction" Content="C" Click="CalcClear_OnClick" />
+								<Button Grid.Row="0" Grid.Column="1" Classes="CalcKey CalcAction" Content="⌫" Click="CalcBackspace_OnClick" />
+								<Button Grid.Row="0" Grid.Column="2" Classes="CalcKey CalcOp" Content="÷" Tag="/" Click="CalcOperator_OnClick" />
+								<Button Grid.Row="0" Grid.Column="3" Classes="CalcKey CalcOp" Content="×" Tag="*" Click="CalcOperator_OnClick" />
+
+								<Button Grid.Row="1" Grid.Column="0" Classes="CalcKey" Content="7" Tag="7" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="1" Grid.Column="1" Classes="CalcKey" Content="8" Tag="8" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="1" Grid.Column="2" Classes="CalcKey" Content="9" Tag="9" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="1" Grid.Column="3" Classes="CalcKey CalcOp" Content="−" Tag="-" Click="CalcOperator_OnClick" />
+
+								<Button Grid.Row="2" Grid.Column="0" Classes="CalcKey" Content="4" Tag="4" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="2" Grid.Column="1" Classes="CalcKey" Content="5" Tag="5" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="2" Grid.Column="2" Classes="CalcKey" Content="6" Tag="6" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="2" Grid.Column="3" Classes="CalcKey CalcOp" Content="+" Tag="+" Click="CalcOperator_OnClick" />
+
+								<Button Grid.Row="3" Grid.Column="0" Classes="CalcKey" Content="1" Tag="1" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="3" Grid.Column="1" Classes="CalcKey" Content="2" Tag="2" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="3" Grid.Column="2" Classes="CalcKey" Content="3" Tag="3" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="3" Grid.Column="3" Grid.RowSpan="2"
+										Classes="CalcKey CalcOp"
+										Content="="
+										VerticalAlignment="Stretch"
+										Click="CalcEquals_OnClick" />
+
+								<Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Classes="CalcKey" Content="0" Tag="0" Click="CalcDigit_OnClick" />
+								<Button Grid.Row="4" Grid.Column="2" Classes="CalcKey" Content="," Click="CalcDecimal_OnClick" />
+							</Grid>
+
+							<Button Content="Применить"
+									HorizontalAlignment="Stretch"
+									Classes="AddButton"
+									Margin="2 6 2 2"
+									Click="CalcApply_OnClick" />
+						</StackPanel>
+					</Border>
+				</Flyout>
+			</Button.Flyout>
+		</Button>
+	</Grid>
+</UserControl>

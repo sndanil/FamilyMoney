@@ -8,7 +8,8 @@
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
         xmlns:s="using:System"
-        xmlns:bh="using:FamilyMoney.Behaviours"
+		xmlns:bh="using:FamilyMoney.Behaviours"
+		xmlns:controls="using:FamilyMoney.Controls"
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="using:FamilyMoney.ViewModels"
@@ -48,20 +49,12 @@
 			<Setter Property="VerticalAlignment" Value="Center"/>
 			<Setter Property="Margin" Value="0 0 15 0" />
 		</Style>
-		<Style Selector="NumericUpDown">
-			<Setter Property="FormatString" Value="0.00" />
-			<Setter Property="HorizontalContentAlignment" Value="Right" />
-			<Setter Property="Increment" Value="0.05" />
-			<Setter Property="Height" Value="20" />
-			<Setter Property="HorizontalAlignment" Value="Stretch" />
-		</Style>
 	</Window.Styles>
 	<Window.Resources>
 		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:IsNotAccountGroupConverter x:Key="accountConverter" />
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 		<cv:TransactionTypeConverter x:Key="transactionTypeConverter" />
-		<cv:NumericUpDownValueConverter x:Key="numericUpDownValueConverter" />
 	</Window.Resources>
 	<Window.DataTemplates>
 		<DataTemplate DataType="vm:AccountViewModel">
@@ -208,11 +201,9 @@
 			</DockPanel>
 
 			<TextBlock Grid.Row="4" Text="Сумма" Classes="Label" />
-			<NumericUpDown Grid.Row="4" Grid.Column="1"
-						   Name="SumPicker"
-						   FormatString="#,##0.00"
-						   Value="{Binding Sum, Converter={StaticResource numericUpDownValueConverter}}"
-						   />
+			<controls:CalculatorAmountBox Grid.Row="4" Grid.Column="1"
+										  Name="SumPicker"
+										  Value="{Binding Sum}" />
 
 		</Grid>
 		<Grid Grid.Row="2" ColumnDefinitions="150 *"
@@ -241,11 +232,9 @@
 			</ComboBox>
 
 			<TextBlock Grid.Row="1" Text="Сумма зачисления" Classes="Label" />
-			<NumericUpDown Grid.Row="1" Grid.Column="1"
-						   Name="ToSumPicker"
-						   FormatString="#,##0.00"
-						   Value="{Binding ToSum, Converter={StaticResource numericUpDownValueConverter}}"
-						   />
+			<controls:CalculatorAmountBox Grid.Row="1" Grid.Column="1"
+										  Name="ToSumPicker"
+										  Value="{Binding ToSum}" />
 		</Grid>
 		<Grid Grid.Row="3" ColumnDefinitions="150 *"
 			  RowDefinitions="* auto"
