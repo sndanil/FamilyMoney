@@ -98,10 +98,14 @@ public partial class CalculatorAmountBox : UserControl
             return;
         }
 
-        if (e.Key == Key.Enter)
+        if (e.Key is Key.Enter or Key.Return)
         {
-            CommitDisplayText();
-            e.Handled = true;
+            // Consume Enter only when an expression was evaluated or the value changed.
+            // Otherwise let it reach the form's IsDefault button (OK).
+            if (CommitDisplayTextIfChanged())
+            {
+                e.Handled = true;
+            }
         }
     }
 
@@ -540,33 +544,55 @@ public partial class CalculatorAmountBox : UserControl
         _suppressDisplaySync = false;
     }
 
-    private void CommitDisplayText()
+    private void CommitDisplayText() => CommitDisplayTextIfChanged();
+
+    /// <returns>
+    /// <c>true</c> if an expression was evaluated or <see cref="Value"/> changed;
+    /// <c>false</c> if nothing meaningful changed (Enter can activate the default button).
+    /// </returns>
+    private bool CommitDisplayTextIfChanged()
     {
         var text = DisplayText?.Trim() ?? string.Empty;
+        var previous = Value;
+
         if (string.IsNullOrEmpty(text))
         {
+            if (previous == 0m)
+            {
+                UpdateDisplayFromValue();
+                return false;
+            }
+
             Value = 0m;
             UpdateDisplayFromValue();
-            return;
+            return true;
         }
 
         if (TryEvaluateExpression(text, out var evaluated))
         {
             Value = RoundMoney(evaluated);
             UpdateDisplayFromValue();
-            return;
+            return true;
         }
 
         text = text.Replace("б", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var parsed)
             || decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out parsed))
         {
-            Value = RoundMoney(parsed);
+            var rounded = RoundMoney(parsed);
+            if (rounded == previous)
+            {
+                UpdateDisplayFromValue();
+                return false;
+            }
+
+            Value = rounded;
             UpdateDisplayFromValue();
-            return;
+            return true;
         }
 
         UpdateDisplayFromValue();
+        return false;
     }
 
     private static decimal RoundMoney(decimal value) =>
