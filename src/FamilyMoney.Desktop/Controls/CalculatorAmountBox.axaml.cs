@@ -58,7 +58,13 @@ public partial class CalculatorAmountBox : UserControl
 
     public new bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None)
     {
-        return AmountTextBox.Focus(method, keyModifiers);
+        var focused = AmountTextBox.Focus(method, keyModifiers);
+        if (focused)
+        {
+            AmountTextBox.SelectAll();
+        }
+
+        return focused;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
