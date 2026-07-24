@@ -3,7 +3,7 @@
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="FamilyMoney.Controls.CalculatorAmountBox"
              x:Name="Root"
-             Focusable="True">
+             Focusable="False">
 	<UserControl.Styles>
 		<Style Selector="Button.CalcKey">
 			<Setter Property="MinHeight" Value="36" />
@@ -12,6 +12,8 @@
 			<Setter Property="VerticalContentAlignment" Value="Center" />
 			<Setter Property="CornerRadius" Value="8" />
 			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="IsTabStop" Value="False" />
+			<Setter Property="Focusable" Value="False" />
 		</Style>
 		<Style Selector="Button.CalcOp">
 			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
@@ -36,14 +38,19 @@
 				Name="CalculatorButton"
 				Classes="DialogToolButton"
 				Margin="4 0 0 0"
-				ToolTip.Tip="Калькулятор"
+				IsTabStop="False"
+				ToolTip.Tip="Калькулятор (F4)"
 				Click="CalculatorButton_OnClick">
 			<mi:MaterialIcon Kind="Calculator" />
 			<Button.Flyout>
-				<Flyout Placement="BottomEdgeAlignedRight">
-					<Border Padding="8"
+				<Flyout Placement="BottomEdgeAlignedRight"
+						Opened="CalculatorFlyout_OnOpened">
+					<Border Name="CalculatorPanel"
+							Padding="8"
 							Width="232"
-							Background="{DynamicResource DialogBackBrush}">
+							Focusable="True"
+							Background="{DynamicResource DialogBackBrush}"
+							KeyDown="CalculatorPanel_OnKeyDown">
 						<StackPanel Spacing="4">
 							<TextBlock Text="{Binding #Root.CalculatorDisplayText}"
 									   FontSize="20"
@@ -86,6 +93,8 @@
 									HorizontalAlignment="Stretch"
 									Classes="AddButton"
 									Margin="2 6 2 2"
+									IsTabStop="False"
+									Focusable="False"
 									Click="CalcApply_OnClick" />
 						</StackPanel>
 					</Border>

@@ -1,7 +1,8 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -31,6 +32,7 @@ public partial class CalculatorAmountBox : UserControl
     private string _calculatorEntry = "0";
     private string _calculatorDisplayText = "0";
     private bool _suppressDisplaySync;
+    private bool _applyOnNextEnter;
 
     public CalculatorAmountBox()
     {
@@ -56,6 +58,8 @@ public partial class CalculatorAmountBox : UserControl
         private set => SetAndRaise(CalculatorDisplayTextProperty, ref _calculatorDisplayText, value);
     }
 
+    private bool IsCalculatorOpen => CalculatorButton.Flyout is FlyoutBase { IsOpen: true };
+
     public new bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None)
     {
         var focused = AmountTextBox.Focus(method, keyModifiers);
@@ -79,11 +83,21 @@ public partial class CalculatorAmountBox : UserControl
 
     private void AmountTextBox_OnLostFocus(object? sender, RoutedEventArgs e)
     {
-        CommitDisplayText();
+        if (!IsCalculatorOpen)
+        {
+            CommitDisplayText();
+        }
     }
 
     private void AmountTextBox_OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.Key == Key.F4)
+        {
+            OpenCalculator();
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == Key.Enter)
         {
             CommitDisplayText();
@@ -93,8 +107,240 @@ public partial class CalculatorAmountBox : UserControl
 
     private void CalculatorButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        PrepareCalculator();
+    }
+
+    private void CalculatorFlyout_OnOpened(object? sender, EventArgs e)
+    {
+        CalculatorPanel.Focus();
+    }
+
+    private void CalculatorPanel_OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (HandleCalculatorKey(e.Key, e.KeyModifiers, e.KeySymbol))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void OpenCalculator()
+    {
+        PrepareCalculator();
+        if (!IsCalculatorOpen)
+        {
+            CalculatorButton.Flyout?.ShowAt(CalculatorButton);
+        }
+    }
+
+    private void PrepareCalculator()
+    {
         CommitDisplayText();
         ResetCalculator(Value);
+        _applyOnNextEnter = false;
+    }
+
+    private void CloseCalculator(bool apply)
+    {
+        if (apply)
+        {
+            ApplyCalculatorResult();
+            return;
+        }
+
+        CalculatorButton.Flyout?.Hide();
+        Focus();
+    }
+
+    private bool HandleCalculatorKey(Key key, KeyModifiers modifiers, string? keySymbol)
+    {
+        if (key == Key.Escape)
+        {
+            CloseCalculator(apply: false);
+            return true;
+        }
+
+        if (key == Key.F4)
+        {
+            CloseCalculator(apply: false);
+            return true;
+        }
+
+        if (key is Key.Enter or Key.Return)
+        {
+            if (_applyOnNextEnter || _pendingOperator is null)
+            {
+                CloseCalculator(apply: true);
+            }
+            else
+            {
+                ExecuteEquals();
+                _applyOnNextEnter = true;
+            }
+
+            return true;
+        }
+
+        if (TryGetOperator(key, modifiers, keySymbol, out var op))
+        {
+            if (op == "=")
+            {
+                ExecuteEquals();
+                _applyOnNextEnter = true;
+            }
+            else
+            {
+                ExecuteOperator(op);
+                _applyOnNextEnter = false;
+            }
+
+            return true;
+        }
+
+        if (TryGetDigit(key, modifiers, out var digit))
+        {
+            AppendDigit(digit);
+            _applyOnNextEnter = false;
+            return true;
+        }
+
+        if (IsDecimalKey(key, keySymbol))
+        {
+            AppendDecimalSeparator();
+            _applyOnNextEnter = false;
+            return true;
+        }
+
+        if (key == Key.Back)
+        {
+            ExecuteBackspace();
+            _applyOnNextEnter = false;
+            return true;
+        }
+
+        if (key is Key.Delete or Key.C or Key.Clear or Key.OemClear)
+        {
+            ResetCalculator(0m);
+            _applyOnNextEnter = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetDigit(Key key, KeyModifiers modifiers, out string digit)
+    {
+        digit = string.Empty;
+
+        // Shift+digit is used for operators on the main keyboard (e.g. Shift+8 = *)
+        if (modifiers.HasFlag(KeyModifiers.Shift)
+            && key is >= Key.D0 and <= Key.D9)
+        {
+            return false;
+        }
+
+        digit = key switch
+        {
+            Key.D0 or Key.NumPad0 => "0",
+            Key.D1 or Key.NumPad1 => "1",
+            Key.D2 or Key.NumPad2 => "2",
+            Key.D3 or Key.NumPad3 => "3",
+            Key.D4 or Key.NumPad4 => "4",
+            Key.D5 or Key.NumPad5 => "5",
+            Key.D6 or Key.NumPad6 => "6",
+            Key.D7 or Key.NumPad7 => "7",
+            Key.D8 or Key.NumPad8 => "8",
+            Key.D9 or Key.NumPad9 => "9",
+            _ => string.Empty
+        };
+
+        return digit.Length > 0;
+    }
+
+    private static bool IsDecimalKey(Key key, string? keySymbol)
+    {
+        if (key is Key.OemComma or Key.OemPeriod or Key.Decimal)
+        {
+            return true;
+        }
+
+        var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+        return keySymbol == separator || keySymbol is "." or "," or "б";
+    }
+
+    private static bool TryGetOperator(Key key, KeyModifiers modifiers, string? keySymbol, out string op)
+    {
+        op = string.Empty;
+
+        // Numpad operators
+        if (key == Key.Add)
+        {
+            op = "+";
+            return true;
+        }
+
+        if (key == Key.Subtract)
+        {
+            op = "-";
+            return true;
+        }
+
+        if (key == Key.Multiply)
+        {
+            op = "*";
+            return true;
+        }
+
+        if (key == Key.Divide)
+        {
+            op = "/";
+            return true;
+        }
+
+        // Main keyboard: = / + on OemPlus
+        if (key == Key.OemPlus)
+        {
+            op = modifiers.HasFlag(KeyModifiers.Shift) ? "+" : "=";
+            return true;
+        }
+
+        if (key == Key.OemMinus)
+        {
+            op = "-";
+            return true;
+        }
+
+        // Slash / question on Oem2; Shift+8 often produces *
+        if (key == Key.Oem2)
+        {
+            op = "/";
+            return true;
+        }
+
+        if (key == Key.D8 && modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            op = "*";
+            return true;
+        }
+
+        if (!string.IsNullOrEmpty(keySymbol))
+        {
+            op = keySymbol switch
+            {
+                "+" => "+",
+                "-" or "−" => "-",
+                "*" or "×" or "·" => "*",
+                "/" or "÷" => "/",
+                "=" => "=",
+                _ => string.Empty
+            };
+
+            if (op.Length > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void CalcDigit_OnClick(object? sender, RoutedEventArgs e)
@@ -105,9 +351,71 @@ public partial class CalculatorAmountBox : UserControl
         }
 
         AppendDigit(digit);
+        _applyOnNextEnter = false;
+        CalculatorPanel.Focus();
     }
 
     private void CalcDecimal_OnClick(object? sender, RoutedEventArgs e)
+    {
+        AppendDecimalSeparator();
+        _applyOnNextEnter = false;
+        CalculatorPanel.Focus();
+    }
+
+    private void CalcOperator_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string op })
+        {
+            return;
+        }
+
+        ExecuteOperator(op);
+        _applyOnNextEnter = false;
+        CalculatorPanel.Focus();
+    }
+
+    private void CalcEquals_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ExecuteEquals();
+        _applyOnNextEnter = true;
+        CalculatorPanel.Focus();
+    }
+
+    private void CalcClear_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ResetCalculator(0m);
+        _applyOnNextEnter = false;
+        CalculatorPanel.Focus();
+    }
+
+    private void CalcBackspace_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ExecuteBackspace();
+        _applyOnNextEnter = false;
+        CalculatorPanel.Focus();
+    }
+
+    private void CalcApply_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ApplyCalculatorResult();
+    }
+
+    private void AppendDigit(string digit)
+    {
+        if (_isEnteringNewNumber || _calculatorEntry == "0")
+        {
+            _calculatorEntry = digit;
+            _isEnteringNewNumber = false;
+        }
+        else
+        {
+            _calculatorEntry += digit;
+        }
+
+        RefreshCalculatorDisplay();
+    }
+
+    private void AppendDecimalSeparator()
     {
         var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
 
@@ -124,20 +432,15 @@ public partial class CalculatorAmountBox : UserControl
         RefreshCalculatorDisplay();
     }
 
-    private void CalcOperator_OnClick(object? sender, RoutedEventArgs e)
+    private void ExecuteOperator(string op)
     {
-        if (sender is not Button { Tag: string op })
-        {
-            return;
-        }
-
         ApplyPendingOperator();
         _pendingOperator = op;
         _isEnteringNewNumber = true;
         RefreshCalculatorDisplay();
     }
 
-    private void CalcEquals_OnClick(object? sender, RoutedEventArgs e)
+    private void ExecuteEquals()
     {
         ApplyPendingOperator();
         _pendingOperator = null;
@@ -146,12 +449,7 @@ public partial class CalculatorAmountBox : UserControl
         RefreshCalculatorDisplay();
     }
 
-    private void CalcClear_OnClick(object? sender, RoutedEventArgs e)
-    {
-        ResetCalculator(0m);
-    }
-
-    private void CalcBackspace_OnClick(object? sender, RoutedEventArgs e)
+    private void ExecuteBackspace()
     {
         if (_isEnteringNewNumber)
         {
@@ -176,28 +474,13 @@ public partial class CalculatorAmountBox : UserControl
         RefreshCalculatorDisplay();
     }
 
-    private void CalcApply_OnClick(object? sender, RoutedEventArgs e)
+    private void ApplyCalculatorResult()
     {
         ApplyPendingOperator();
         Value = RoundMoney(_accumulator);
         UpdateDisplayFromValue();
         CalculatorButton.Flyout?.Hide();
-        AmountTextBox.Focus();
-    }
-
-    private void AppendDigit(string digit)
-    {
-        if (_isEnteringNewNumber || _calculatorEntry == "0")
-        {
-            _calculatorEntry = digit;
-            _isEnteringNewNumber = false;
-        }
-        else
-        {
-            _calculatorEntry += digit;
-        }
-
-        RefreshCalculatorDisplay();
+        Focus();
     }
 
     private void ApplyPendingOperator()
@@ -274,6 +557,7 @@ public partial class CalculatorAmountBox : UserControl
             return;
         }
 
+        text = text.Replace("б", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var parsed)
             || decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out parsed))
         {
@@ -317,7 +601,8 @@ public partial class CalculatorAmountBox : UserControl
 
                 var raw = current.ToString()
                     .Replace('.', decimalSeparator)
-                    .Replace(',', decimalSeparator);
+                    .Replace(',', decimalSeparator)
+                    .Replace('б', decimalSeparator);
 
                 if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.CurrentCulture, out var number)
                     && !decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out number))
@@ -337,7 +622,7 @@ public partial class CalculatorAmountBox : UserControl
                     continue;
                 }
 
-                if (char.IsDigit(ch) || ch is '.' or ',' || ch == decimalSeparator)
+                if (char.IsDigit(ch) || ch is '.' or ',' or 'б' || ch == decimalSeparator)
                 {
                     current.Append(ch);
                     expectUnary = false;
@@ -404,7 +689,7 @@ public partial class CalculatorAmountBox : UserControl
             if (ch == '-' && i > 0)
             {
                 var prev = text[i - 1];
-                if (char.IsDigit(prev) || prev == decimalSeparator || prev is '.' or ',')
+                if (char.IsDigit(prev) || prev == decimalSeparator || prev is '.' or ',' or 'б')
                 {
                     return true;
                 }
