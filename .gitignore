@@ -404,3 +404,5 @@ FodyWeavers.xsd
 Directory.Build.props.user
 **/appsettings.local.json
 **/appsettings.*.local.json
+/.cursor/*
+/.config/*
