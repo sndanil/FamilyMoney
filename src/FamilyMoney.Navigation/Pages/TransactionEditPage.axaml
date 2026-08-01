@@ -80,6 +80,28 @@
   <Grid Background="{DynamicResource MainBackBrush}">
     <ScrollViewer>
       <StackPanel Margin="12 0 12 88">
+        <Grid x:Name="VoicePanel"
+              ColumnDefinitions="* Auto"
+              Margin="0 8 0 0"
+              IsVisible="False">
+          <TextBlock x:Name="VoiceStatusText"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Center"
+                     FontSize="13"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     Text="Можно сказать: «Счёт наличные, категория Ашан, сумма десять»" />
+          <Button Grid.Column="1"
+                  x:Name="VoiceButton"
+                  Margin="8 0 0 0"
+                  Width="44"
+                  Height="44"
+                  CornerRadius="22"
+                  ToolTip.Tip="Заполнить голосом"
+                  Click="VoiceButtonClick">
+            <mi:MaterialIcon x:Name="VoiceButtonIcon" Kind="Microphone" Width="22" Height="22" />
+          </Button>
+        </Grid>
+
         <TextBlock Classes="Label" Text="Счёт" />
         <ComboBox SelectedItem="{Binding Account}"
                   ItemsSource="{Binding FlatAccounts}">

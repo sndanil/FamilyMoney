@@ -1,10 +1,15 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
 using FamilyMoney.Navigation.Utils;
+using FamilyMoney.Services;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
+using FamilyMoney.Voice;
+using Material.Icons;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 
 namespace FamilyMoney.Navigation.Pages;
@@ -14,8 +19,10 @@ public partial class TransactionEditPage : ContentPage
     private readonly BaseTransactionViewModel _viewModel = null!;
     private readonly TransactionRowViewModel? _row;
     private readonly TaskCompletionSource<BaseTransactionViewModel?> _result = new();
+    private readonly ISpeechToTextService? _speechToText;
     private bool _skipCategoryChange;
     private bool _closing;
+    private bool _isListening;
 
     public TransactionEditPage()
     {
@@ -41,6 +48,9 @@ public partial class TransactionEditPage : ContentPage
         var hasRow = row != null;
         DeleteButton.IsVisible = hasRow;
         CopyButton.IsVisible = hasRow;
+
+        _speechToText = AppInit.GlobalHost?.Services.GetService<ISpeechToTextService>();
+        VoicePanel.IsVisible = _speechToText?.IsAvailable == true;
 
         SubCategoryCompleteBox.ItemSelector = SubCategoryItemSelector;
         SubCategoryCompleteBox.ItemFilter = SubCategoryItemFilter;
@@ -80,6 +90,71 @@ public partial class TransactionEditPage : ContentPage
     {
         _viewModel.PropertyChanged -= ViewModelPropertyChanged;
         WeakReferenceMessenger.Default.Unregister<ModelCloseMessage<BaseTransactionViewModel>>(this);
+    }
+
+    private async void VoiceButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (_speechToText == null || _isListening || _closing)
+        {
+            return;
+        }
+
+        _isListening = true;
+        VoiceButton.IsEnabled = false;
+        VoiceButtonIcon.Kind = MaterialIconKind.MicrophoneSettings;
+        VoiceStatusText.Text = "Слушаю…";
+
+        try
+        {
+            var text = await _speechToText.ListenAsync();
+            if (_closing)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                VoiceStatusText.Text = "Не удалось распознать речь. Попробуйте ещё раз.";
+                return;
+            }
+
+            var commands = TransactionVoiceParser.Parse(text);
+            if (commands.Count == 0)
+            {
+                VoiceStatusText.Text = $"Услышано: «{text}». Команды не распознаны.";
+                return;
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _skipCategoryChange = true;
+                try
+                {
+                    var applyResult = TransactionVoiceApplier.Apply(_viewModel, commands);
+                    if (_viewModel.SubCategory != null)
+                    {
+                        SubCategoryCompleteBox.SelectedItem = _viewModel.SubCategory;
+                        SubCategoryCompleteBox.Text = _viewModel.SubCategory.Name;
+                    }
+
+                    VoiceStatusText.Text = $"«{text}» → {applyResult.ToStatusText()}";
+                }
+                finally
+                {
+                    _skipCategoryChange = false;
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            VoiceStatusText.Text = "Ошибка распознавания: " + ex.Message;
+        }
+        finally
+        {
+            _isListening = false;
+            VoiceButton.IsEnabled = true;
+            VoiceButtonIcon.Kind = MaterialIconKind.Microphone;
+        }
     }
 
     private async void DeleteConfirmClick(object? sender, RoutedEventArgs e)

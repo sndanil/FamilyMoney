@@ -45,6 +45,7 @@ public partial class App : Application
     {
         services.AddSingleton<MainViewHolder>();
         services.AddSingleton<IQrScannerService, AndroidQrScannerService>();
+        services.AddSingleton<ISpeechToTextService, AndroidSpeechToTextService>();
         services.AddSingleton<IFilePickerService>(sp =>
         {
             var mainView = sp.GetRequiredService<MainViewHolder>().View;
