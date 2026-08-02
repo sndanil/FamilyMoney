@@ -618,29 +618,6 @@ public partial class CalculatorAmountBox : UserControl
             var current = new StringBuilder();
             var expectUnary = true;
 
-            void FlushNumber()
-            {
-                if (current.Length == 0)
-                {
-                    return;
-                }
-
-                var raw = current.ToString()
-                    .Replace('.', decimalSeparator)
-                    .Replace(',', decimalSeparator)
-                    .Replace('б', decimalSeparator);
-
-                if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.CurrentCulture, out var number)
-                    && !decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out number))
-                {
-                    throw new FormatException();
-                }
-
-                numbers.Add(number);
-                current.Clear();
-                expectUnary = false;
-            }
-
             foreach (var ch in text)
             {
                 if (char.IsWhiteSpace(ch))
@@ -695,6 +672,29 @@ public partial class CalculatorAmountBox : UserControl
             }
 
             return true;
+
+            void FlushNumber()
+            {
+                if (current.Length == 0)
+                {
+                    return;
+                }
+
+                var raw = current.ToString()
+                    .Replace('.', decimalSeparator)
+                    .Replace(',', decimalSeparator)
+                    .Replace('б', decimalSeparator);
+
+                if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.CurrentCulture, out var number)
+                    && !decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out number))
+                {
+                    throw new FormatException();
+                }
+
+                numbers.Add(number);
+                current.Clear();
+                expectUnary = false;
+            }
         }
         catch
         {
@@ -704,6 +704,11 @@ public partial class CalculatorAmountBox : UserControl
 
     private static bool ContainsBinaryOperator(string text, char decimalSeparator)
     {
+        var groupSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator;
+        text = text
+            .Replace(" ", string.Empty)
+            .Replace(groupSeparator, string.Empty);
+
         for (var i = 0; i < text.Length; i++)
         {
             var ch = text[i];
