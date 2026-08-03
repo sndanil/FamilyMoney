@@ -1,9 +1,10 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FamilyMoney.Voice;
 
-internal static class RussianNumberParser
+internal static partial class RussianNumberParser
 {
     private static readonly HashSet<string> RubleUnits = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -67,6 +68,18 @@ internal static class RussianNumberParser
         ["тысяч"] = 1000,
     };
 
+    [GeneratedRegex(@"^\d{1,3}([ .]\d{3})+([.,]\d{1,2})?$")]
+    private static partial Regex GroupedWithSpaceOrDotRegex();
+
+    [GeneratedRegex(@"^(?<int>\d{1,3}(?:\.\d{3})+),(?<frac>\d{1,2})$")]
+    private static partial Regex EuropeanDotThousandsCommaDecimalRegex();
+
+    [GeneratedRegex(@"^(?<int>\d{1,3}(?:,\d{3})+)\.(?<frac>\d{1,2})$")]
+    private static partial Regex UsCommaThousandsDotDecimalRegex();
+
+    [GeneratedRegex(@"^(?<a>\d+)(?<sep>[.,])(?<b>\d+)$")]
+    private static partial Regex SingleSeparatorRegex();
+
     public static bool TryParse(string text, out decimal value)
     {
         value = 0m;
@@ -75,13 +88,7 @@ internal static class RussianNumberParser
             return false;
         }
 
-        var normalized = text.Trim()
-            .Replace('и', CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0])
-            .Replace(" ", string.Empty)
-            .Replace(',', '.');
-
-        if (decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out value)
-            || decimal.TryParse(text.Trim(), NumberStyles.Number, CultureInfo.CurrentCulture, out value))
+        if (TryParseSpokenNumeric(text, out value))
         {
             return true;
         }
@@ -171,6 +178,128 @@ internal static class RussianNumberParser
         return true;
     }
 
+    /// <summary>
+    /// Разбор чисел из STT: «5.438» = 5438 (точка — разделитель тысяч),
+    /// «5,75» / «5.75» = 5.75, «1.234,56» = 1234.56.
+    /// </summary>
+    private static bool TryParseSpokenNumeric(string text, out decimal value)
+    {
+        value = 0m;
+
+        var s = text.Trim()
+            .Replace('\u00A0', ' ')
+            .Replace('\u202F', ' ')
+            .Replace('и', ',');
+
+        // Убрать пробелы вокруг, но сохранить внутренние как возможные тысячи.
+        s = Regex.Replace(s, @"\s+", " ").Trim();
+
+        if (string.IsNullOrEmpty(s) || s.Any(ch => !(char.IsDigit(ch) || ch is '.' or ',' or ' ')))
+        {
+            return false;
+        }
+
+        // 5 438 / 5.438.120 / 5 438,75 / 5.438,75
+        if (GroupedWithSpaceOrDotRegex().IsMatch(s))
+        {
+            string intPart;
+            string? fracPart = null;
+
+            var comma = s.LastIndexOf(',');
+            var lastDot = s.LastIndexOf('.');
+            if (comma > 0 && comma > lastDot)
+            {
+                intPart = s[..comma];
+                fracPart = s[(comma + 1)..];
+            }
+            else
+            {
+                intPart = s;
+            }
+
+            intPart = intPart.Replace(" ", string.Empty).Replace(".", string.Empty);
+            if (!decimal.TryParse(intPart, NumberStyles.None, CultureInfo.InvariantCulture, out var whole))
+            {
+                return false;
+            }
+
+            if (fracPart != null)
+            {
+                if (!decimal.TryParse("0." + fracPart, NumberStyles.Number, CultureInfo.InvariantCulture, out var frac))
+                {
+                    return false;
+                }
+
+                value = whole + frac;
+            }
+            else
+            {
+                value = whole;
+            }
+
+            return true;
+        }
+
+        var european = EuropeanDotThousandsCommaDecimalRegex().Match(s);
+        if (european.Success)
+        {
+            var intPart = european.Groups["int"].Value.Replace(".", string.Empty);
+            return TryCompose(intPart, european.Groups["frac"].Value, out value);
+        }
+
+        var us = UsCommaThousandsDotDecimalRegex().Match(s);
+        if (us.Success)
+        {
+            var intPart = us.Groups["int"].Value.Replace(",", string.Empty);
+            return TryCompose(intPart, us.Groups["frac"].Value, out value);
+        }
+
+        var single = SingleSeparatorRegex().Match(s.Replace(" ", string.Empty));
+        if (single.Success)
+        {
+            var a = single.Groups["a"].Value;
+            var b = single.Groups["b"].Value;
+            var sep = single.Groups["sep"].Value[0];
+
+            // Ровно 3 цифры после единственного разделителя — типичный
+            // разделитель тысяч из STT («5.438» → 5438), а не дробь.
+            if (b.Length == 3)
+            {
+                return decimal.TryParse(a + b, NumberStyles.None, CultureInfo.InvariantCulture, out value);
+            }
+
+            // 1–2 цифры — дробная часть (копейки / десятичные).
+            if (b.Length is 1 or 2)
+            {
+                return TryCompose(a, b, out value);
+            }
+
+            // Больше 3 цифр после точки/запятой — не считаем валидным форматом суммы.
+            return false;
+        }
+
+        // Простое целое: «5438»
+        var plain = s.Replace(" ", string.Empty);
+        return decimal.TryParse(plain, NumberStyles.None, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryCompose(string intPart, string fracPart, out decimal value)
+    {
+        value = 0m;
+        if (!decimal.TryParse(intPart, NumberStyles.None, CultureInfo.InvariantCulture, out var whole))
+        {
+            return false;
+        }
+
+        if (!decimal.TryParse("0." + fracPart, NumberStyles.Number, CultureInfo.InvariantCulture, out var frac))
+        {
+            return false;
+        }
+
+        value = whole + frac;
+        return true;
+    }
+
     private static List<string> TakeNumberTokens(IReadOnlyList<string> tokens, int start, int endExclusive)
     {
         var result = new List<string>();
@@ -196,6 +325,12 @@ internal static class RussianNumberParser
             return false;
         }
 
+        // Один токен вида «5.438» / «5,75»
+        if (tokens.Count == 1 && TryParseSpokenNumeric(tokens[0], out value))
+        {
+            return true;
+        }
+
         decimal total = 0;
         decimal current = 0;
         var matched = false;
@@ -207,7 +342,7 @@ internal static class RussianNumberParser
                 continue;
             }
 
-            if (decimal.TryParse(token.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out var numeric))
+            if (TryParseSpokenNumeric(token, out var numeric))
             {
                 current += numeric;
                 matched = true;
