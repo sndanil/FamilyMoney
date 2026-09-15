@@ -394,7 +394,7 @@ public partial class AccountsViewModel : ViewModelBase
             Name = other.Name,
             IsGroup = other.IsGroup,
             IsNotSummable = other.IsNotSummable,
-            Sum = other.IsGroup ? 0 : existingAccount.Sum,
+            Sum = other.IsGroup ? 0 : (existingAccount?.Sum ?? 0),
             Order = (other.Parent ?? Total).Children
                         .Select((account, index) => (account, index))
                         .Where(i => i.account.Id == other.Id)
