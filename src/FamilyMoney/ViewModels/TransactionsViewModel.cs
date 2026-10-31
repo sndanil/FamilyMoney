@@ -287,13 +287,15 @@ public partial class TransactionsViewModel : ViewModelBase
                     transactionGroupViewModel
                     );
             }
-            else if (entity is TransferTransaction)
+            else if (entity is TransferTransaction transferSource)
             {
-                viewModel = CreateNewTransaction<TransferTransactionViewModel>(
+                var transferCopy = CreateNewTransaction<TransferTransactionViewModel>(
                     GetCategories<TransferCategory, TransferCategoryViewModel>(),
                     GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
                     transactionGroupViewModel
                     );
+                transferCopy.ToAccount = _stateManager.GetMainState().FlatAccounts.FirstOrDefault(a => a.Id == transferSource.ToAccountId);
+                viewModel = transferCopy;
                 viewModel.IsTransfer = true;
             }
             else
@@ -301,6 +303,11 @@ public partial class TransactionsViewModel : ViewModelBase
                 return (null, null);
             }
 
+            foreach (var tag in entity.Tags?.ToArray() ?? [])
+            {
+                viewModel.Tags.Add(tag);
+            }
+            viewModel.RefreshSuggestedTags();
             viewModel.Sum = entity!.Sum;
             viewModel.Comment = entity.Comment;
 
