@@ -1,7 +1,7 @@
 #load "SvgPng.csx"
 
 var root = Directory.GetCurrentDirectory();
-var source = Path.Combine(root, "Icon_flat.svg");
+var source = Path.Combine(root, "AppIcon.png");
 
 int[] pngSizes = [16, 32, 48, 64, 128, 256, 512];
 int[] icoSizes = [16, 32, 48, 256];
@@ -9,7 +9,7 @@ var icoImages = new List<(int Size, byte[] PngData)>();
 
 foreach (var size in pngSizes)
 {
-    using var icon = RenderSvg(source, size, size);
+    using var icon = RenderPng(source, size);
     var outputPath = Path.Combine(root, $"icon-{size}.png");
     SavePng(icon, outputPath);
     Console.WriteLine($"Saved icon-{size}.png: {size}x{size}");
@@ -48,9 +48,20 @@ var androidRoot = Path.Combine(root, "..", "src", "FamilyMoney.Android", "Resour
 
 foreach (var (size, folder) in androidMipmaps)
 {
-    using var icon = RenderSvg(source, size, size);
+    using var icon = RenderPng(source, size);
     var outputDir = Path.Combine(androidRoot, folder);
     SavePng(icon, Path.Combine(outputDir, "ic_launcher.png"));
     SavePng(icon, Path.Combine(outputDir, "ic_launcher_round.png"));
     Console.WriteLine($"Saved {folder}/ic_launcher*.png: {size}x{size}");
+}
+
+foreach (var target in new[]
+         {
+             Path.Combine(root, "..", "src", "FamilyMoney.Android", "Resources", "drawable", "icon.png"),
+             Path.Combine(root, "..", "src", "FamilyMoney.Android", "Resources", "drawable", "splash_icon.png"),
+         })
+{
+    using var icon = RenderPng(source, 512);
+    SavePng(icon, target);
+    Console.WriteLine($"Saved {Path.GetRelativePath(root, target)}: 512x512");
 }
