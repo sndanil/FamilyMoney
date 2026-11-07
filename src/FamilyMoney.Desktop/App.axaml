@@ -24,12 +24,15 @@
 		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeStyles.axaml" />
 		<mi:MaterialIconStyles />
 
-		<!-- Окна с CanMaximize="False": не показываем неактивные кнопки maximize/fullscreen. -->
+		<!-- Окна с CanMaximize="False": не показываем неактивные кнопки maximize/fullscreen,
+		     но оставляем их место, чтобы «свернуть» и «закрыть» оставались у правого края. -->
 		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_MaximizeButton:disabled">
-			<Setter Property="IsVisible" Value="False" />
+			<Setter Property="Opacity" Value="0" />
+			<Setter Property="IsHitTestVisible" Value="False" />
 		</Style>
 		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_FullScreenButton:disabled">
-			<Setter Property="IsVisible" Value="False" />
+			<Setter Property="Opacity" Value="0" />
+			<Setter Property="IsHitTestVisible" Value="False" />
 		</Style>
 
 		<Style Selector="NumericUpDown">
