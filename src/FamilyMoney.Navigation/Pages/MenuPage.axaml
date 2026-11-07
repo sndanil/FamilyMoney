@@ -33,7 +33,7 @@
   </ContentPage.Styles>
 
   <Grid Background="{DynamicResource SidebarBackBrush}">
-    <controls:AccountsDrawerView Margin="8 0 8 96"
+    <controls:AccountsDrawerView Margin="8 0 8 0"
                                  DataContext="{Binding Accounts}" />
 
     <Border VerticalAlignment="Bottom"
