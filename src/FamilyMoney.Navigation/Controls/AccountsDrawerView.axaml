@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -20,25 +20,24 @@
     <Style Selector="Border.Account">
       <Setter Property="MinHeight" Value="40" />
     </Style>
-    <Style Selector="Border.Group">
+    <Style Selector="Border.GroupCard">
       <Setter Property="Margin" Value="8 4 8 0" />
-      <Setter Property="CornerRadius" Value="8 8 0 0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="ClipToBounds" Value="True" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+    </Style>
+    <Style Selector="Border.Group">
       <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
     </Style>
     <Style Selector="Border.Element">
-      <Setter Property="Margin" Value="8 0 8 0" />
       <Setter Property="BorderThickness" Value="0 0 0 1" />
       <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
       <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
     </Style>
-    <Style Selector="Border.AloneElement">
-      <Setter Property="CornerRadius" Value="8" />
-      <Setter Property="Margin" Value="8 0 8 4" />
+    <Style Selector="Border.Element.LastVisible">
       <Setter Property="BorderThickness" Value="0" />
     </Style>
-    <Style Selector="ItemsControl.Children > ContentPresenter:nth-last-child(1) > Border">
-      <Setter Property="CornerRadius" Value="0 0 8 8" />
-      <Setter Property="Margin" Value="8 0 8 4" />
+    <Style Selector="Border.Account.TopLevel.Element">
       <Setter Property="BorderThickness" Value="0" />
     </Style>
     <Style Selector="Border.Account:pointerover">
@@ -131,20 +130,21 @@
 
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:AccountViewModel">
-            <StackPanel Orientation="Vertical">
+            <Border Classes="GroupCard">
+              <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                  <Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden" />
+                  <Binding Path="!IsHidden" />
+                </MultiBinding>
+              </Border.IsVisible>
+              <StackPanel Orientation="Vertical">
               <Border Classes="Account"
+                      Classes.TopLevel="True"
                       Classes.Element="{Binding !IsGroup}"
                       Classes.Group="{Binding IsGroup}"
                       Classes.Selected="{Binding IsSelected}"
                       Classes.Hidden="{Binding IsHidden}"
                       Tapped="OnAccountTapped">
-                <Classes.AloneElement>
-                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                    <Binding Path="!IsGroup" />
-                    <Binding Path="!IsExpanded" />
-                    <Binding Path="!Children.Count" />
-                  </MultiBinding>
-                </Classes.AloneElement>
                 <Border.IsVisible>
                   <MultiBinding Converter="{x:Static BoolConverters.Or}">
                     <Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden" />
@@ -207,6 +207,7 @@
                     <Border Classes="Account Element"
                             Classes.Selected="{Binding IsSelected}"
                             Classes.Hidden="{Binding IsHidden}"
+                            Classes.LastVisible="{Binding IsLastVisibleChild}"
                             Tapped="OnAccountTapped">
                       <Border.IsVisible>
                         <MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -248,6 +249,7 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </StackPanel>
+            </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
