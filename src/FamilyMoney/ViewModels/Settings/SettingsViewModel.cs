@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
@@ -285,6 +285,7 @@ public partial class SettingsViewModel : ViewModelBase
             Databases = Databases.Select(d => d.ToConfiguration()).ToArray(),
             SelectedDatabaseIndex = selectedIndex,
             Transactions = root.Transactions,
+            AccountsPaneWidth = root.AccountsPaneWidth,
         };
 
         _configuration.Save(newRoot);

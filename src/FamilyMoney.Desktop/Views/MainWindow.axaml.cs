@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
@@ -17,6 +18,14 @@ public partial class MainWindow : Window
         {
             return;
         }
+
+        Closing += (_, _) =>
+        {
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.SaveLayout();
+            }
+        };
 
         WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<AccountViewModel>>(this, static (w, m) =>
         {
@@ -47,5 +56,13 @@ public partial class MainWindow : Window
             var dialog = new DatabaseWindow { DataContext = m?.From };
             m?.Reply(dialog.ShowDialog<DatabaseViewModel?>(w));
         });
+    }
+
+    private void AccountsSplitter_DragCompleted(object? sender, VectorEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.SaveLayout();
+        }
     }
 }

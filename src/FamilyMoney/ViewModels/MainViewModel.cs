@@ -16,6 +16,8 @@ public partial class MainViewModel : ViewModelBase
 {
     private const string AppTitle = "Семейные деньги";
 
+    private const int DefaultLeftSideWidth = 500;
+
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
     private readonly IGlobalConfiguration _configuration;
@@ -28,7 +30,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly ReportsViewModel _reportsViewModel;
 
     [ObservableProperty]
-    public partial int LeftSideWidth { get; set; } = 500;
+    public partial int LeftSideWidth { get; set; } = DefaultLeftSideWidth;
 
     [ObservableProperty]
     public partial bool IsPaneOpen { get; set; }
@@ -70,6 +72,12 @@ public partial class MainViewModel : ViewModelBase
         _stateManager = stateManager;
         _configuration = configuration;
         _syncService = syncService;
+
+        var savedLeftSideWidth = _configuration.Get().AccountsPaneWidth;
+        if (savedLeftSideWidth is > 0)
+        {
+            LeftSideWidth = savedLeftSideWidth.Value;
+        }
 
         Settings = settingsViewModel;
         _categoriesViewModel = categoriesViewModel;
@@ -141,6 +149,19 @@ public partial class MainViewModel : ViewModelBase
         {
             _categoriesViewModel.EnsureLoaded();
         }
+    }
+
+    /// <summary>Сохраняет последнюю ширину списка счетов локально для текущего пользователя.</summary>
+    public void SaveLayout()
+    {
+        var root = _configuration.Get();
+        if (root.AccountsPaneWidth == LeftSideWidth)
+        {
+            return;
+        }
+
+        root.AccountsPaneWidth = LeftSideWidth;
+        _configuration.Save(root);
     }
 
     [RelayCommand]

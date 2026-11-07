@@ -337,8 +337,11 @@
 
 						<views:AccountsView Grid.RowSpan="2" DataContext="{Binding Accounts}" />
 
-						<GridSplitter Grid.Column="1" Grid.Row="1" ResizeDirection="Columns"
-									  Background="Transparent"/>
+						<GridSplitter Name="AccountsSplitter"
+									  Grid.Column="1" Grid.Row="1"
+									  ResizeDirection="Columns"
+									  Background="Transparent"
+									  DragCompleted="AccountsSplitter_DragCompleted"/>
 
 						<Panel IsVisible="{Binding ShowTransactionsTree}" Grid.Column="2"	Grid.Row="1">
 							<views:TransactionsView DataContext="{Binding Transactions}" />
