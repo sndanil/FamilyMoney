@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Models;
 using System;
@@ -28,6 +28,12 @@ public partial class BaseSubCategoryViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial IList<string> Tags { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool IsEditing { get; set; }
+
+    [ObservableProperty]
+    public partial string EditName { get; set; } = string.Empty;
 
     public void FillFrom(Guid id, IRepository repository)
     {

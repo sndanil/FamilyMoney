@@ -179,6 +179,27 @@ public partial class TransactionsViewModel : ViewModelBase
             t.InvalidateListsCache(categories: true, subCategories: true);
         });
 
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, SubCategoryRenamedMessage>(this, async (t, m) =>
+        {
+            lock (t._listsCacheLock)
+            {
+                if (t._subCategoriesCache.TryGetValue(m.Id, out var cached))
+                {
+                    cached.Name = m.Name;
+                }
+
+                foreach (var list in t._subCategoryListsCache.Values)
+                {
+                    foreach (var subCategory in list.Where(s => s.Id == m.Id))
+                    {
+                        subCategory.Name = m.Name;
+                    }
+                }
+            }
+
+            await Task.CompletedTask;
+        });
+
         WeakReferenceMessenger.Default.Register<TransactionsViewModel, TransactionChangedMessage>(this, async (t, _) =>
         {
             // Суммы, комментарии и теги подкатегорий выводятся из транзакций.

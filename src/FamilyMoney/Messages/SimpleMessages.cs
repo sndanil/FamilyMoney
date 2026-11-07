@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Models;
+using FamilyMoney.Models;
 using FamilyMoney.State;
 using System;
 
@@ -15,6 +15,8 @@ public record MainStateChangedMessage(MainState State);
 public record DatabaseChangedMessage;
 
 public record CategoryUpdateMessage(Guid? CategoryId);
+
+public record SubCategoryRenamedMessage(Guid Id, string Name);
 
 public record TransactionChangedMessage(Transaction? Before, Transaction? After);
 

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -132,6 +132,25 @@
 		</Style>
 		<Style Selector="Button.Secondary:pointerover">
 			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Button.IconButton">
+			<Setter Property="Width" Value="26" />
+			<Setter Property="Height" Value="26" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.IconButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="TextBox.InlineEdit">
+			<Setter Property="Height" Value="30" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="6 2" />
+			<Setter Property="CornerRadius" Value="6" />
 		</Style>
 		<Style Selector="Button.TypeTab">
 			<Setter Property="Background" Value="Transparent" />
@@ -367,14 +386,51 @@
 												<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
 													<Border Classes="SubCategoryRow">
 														<Grid ColumnDefinitions="*,Auto">
-															<TextBlock Text="{Binding Name}"
-																	   FontSize="12"
-																	   TextTrimming="CharacterEllipsis" />
-															<TextBlock Grid.Column="1"
-																	   Classes="Secondary"
-																	   FontSize="11"
-																	   Text="{Binding LastSum, StringFormat='Последняя сумма: #,##0.00'}"
-																	   IsVisible="{Binding LastSum, Converter={StaticResource isNotZeroConverter}}" />
+															<StackPanel IsVisible="{Binding !IsEditing}"
+																		VerticalAlignment="Center"
+																		Spacing="2">
+																<TextBlock Text="{Binding Name}"
+																		   FontSize="12"
+																		   TextTrimming="CharacterEllipsis" />
+																<TextBlock Classes="Secondary"
+																		   FontSize="11"
+																		   Text="{Binding LastSum, StringFormat='Последняя сумма: #,##0.00'}"
+																		   IsVisible="{Binding LastSum, Converter={StaticResource isNotZeroConverter}}" />
+															</StackPanel>
+
+															<TextBox Grid.Column="0"
+																	 Classes="InlineEdit"
+																	 Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+																	 IsVisible="{Binding IsEditing}"
+																	 VerticalContentAlignment="Center"
+																	 KeyDown="SubCategoryNameKeyDown" />
+
+															<StackPanel Grid.Column="1"
+																		Orientation="Horizontal"
+																		Spacing="2"
+																		VerticalAlignment="Center">
+																<Button Classes="IconButton"
+																		IsVisible="{Binding !IsEditing}"
+																		ToolTip.Tip="Переименовать"
+																		Command="{Binding $parent[UserControl].((vm:CategoriesViewModel)DataContext).BeginRenameSubCategoryCommand}"
+																		CommandParameter="{Binding}">
+																	<mi:MaterialIcon Kind="Pencil" Width="14" Height="14" />
+																</Button>
+																<Button Classes="IconButton"
+																		IsVisible="{Binding IsEditing}"
+																		ToolTip.Tip="Сохранить"
+																		Command="{Binding $parent[UserControl].((vm:CategoriesViewModel)DataContext).SaveRenameSubCategoryCommand}"
+																		CommandParameter="{Binding}">
+																	<mi:MaterialIcon Kind="Check" Width="14" Height="14" />
+																</Button>
+																<Button Classes="IconButton"
+																		IsVisible="{Binding IsEditing}"
+																		ToolTip.Tip="Отмена"
+																		Command="{Binding $parent[UserControl].((vm:CategoriesViewModel)DataContext).CancelRenameSubCategoryCommand}"
+																		CommandParameter="{Binding}">
+																	<mi:MaterialIcon Kind="Close" Width="14" Height="14" />
+																</Button>
+															</StackPanel>
 														</Grid>
 													</Border>
 												</DataTemplate>
@@ -389,6 +445,13 @@
 													   Classes="Secondary"
 													   FontSize="11" />
 										</StackPanel>
+
+										<TextBlock Text="{Binding RenameError}"
+												   Foreground="{DynamicResource NegativeBrush}"
+												   FontSize="11"
+												   TextWrapping="Wrap"
+												   Margin="0 6 0 0"
+												   IsVisible="{Binding RenameError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 									</StackPanel>
 								</Border>
 							</StackPanel>

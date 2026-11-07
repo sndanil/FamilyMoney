@@ -43,6 +43,9 @@ public partial class CategoriesViewModel : ViewModelBase
     public partial BaseCategoryViewModel? SelectedCategory { get; set; }
 
     [ObservableProperty]
+    public partial string? RenameError { get; set; }
+
+    [ObservableProperty]
     public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -103,6 +106,11 @@ public partial class CategoriesViewModel : ViewModelBase
 
         LoadSubCategories(categories);
         RefreshVisibleCategories();
+    }
+
+    partial void OnSelectedCategoryChanged(BaseCategoryViewModel? value)
+    {
+        RenameError = null;
     }
 
     partial void OnSelectedTypeChanged(CategoryKind value)
@@ -307,6 +315,73 @@ public partial class CategoriesViewModel : ViewModelBase
         SaveCategory(category, category);
         RefreshVisibleCategories();
         await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public void BeginRenameSubCategory(BaseSubCategoryViewModel? subCategory)
+    {
+        if (subCategory == null || SelectedCategory == null)
+        {
+            return;
+        }
+
+        foreach (var item in SelectedCategory.SubCategories)
+        {
+            item.IsEditing = false;
+        }
+
+        RenameError = null;
+        subCategory.EditName = subCategory.Name;
+        subCategory.IsEditing = true;
+    }
+
+    [RelayCommand]
+    public void CancelRenameSubCategory(BaseSubCategoryViewModel? subCategory)
+    {
+        if (subCategory == null)
+        {
+            return;
+        }
+
+        subCategory.IsEditing = false;
+        RenameError = null;
+    }
+
+    [RelayCommand]
+    public void SaveRenameSubCategory(BaseSubCategoryViewModel? subCategory)
+    {
+        if (subCategory == null)
+        {
+            return;
+        }
+
+        var name = (subCategory.EditName ?? string.Empty).Trim();
+        if (name.Length == 0)
+        {
+            RenameError = "Название не может быть пустым.";
+            return;
+        }
+
+        if (SelectedCategory != null
+            && SelectedCategory.SubCategories.Any(s =>
+                s.Id != subCategory.Id
+                && string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            RenameError = "Такая подкатегория уже есть в этой категории.";
+            return;
+        }
+
+        var entity = _repository.GetSubCategory(subCategory.Id);
+        if (entity != null)
+        {
+            entity.Name = name;
+            _repository.UpdateSubCategory(entity);
+        }
+
+        subCategory.Name = name;
+        subCategory.IsEditing = false;
+        RenameError = null;
+        WeakReferenceMessenger.Default.Send(new SubCategoryRenamedMessage(subCategory.Id, name));
     }
 
     private void SaveCategory(BaseCategoryViewModel categoryForSave, BaseCategoryViewModel? categoryForUpdate)
