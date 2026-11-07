@@ -190,11 +190,6 @@ public partial class TransactionEditPage : ContentPage
         {
             _viewModel.RefreshSuggestedTags();
         }
-
-        if (e.PropertyName == nameof(_viewModel.SubCategory))
-        {
-            _viewModel.Comments = _viewModel.SubCategory?.Comments ?? [];
-        }
     }
 
     private void SubCategoryDropDownClosed(object? sender, EventArgs e)

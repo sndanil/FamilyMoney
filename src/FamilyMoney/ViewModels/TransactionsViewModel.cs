@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
@@ -457,7 +457,6 @@ public partial class TransactionsViewModel : ViewModelBase
             viewModel.Category = viewModel.Categories.FirstOrDefault(c => c.Id == entity.CategoryId);
             viewModel.SubCategory = viewModel.SubCategories.FirstOrDefault(c => c.Id == entity.SubCategoryId);
             viewModel.SubCategoryText = viewModel.SubCategory?.Name;
-            viewModel.Comments = viewModel.SubCategory?.Comments ?? [];
             viewModel.RefreshSuggestedTags();
 
             viewModel.Categories = viewModel.Categories.Where(c => !c.IsHidden).ToList();
@@ -876,8 +875,8 @@ public partial class TransactionsViewModel : ViewModelBase
         var from = DateTime.Today.AddYears(-1);
         var subCategoriesBySums = _repository.GetLastSumsBySubCategories(from, typedSubCategories.Select(c => c.Id))
             .ToDictionary(s => s.SubCategoryId);
-        var subCategoriesByComments = _repository.GetCommentsBySubCategories(from)
-            .ToDictionary(s => s.SubCategoryId);
+        var commentSuggestions = _repository.GetCommentSuggestionsBySubCategories(from)
+            .ToDictionary(s => (s.SubCategoryId, s.CategoryId));
         var subCategoriesByTags = _repository.GetTagsBySubCategories(from)
             .ToDictionary(s => (s.SubCategoryId, s.CategoryId));
 
@@ -888,7 +887,7 @@ public partial class TransactionsViewModel : ViewModelBase
             CategoryId = c.CategoryId,
             Category = GetCategory<C>(c.CategoryId.GetValueOrDefault()),
             LastSum = subCategoriesBySums.TryGetValue(c.Id, out var sum) ? sum.Sum : 0m,
-            Comments = subCategoriesByComments.TryGetValue(c.Id, out var comments) ? comments.Comments : [],
+            Comments = commentSuggestions.TryGetValue((c.Id, c.CategoryId.GetValueOrDefault()), out var comments) ? comments.Comments : [],
             Tags = subCategoriesByTags.TryGetValue((c.Id, c.CategoryId.GetValueOrDefault()), out var tags) ? tags.Tags : [],
         });
 

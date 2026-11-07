@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Configuration;
+using FamilyMoney.Configuration;
 using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
 using FamilyMoney.Sync;
@@ -10,7 +10,7 @@ namespace FamilyMoney.DataAccess;
 
 public record SubCategoryLastSum(Guid SubCategoryId, decimal Sum);
 
-public record SubCategoryLastComments(Guid SubCategoryId, IList<string> Comments);
+public record SubCategoryCommentSuggestions(Guid CategoryId, Guid SubCategoryId, IList<string> Comments);
 
 public record SubCategoryTags(Guid SubCategoryId, Guid CategoryId, IList<string> Tags);
 
@@ -44,7 +44,7 @@ public interface IRepository
     IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategory(SubCategory subCategory);
     IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds);
-    IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from);
+    IEnumerable<SubCategoryCommentSuggestions> GetCommentSuggestionsBySubCategories(DateTime from);
 
     IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from);
 

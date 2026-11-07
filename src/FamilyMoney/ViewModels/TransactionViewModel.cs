@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -88,6 +88,11 @@ public partial class BaseTransactionViewModel : ViewModelBase
     public BaseTransactionViewModel()
     {
         Tags.CollectionChanged += (_, _) => NotifySuggestedTagsChanged();
+    }
+
+    partial void OnSubCategoryChanged(BaseSubCategoryViewModel? value)
+    {
+        Comments = value?.Comments ?? [];
     }
 
     private bool CanOkCommand()

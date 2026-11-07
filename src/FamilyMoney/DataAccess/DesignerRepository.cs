@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Configuration;
+using FamilyMoney.Configuration;
 using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
 using FamilyMoney.Sync;
@@ -50,7 +50,7 @@ public class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
-    public IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from)
+    public IEnumerable<SubCategoryCommentSuggestions> GetCommentSuggestionsBySubCategories(DateTime from)
     {
         throw new NotImplementedException();
     }

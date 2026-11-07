@@ -1,7 +1,8 @@
-﻿<Application xmlns="https://github.com/avaloniaui"
+<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="FamilyMoney.App"
 			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:chrome="using:Avalonia.Controls.Chrome"
              xmlns:local="using:FamilyMoney"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -22,6 +23,14 @@
 		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/FluentPalettes.axaml" />
 		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeStyles.axaml" />
 		<mi:MaterialIconStyles />
+
+		<!-- Окна с CanMaximize="False": не показываем неактивные кнопки maximize/fullscreen. -->
+		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_MaximizeButton:disabled">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_FullScreenButton:disabled">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
 
 		<Style Selector="NumericUpDown">
 			<Setter Property="HorizontalContentAlignment" Value="Right" />

@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Configuration;
+using FamilyMoney.Configuration;
 using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
 using FamilyMoney.State;
@@ -389,23 +389,28 @@ public class LiteDbRepository : IRepository
         return result;
     }
 
-    public IEnumerable<SubCategoryLastComments> GetCommentsBySubCategories(DateTime from)
+    public IEnumerable<SubCategoryCommentSuggestions> GetCommentSuggestionsBySubCategories(DateTime from)
     {
         using var db = OpenDatabase();
         var collection = db.GetCollection<Transaction>(nameof(Transaction));
 
-        var query = collection.Query()
-            .Where(t => t.Date >= from && t.DeletedAt == null && !string.IsNullOrEmpty(t.Comment))
-            .Select(t => new { t.SubCategoryId, t.Comment });
-
-        var result = query
-            .ToList()
-            .Distinct()
-            .GroupBy(t => t.SubCategoryId.GetValueOrDefault())
-            .Select(t => new SubCategoryLastComments(t.Key, t.Where(c => !string.IsNullOrEmpty(c.Comment)).Select(c => c.Comment!).ToList()))
+        var rows = collection.Query()
+            .Where(t => t.Date >= from
+                && t.DeletedAt == null
+                && !string.IsNullOrEmpty(t.Comment)
+                && t.CategoryId != null
+                && t.SubCategoryId != null)
+            .Select(t => new { t.CategoryId, t.SubCategoryId, t.Comment, t.Date, t.LastChange })
             .ToList();
 
-        return result;
+        return rows
+            .GroupBy(t => (CategoryId: t.CategoryId!.Value, SubCategoryId: t.SubCategoryId!.Value))
+            .Select(g => new SubCategoryCommentSuggestions(
+                g.Key.CategoryId,
+                g.Key.SubCategoryId,
+                CommentSuggestionBuilder.Build(g.Select(t =>
+                    new CommentCandidate(t.Date, t.LastChange, t.Comment!))).ToList()))
+            .ToList();
     }
 
     public IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from)

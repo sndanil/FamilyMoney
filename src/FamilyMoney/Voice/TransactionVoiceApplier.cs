@@ -102,7 +102,6 @@ public static class TransactionVoiceApplier
 
             viewModel.SubCategory = subCategory;
             viewModel.SubCategoryText = subCategory.Name;
-            viewModel.Comments = subCategory.Comments ?? [];
             viewModel.RefreshSuggestedTags();
 
             result.Applied.Add(category != null

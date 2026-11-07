@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -46,6 +46,12 @@ public partial class AccountViewModel : ViewModelBase
     public partial bool IsSelected { get; set; }
 
     public bool IsAloneGroup => Children.Count == 0;
+
+    /// <summary>
+    /// Уровень вложенности: 0 — корневой счёт или группа, 1 — вложенный счёт.
+    /// Служебный корень «Всего» не учитывается.
+    /// </summary>
+    public int Level => Parent?.Parent is null ? 0 : Parent.Level + 1;
 
     public ObservableCollection<AccountViewModel> Children => _children;
 
