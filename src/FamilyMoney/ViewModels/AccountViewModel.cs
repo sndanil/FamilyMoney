@@ -45,6 +45,10 @@ public partial class AccountViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
+    /// <summary>Последний видимый счёт в группе — у него не рисуется нижний разделитель.</summary>
+    [ObservableProperty]
+    public partial bool IsLastVisibleChild { get; set; }
+
     public bool IsAloneGroup => Children.Count == 0;
 
     /// <summary>

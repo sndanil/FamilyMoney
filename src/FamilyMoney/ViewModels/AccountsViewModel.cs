@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -124,8 +124,47 @@ public partial class AccountsViewModel : ViewModelBase
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
         _total.AddFromAccount(_repository, _localSettings, accounts);
+        RefreshVisibleOrder();
 
         return [.. _total.Children];
+    }
+
+    partial void OnShowHiddenChanged(bool value)
+    {
+        RefreshVisibleOrder();
+    }
+
+    /// <summary>
+    /// Помечает последний видимый счёт каждой группы: у него не должно быть нижнего разделителя.
+    /// </summary>
+    private void RefreshVisibleOrder()
+    {
+        MarkLastVisible(_total.Children);
+
+        foreach (var account in _total.Children)
+        {
+            MarkLastVisible(account.Children);
+        }
+    }
+
+    private void MarkLastVisible(IEnumerable<AccountViewModel> accounts)
+    {
+        AccountViewModel? lastVisible = null;
+
+        foreach (var account in accounts)
+        {
+            account.IsLastVisibleChild = false;
+
+            if (ShowHidden || !account.IsHidden)
+            {
+                lastVisible = account;
+            }
+        }
+
+        if (lastVisible != null)
+        {
+            lastVisible.IsLastVisibleChild = true;
+        }
     }
 
     private void RecalcAccounts()
@@ -171,6 +210,7 @@ public partial class AccountsViewModel : ViewModelBase
             if (m?.AccountId != null)
             {
                 a._localSettings.SetHidden(m.AccountId.Value, m.IsHidden);
+                a.RefreshVisibleOrder();
             }
         });
 
@@ -222,6 +262,7 @@ public partial class AccountsViewModel : ViewModelBase
             result.Parent = Total;
             result.Id = Guid.NewGuid();
             Save(null, result);
+            RefreshVisibleOrder();
         }
     }
 
@@ -237,6 +278,7 @@ public partial class AccountsViewModel : ViewModelBase
             result.Id = Guid.NewGuid();
             result.Parent = parent;
             Save(null, result);
+            RefreshVisibleOrder();
         }
     }
 
@@ -348,6 +390,8 @@ public partial class AccountsViewModel : ViewModelBase
             UpdateChildren(oldParent);
             UpdateChildren(destAccount.Parent!);
         }
+
+        RefreshVisibleOrder();
     }
 
     private void RefreshSelectedAccount(Guid? accountId)

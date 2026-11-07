@@ -1,4 +1,4 @@
-﻿	<UserControl xmlns="https://github.com/avaloniaui"
+	<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -31,25 +31,25 @@
 			<Setter Property="Width" Value="300" />
 			<Setter Property="Opacity" Value="0.6" />
 		</Style>
-		<Style Selector="Border.Group">
+		<Style Selector="Border.GroupCard">
 			<Setter Property="Margin" Value="4 4 4 0" />
-			<Setter Property="CornerRadius" Value="8 8 0 0"/>
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="ClipToBounds" Value="True" />
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+		</Style>
+		<Style Selector="Border.Group">
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 		</Style>
 		<Style Selector="Border.Element">
-			<Setter Property="Margin" Value="4 0 4 0" />
 			<Setter Property="BorderThickness" Value="0 0 0 1" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
 			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
 		</Style>
-		<Style Selector="Border.AloneElement">
-			<Setter Property="CornerRadius" Value="8"/>
-			<Setter Property="Margin" Value="4 0 4 4" />
+		<Style Selector="Border.Element.LastVisible">
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
-		<Style Selector="ItemsControl.Children > ContentPresenter:nth-last-child(1) > Border">
-			<Setter Property="CornerRadius" Value="0 0 8 8"/>
-			<Setter Property="Margin" Value="4 0 4 4" />
+		<!-- Одиночный счёт верхнего уровня — это самостоятельная карточка без нижней линии. -->
+		<Style Selector="Border.Account.TopLevel.Element">
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Border.Account:pointerover">
@@ -111,7 +111,7 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Button.Expander">
-			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="Background" Value="{ReflectionBinding $parent[Border].Background}" />
 			<Setter Property="Height" Value="24" />
 			<Setter Property="Width" Value="24" />
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -123,12 +123,19 @@
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
 		</Style>
 		<Style Selector="Grid.Mover">
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
 			<Setter Property="Margin" Value="10 0 0 0" />
 			<Setter Property="Width" Value="25" />
+			<Setter Property="IsHitTestVisible" Value="True" />
 		</Style>
 		<Style Selector="Grid.Mover.Group">
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+		</Style>
+		<Style Selector="Border.Account:pointerover Grid.Mover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Border.Account.Selected Grid.Mover">
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
 		<Style Selector="StackPanel.ShiftForMove">
 			<Setter Property="Margin" Value="35 0 0 0" />
@@ -198,20 +205,21 @@
 
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Orientation="Vertical">
+						<Border Classes="GroupCard">
+							<Border.IsVisible>
+								<MultiBinding Converter="{x:Static BoolConverters.Or}">
+									<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
+									<Binding Path="!IsHidden" />
+								</MultiBinding>
+							</Border.IsVisible>
+							<StackPanel Orientation="Vertical">
 							<Border Classes="Account" 
+									Classes.TopLevel="True"
 									Classes.Element="{Binding !IsGroup}" 
 									Classes.Group="{Binding IsGroup}" 
 									Classes.Selected="{Binding IsSelected}"
 									Classes.Hidden="{Binding IsHidden}"
 									>
-								<Classes.AloneElement>
-									<MultiBinding Converter="{x:Static BoolConverters.Or}">
-										<Binding Path="!IsGroup" />
-										<Binding Path="!IsExpanded" />
-										<Binding Path="!Children.Count" />
-									</MultiBinding>
-								</Classes.AloneElement>
 								<Border.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.Or}">
 										<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
@@ -307,6 +315,7 @@
 										<Border Classes="Account Element" 
 												Classes.Selected="{Binding IsSelected}"
 												Classes.Hidden="{Binding IsHidden}"
+												Classes.LastVisible="{Binding IsLastVisibleChild}"
 												>
 											<Border.IsVisible>
 												<MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -364,6 +373,7 @@
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>
 						</StackPanel>
+						</Border>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
