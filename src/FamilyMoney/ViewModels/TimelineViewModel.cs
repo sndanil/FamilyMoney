@@ -262,16 +262,9 @@ public partial class TimelineViewModel : ViewModelBase
         try
         {
             Scopes.Clear();
-            Scopes.Add(new TimelineScope(null, total.Name, 0, false));
-
-            foreach (var account in total.Children)
+            foreach (var scope in TimelineScopeCatalog.Build(total))
             {
-                Scopes.Add(new TimelineScope(account.Id, account.Name, 0, account.IsGroup));
-
-                foreach (var child in account.Children)
-                {
-                    Scopes.Add(new TimelineScope(child.Id, child.Name, 1, child.IsGroup));
-                }
+                Scopes.Add(scope);
             }
 
             SelectedScope = Scopes.FirstOrDefault(s => s.AccountId == preferredAccountId) ?? Scopes[0];

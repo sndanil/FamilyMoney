@@ -2,12 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:c="using:FamilyMoney.Controls"
+             xmlns:cv="using:FamilyMoney.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
              x:DataType="vm:ReportsViewModel"
              x:Class="FamilyMoney.Views.ReportsView">
+
+	<UserControl.Resources>
+		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+		<cv:BoolToFontWeightConverter x:Key="boolToFontWeightConverter" />
+	</UserControl.Resources>
 
 	<UserControl.Styles>
 		<Style Selector="Button.TimelineTool">
@@ -51,16 +57,24 @@
 						   FontSize="12"
 						   Foreground="{DynamicResource TextSecondaryBrush}"
 						   VerticalAlignment="Center" />
-				<ComboBox Width="220"
-						  Height="34"
+				<ComboBox Width="240"
+						  Height="36"
 						  VerticalAlignment="Center"
 						  ItemsSource="{Binding Timeline.Scopes}"
 						  SelectedItem="{Binding Timeline.SelectedScope, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate x:DataType="vm:TimelineScope">
-							<StackPanel Orientation="Horizontal">
+							<StackPanel Orientation="Horizontal" Spacing="8">
 								<Border Width="{Binding IndentWidth}" />
-								<TextBlock Text="{Binding Name}" />
+								<Image Width="18"
+									   Height="18"
+									   Stretch="Uniform"
+									   VerticalAlignment="Center"
+									   Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+									   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+								<TextBlock Text="{Binding Name}"
+										   VerticalAlignment="Center"
+										   FontWeight="{Binding IsGroup, Converter={StaticResource boolToFontWeightConverter}}" />
 							</StackPanel>
 						</DataTemplate>
 					</ComboBox.ItemTemplate>

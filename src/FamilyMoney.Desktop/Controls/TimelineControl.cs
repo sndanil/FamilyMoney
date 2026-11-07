@@ -393,12 +393,14 @@ public sealed class TimelineControl : Control
             return -1;
         }
 
-        var date = model.From.AddDays((position.X - layout.Plot.Left) / layout.Plot.Width * totalDays);
+        // Сравниваем по датам: у дневной отсечки Start == End, и время суток в точке курсора
+        // иначе никогда не попадает в интервал.
+        var date = model.From.AddDays((position.X - layout.Plot.Left) / layout.Plot.Width * totalDays).Date;
 
         for (var i = 0; i < model.Buckets.Count; i++)
         {
             var bucket = model.Buckets[i];
-            if (date >= bucket.Start && date <= bucket.End)
+            if (date >= bucket.Start.Date && date <= bucket.End.Date)
             {
                 return i;
             }
