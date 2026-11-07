@@ -1,4 +1,4 @@
-﻿<ContentPage xmlns="https://github.com/avaloniaui"
+<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
@@ -8,48 +8,70 @@
              Header="Меню"
              NavigationPage.HasNavigationBar="False">
   <ContentPage.Styles>
-    <Style Selector="Button.MenuAction">
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Left" />
-      <Setter Property="Padding" Value="12 10" />
+    <Style Selector="Button.FloatingAction">
+      <Setter Property="Height" Value="52" />
+      <Setter Property="MinWidth" Value="88" />
+      <Setter Property="Padding" Value="8 4" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="Button.MenuAction:checked">
-      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+    <Style Selector="Button.FloatingAction:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
     </Style>
-    <Style Selector="Button.MenuAction mi|MaterialIcon">
+    <Style Selector="Button.FloatingAction mi|MaterialIcon">
       <Setter Property="Width" Value="20" />
       <Setter Property="Height" Value="20" />
-      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.FloatingActionLabel">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="TextAlignment" Value="Center" />
     </Style>
   </ContentPage.Styles>
 
-  <Grid RowDefinitions="* Auto" Background="{DynamicResource SidebarBackBrush}">
-
-    <controls:AccountsDrawerView Margin="8 0 8 8"
+  <Grid Background="{DynamicResource SidebarBackBrush}">
+    <controls:AccountsDrawerView Margin="8 0 8 96"
                                  DataContext="{Binding Accounts}" />
 
-    <StackPanel Spacing="4" Margin="8" Grid.Row="1">
-      <Button Classes="MenuAction"
-              Classes.Checked="{Binding Accounts.ShowHidden}"
-              Command="{Binding Accounts.ShowHiddenCommand}">
-        <StackPanel Orientation="Horizontal" Spacing="12">
-          <mi:MaterialIcon Kind="EyeOff" />
-          <TextBlock Text="Показать скрытые"
-                     VerticalAlignment="Center"
-                     IsVisible="{Binding !Accounts.ShowHidden}" />
-          <TextBlock Text="Скрыть скрытые"
-                     VerticalAlignment="Center"
-                     IsVisible="{Binding Accounts.ShowHidden}" />
-        </StackPanel>
-      </Button>
+    <Border VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            Margin="12 0 12 16"
+            Padding="6 2"
+            CornerRadius="24"
+            BorderBrush="{DynamicResource LikeGridLinesBrush}"
+            BorderThickness="1"
+            BoxShadow="0 2 12 0 #20000000">
+      <Border.Background>
+        <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
+      </Border.Background>
 
-      <Button Classes="MenuAction"
-              Click="OnSettingsClick">
-        <StackPanel Orientation="Horizontal" Spacing="12">
-          <mi:MaterialIcon Kind="Cog" />
-          <TextBlock Text="Параметры" VerticalAlignment="Center" />
-        </StackPanel>
-      </Button>
-    </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="2">
+        <Button Classes="FloatingAction"
+                Command="{Binding Accounts.ShowHiddenCommand}"
+                ToolTip.Tip="Показать или скрыть скрытые счета">
+          <StackPanel Spacing="2">
+            <mi:MaterialIcon Kind="EyeOff" />
+            <TextBlock Classes="FloatingActionLabel"
+                       Text="Показать скрытые"
+                       IsVisible="{Binding !Accounts.ShowHidden}" />
+            <TextBlock Classes="FloatingActionLabel"
+                       Text="Скрыть скрытые"
+                       IsVisible="{Binding Accounts.ShowHidden}" />
+          </StackPanel>
+        </Button>
+
+        <Button Classes="FloatingAction"
+                Click="OnSettingsClick"
+                ToolTip.Tip="Параметры">
+          <StackPanel Spacing="2">
+            <mi:MaterialIcon Kind="Cog" />
+            <TextBlock Classes="FloatingActionLabel" Text="Параметры" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Border>
   </Grid>
 </ContentPage>
