@@ -23,7 +23,11 @@ public partial class SettingsViewModel : ViewModelBase
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(EditDatabaseCommand), nameof(DeleteDatabaseCommand), nameof(SetActiveDatabaseCommand))]
+    [NotifyCanExecuteChangedFor(
+        nameof(EditDatabaseCommand),
+        nameof(ConfigureS3Command),
+        nameof(DeleteDatabaseCommand),
+        nameof(SetActiveDatabaseCommand))]
     public partial DatabaseViewModel? SelectedDatabase { get; set; }
 
     [ObservableProperty]
@@ -66,13 +70,25 @@ public partial class SettingsViewModel : ViewModelBase
             Databases.Add(database);
         }
 
-        SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
+        if (Databases.Count > 0 && !Databases.Any(d => d.IsSelected))
+        {
+            Databases[0].IsSelected = true;
+        }
+
+        SelectedDatabase = Databases.FirstOrDefault(d => d.IsSelected) ?? Databases.FirstOrDefault();
+        RefreshSyncState();
     }
 
     public void UpdateSyncStatus()
     {
+        RefreshSyncState();
+    }
+
+    private void RefreshSyncState()
+    {
         OnPropertyChanged(nameof(IsSyncAvailable));
         SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
+        SyncNowCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -92,6 +108,9 @@ public partial class SettingsViewModel : ViewModelBase
 
         Databases.Add(result);
         Save();
+        SelectedDatabase = result;
+        DeleteDatabaseCommand.NotifyCanExecuteChanged();
+        RefreshSyncState();
     }
 
     [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
@@ -111,8 +130,28 @@ public partial class SettingsViewModel : ViewModelBase
 
         SelectedDatabase.ApplyFrom(result);
         Save();
-        OnPropertyChanged(nameof(IsSyncAvailable));
-        SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
+        RefreshSyncState();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
+    public async Task ConfigureS3Async()
+    {
+        if (SelectedDatabase == null)
+        {
+            return;
+        }
+
+        var copy = SelectedDatabase.Clone(_filePickerService);
+        copy.InitialTabIndex = 1;
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<DatabaseViewModel>(copy));
+        if (result == null)
+        {
+            return;
+        }
+
+        SelectedDatabase.ApplyFrom(result);
+        Save();
+        RefreshSyncState();
     }
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
@@ -125,14 +164,16 @@ public partial class SettingsViewModel : ViewModelBase
 
         var wasSelected = SelectedDatabase.IsSelected;
         Databases.Remove(SelectedDatabase);
-        SelectedDatabase = null;
 
         if (wasSelected)
         {
             Databases[0].IsSelected = true;
         }
 
+        SelectedDatabase = Databases.FirstOrDefault(d => d.IsSelected) ?? Databases.FirstOrDefault();
         Save();
+        DeleteDatabaseCommand.NotifyCanExecuteChanged();
+        RefreshSyncState();
         await Task.CompletedTask;
     }
 
@@ -163,6 +204,7 @@ public partial class SettingsViewModel : ViewModelBase
         database.IsSelected = true;
         SelectedDatabase = database;
         Save();
+        RefreshSyncState();
         await Task.CompletedTask;
     }
 
@@ -222,7 +264,10 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         Save();
+        SelectedDatabase = database;
+        DeleteDatabaseCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsSyncAvailable));
+        SyncNowCommand.NotifyCanExecuteChanged();
         SyncStatus = $"Настройки получены: {config.Name}";
     }
 

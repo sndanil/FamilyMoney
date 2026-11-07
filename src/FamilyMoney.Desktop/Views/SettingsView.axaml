@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,64 +6,414 @@
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
              x:DataType="vm:SettingsViewModel"
              x:Class="FamilyMoney.Views.SettingsView">
-	<UserControl.DataTemplates>
-		<DataTemplate DataType="vm:DatabaseViewModel">
-			<Border Classes="Item">
-				<Grid ColumnDefinitions="* auto" Margin="10 6">
-					<StackPanel Spacing="2">
-						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-						<TextBlock Text="{Binding Path}"
-								   Opacity="0.7"
-								   FontSize="11"
-								   TextTrimming="CharacterEllipsis" />
-					</StackPanel>
-					<mi:MaterialIcon Grid.Column="1"
-													  Kind="CheckCircle"
-													  IsVisible="{Binding IsSelected}"
-													  VerticalAlignment="Center"
-													  Margin="10 0 0 0" />
-				</Grid>
-			</Border>
-		</DataTemplate>
-	</UserControl.DataTemplates>
+
 	<UserControl.Styles>
-		<Style Selector="Border.Header StackPanel">
-			<Setter Property="Width" Value="500" />
+		<Style Selector="TextBlock.PageTitle">
+			<Setter Property="FontSize" Value="24" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="TextBlock.PageSubtitle">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+		</Style>
+		<Style Selector="TextBlock.SectionLabel">
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+		</Style>
+		<Style Selector="TextBlock.InfoLabel">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TextBlock.InfoValue">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+
+		<Style Selector="Border.Card">
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="12" />
+		</Style>
+		<Style Selector="Border.DbIcon">
+			<Setter Property="Width" Value="36" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.DbIcon mi|MaterialIcon">
+			<Setter Property="Width" Value="18" />
+			<Setter Property="Height" Value="18" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+		</Style>
+		<Style Selector="Border.ActiveBadge">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="7 3" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.ActiveBadge TextBlock">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontSize" Value="10" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Border.CountBadge">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="7 2" />
+		</Style>
+		<Style Selector="Border.CountBadge TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Border.InfoCard">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="14 4" />
+		</Style>
+		<Style Selector="Border.InfoRow">
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
+			<Setter Property="Padding" Value="0 9" />
+		</Style>
+		<Style Selector="Border.InfoRow.Last">
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
+		<Style Selector="Border.SyncCard">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="14" />
+		</Style>
+
+		<Style Selector="Button.Primary">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="Padding" Value="14 0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Primary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Opacity" Value="0.9" />
+		</Style>
+		<Style Selector="Button.Secondary">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Padding" Value="12 0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Secondary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Button.Outline">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Padding" Value="12 0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Outline:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+		</Style>
+		<Style Selector="Button.Danger">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Padding" Value="12 0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Danger:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+
+		<Style Selector="ListBoxItem">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Margin" Value="2 0" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="ListBoxItem:selected">
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+		</Style>
+		<Style Selector="ListBoxItem:selected TextBlock.Secondary">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="Opacity" Value="0.72" />
 		</Style>
 	</UserControl.Styles>
 
-	<Grid ColumnDefinitions="*" RowDefinitions="50 auto *" Margin="20">
-		<Border Classes="Header">
-			<StackPanel Orientation="Horizontal" Spacing="10">
-				<TextBlock Text="Базы данных" />
-				<Button Command="{Binding AddDatabaseCommand}" Content="Добавить" />
-				<Button Command="{Binding EditDatabaseCommand}" Content="Изменить" />
-				<Button Command="{Binding DeleteDatabaseCommand}" Content="Удалить" />
-				<Button Command="{Binding SetActiveDatabaseCommand}" Content="Использовать" />
+	<Grid Margin="24" RowDefinitions="Auto,*">
+		<Grid ColumnDefinitions="*,Auto">
+			<StackPanel Spacing="4">
+				<TextBlock Text="Базы данных" Classes="PageTitle" />
+				<TextBlock Text="Локальные базы и синхронизация" Classes="PageSubtitle" />
 			</StackPanel>
-		</Border>
 
-		<Border Grid.Row="1" Classes="Header" Margin="0 8 0 0">
-			<StackPanel Orientation="Horizontal" Spacing="10">
-				<TextBlock Text="Синхронизация S3" VerticalAlignment="Center" />
-				<Button Command="{Binding SyncNowCommand}" Content="Синхронизировать" />
-				<TextBlock Text="{Binding SyncStatus}" VerticalAlignment="Center" Opacity="0.8" />
-			</StackPanel>
-		</Border>
+			<Button Grid.Column="1"
+					Classes="Primary"
+					Command="{Binding AddDatabaseCommand}"
+					VerticalAlignment="Center">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
+					<TextBlock Text="Добавить базу" VerticalAlignment="Center" />
+				</StackPanel>
+			</Button>
+		</Grid>
 
-		<Border Grid.Row="2" Classes="Content">
-			<ListBox ItemsSource="{Binding Databases}"
-					 SelectedItem="{Binding SelectedDatabase}"
-					 Name="DatabasesList">
-				<Interaction.Behaviors>
-					<EventTriggerBehavior EventName="DoubleTapped">
-						<InvokeCommandAction Command="{Binding EditDatabaseCommand}" />
-					</EventTriggerBehavior>
-				</Interaction.Behaviors>
-			</ListBox>
-		</Border>
+		<Grid Grid.Row="1" ColumnDefinitions="340,16,*" Margin="0 18 0 0">
+			<!-- Список баз -->
+			<Border Classes="Card">
+				<Grid RowDefinitions="Auto,*">
+					<Grid ColumnDefinitions="*,Auto" Margin="18 16 18 6">
+						<TextBlock Text="Мои базы" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+						<Border Grid.Column="1" Classes="CountBadge">
+							<TextBlock Text="{Binding Databases.Count}" />
+						</Border>
+					</Grid>
+
+					<ListBox Grid.Row="1"
+							 ItemsSource="{Binding Databases}"
+							 SelectedItem="{Binding SelectedDatabase}"
+							 Background="Transparent"
+							 BorderThickness="0"
+							 Padding="0"
+							 Margin="8 0 8 10">
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="DoubleTapped">
+								<InvokeCommandAction Command="{Binding EditDatabaseCommand}" />
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
+
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="vm:DatabaseViewModel">
+								<Border Padding="10" Background="Transparent">
+									<Grid ColumnDefinitions="Auto,*,Auto">
+										<Border Classes="DbIcon">
+											<mi:MaterialIcon Kind="Database" />
+										</Border>
+
+										<StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center" Spacing="2">
+											<TextBlock Text="{Binding Name}"
+													   FontWeight="SemiBold"
+													   TextTrimming="CharacterEllipsis" />
+											<TextBlock Text="{Binding Path}"
+													   Classes="Secondary"
+													   FontSize="11"
+													   TextTrimming="CharacterEllipsis" />
+										</StackPanel>
+
+										<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+											<Border Classes="ActiveBadge" IsVisible="{Binding IsSelected}">
+												<TextBlock Text="Активная" />
+											</Border>
+											<mi:MaterialIcon Kind="Cloud"
+															 Width="15"
+															 Height="15"
+															 Foreground="{DynamicResource AccentBrush}"
+															 IsVisible="{Binding S3.Enabled}"
+															 ToolTip.Tip="S3 включена" />
+										</StackPanel>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</Grid>
+			</Border>
+
+			<!-- Детали выбранной базы -->
+			<Border Grid.Column="2" Classes="Card">
+				<Grid>
+					<Grid IsVisible="{Binding SelectedDatabase, Converter={x:Static ObjectConverters.IsNotNull}}"
+						  RowDefinitions="Auto,Auto,*,Auto">
+						<Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="24 20 24 0">
+							<StackPanel Spacing="4">
+								<TextBlock Text="{Binding SelectedDatabase.Name}"
+										   FontSize="20"
+										   FontWeight="SemiBold"
+										   TextTrimming="CharacterEllipsis" />
+								<TextBlock Text="{Binding SelectedDatabase.Path}"
+										   Classes="Secondary"
+										   FontSize="12"
+										   TextTrimming="CharacterEllipsis" />
+							</StackPanel>
+							<Border Grid.Column="1"
+									Classes="ActiveBadge"
+									IsVisible="{Binding SelectedDatabase.IsSelected}"
+									VerticalAlignment="Top">
+								<TextBlock Text="Активная" />
+							</Border>
+						</Grid>
+
+						<Border Grid.Row="1"
+								Height="1"
+								Margin="24 16"
+								Background="{DynamicResource LikeGridLinesBrush}" />
+
+						<ScrollViewer Grid.Row="2" Margin="24 0">
+							<StackPanel Spacing="22">
+								<StackPanel Spacing="8">
+									<TextBlock Text="ОСНОВНОЕ" Classes="SectionLabel" />
+
+									<Border Classes="InfoCard">
+										<StackPanel>
+											<Border Classes="InfoRow">
+												<Grid ColumnDefinitions="170,*">
+													<TextBlock Text="Файл базы" Classes="InfoLabel" />
+													<SelectableTextBlock Grid.Column="1"
+																		 Text="{Binding SelectedDatabase.Path}"
+																		 FontSize="12"
+																		 TextWrapping="Wrap" />
+												</Grid>
+											</Border>
+
+											<Border Classes="InfoRow">
+												<Grid ColumnDefinitions="170,*">
+													<TextBlock Text="Папка резервных копий" Classes="InfoLabel" />
+													<SelectableTextBlock Grid.Column="1"
+																		 Text="{Binding SelectedDatabase.BackupsFolder}"
+																		 FontSize="12"
+																		 TextWrapping="Wrap" />
+												</Grid>
+											</Border>
+
+											<Border Classes="InfoRow">
+												<Grid ColumnDefinitions="170,*">
+													<TextBlock Text="Резервных копий" Classes="InfoLabel" />
+													<TextBlock Grid.Column="1"
+															   Classes="InfoValue"
+															   Text="{Binding SelectedDatabase.MaxBackups, StringFormat='до {0}'}" />
+												</Grid>
+											</Border>
+
+											<Border Classes="InfoRow Last">
+												<Grid ColumnDefinitions="170,*">
+													<TextBlock Text="Синхронизация S3" Classes="InfoLabel" />
+													<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+														<TextBlock Text="Включена"
+																   Classes="Positive"
+																   IsVisible="{Binding SelectedDatabase.S3.Enabled}" />
+														<TextBlock Text="Отключена"
+																   Classes="Secondary"
+																   IsVisible="{Binding !SelectedDatabase.S3.Enabled}" />
+														<TextBlock Text="{Binding SelectedDatabase.S3.Bucket}"
+																   Classes="Secondary"
+																   TextTrimming="CharacterEllipsis"
+																   IsVisible="{Binding SelectedDatabase.S3.Enabled}" />
+													</StackPanel>
+												</Grid>
+											</Border>
+										</StackPanel>
+									</Border>
+								</StackPanel>
+
+								<StackPanel Spacing="8">
+									<TextBlock Text="СИНХРОНИЗАЦИЯ" Classes="SectionLabel" />
+
+									<Border Classes="SyncCard" IsVisible="{Binding SelectedDatabase.IsSelected}">
+										<Grid ColumnDefinitions="*,Auto">
+											<StackPanel Spacing="4">
+												<TextBlock Text="S3-синхронизация" FontWeight="SemiBold" />
+												<TextBlock Text="{Binding SyncStatus}"
+														   Classes="Secondary"
+														   TextWrapping="Wrap" />
+												<TextBlock Text="S3 не настроена. Включите её в настройках базы."
+														   Classes="Secondary"
+														   FontSize="11"
+														   TextWrapping="Wrap"
+														   IsVisible="{Binding !IsSyncAvailable}" />
+											</StackPanel>
+
+											<StackPanel Grid.Column="1" Spacing="6" HorizontalAlignment="Right" VerticalAlignment="Center">
+												<Button Classes="Primary"
+														Command="{Binding SyncNowCommand}"
+														IsVisible="{Binding IsSyncAvailable}">
+													<StackPanel Orientation="Horizontal" Spacing="6">
+														<mi:MaterialIcon Kind="Sync" Width="15" Height="15" />
+														<TextBlock Text="Синхронизировать" VerticalAlignment="Center" />
+													</StackPanel>
+												</Button>
+												<Button Classes="Outline"
+														Content="Настроить S3"
+														Command="{Binding ConfigureS3Command}"
+														IsVisible="{Binding !IsSyncAvailable}" />
+											</StackPanel>
+										</Grid>
+									</Border>
+
+									<Border Classes="SyncCard" IsVisible="{Binding !SelectedDatabase.IsSelected}">
+										<StackPanel Spacing="4">
+											<TextBlock Text="Синхронизация" FontWeight="SemiBold" />
+											<TextBlock Text="Синхронизация выполняется для активной базы. Сделайте эту базу активной, чтобы синхронизировать её."
+													   Classes="Secondary"
+													   TextWrapping="Wrap" />
+										</StackPanel>
+									</Border>
+								</StackPanel>
+							</StackPanel>
+						</ScrollViewer>
+
+						<Border Grid.Row="3"
+								BorderBrush="{DynamicResource LikeGridLinesBrush}"
+								BorderThickness="0 1 0 0"
+								Padding="24 14">
+							<Grid ColumnDefinitions="*,Auto">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<Button Classes="Primary"
+											Content="Использовать"
+											Command="{Binding SetActiveDatabaseCommand}"
+											IsVisible="{Binding !SelectedDatabase.IsSelected}" />
+									<Button Classes="Secondary"
+											Content="Изменить"
+											Command="{Binding EditDatabaseCommand}" />
+								</StackPanel>
+
+								<Button Grid.Column="1"
+										Classes="Danger"
+										Content="Удалить"
+										Command="{Binding DeleteDatabaseCommand}" />
+							</Grid>
+						</Border>
+					</Grid>
+
+					<StackPanel HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Spacing="10"
+								IsVisible="{Binding SelectedDatabase, Converter={x:Static ObjectConverters.IsNull}}">
+						<mi:MaterialIcon Kind="DatabaseOutline"
+										 Width="48"
+										 Height="48"
+										 Foreground="{DynamicResource TextSecondaryBrush}" />
+						<TextBlock Text="Выберите базу слева"
+								   FontSize="16"
+								   FontWeight="SemiBold"
+								   HorizontalAlignment="Center" />
+						<TextBlock Text="Здесь появятся её параметры и действия."
+								   Classes="Secondary"
+								   HorizontalAlignment="Center" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
 	</Grid>
 </UserControl>

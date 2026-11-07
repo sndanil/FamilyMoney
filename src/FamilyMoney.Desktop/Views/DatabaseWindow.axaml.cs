@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Messaging;
@@ -16,7 +16,18 @@ public partial class DatabaseWindow : Window
     {
         InitializeComponent();
 
+        Opened += (_, _) => ApplyInitialTab();
+        DataContextChanged += (_, _) => ApplyInitialTab();
+
         WeakReferenceMessenger.Default.Register<DatabaseWindow, ModelCloseMessage<DatabaseViewModel>>(this, static (w, m) => w.Close(m.Result));
+    }
+
+    private void ApplyInitialTab()
+    {
+        if (DataContext is DatabaseViewModel viewModel)
+        {
+            DatabaseTabs.SelectedIndex = viewModel.InitialTabIndex;
+        }
     }
 
     private void OnShowQrClick(object? sender, RoutedEventArgs e)

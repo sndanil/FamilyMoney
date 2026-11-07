@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
@@ -41,6 +41,9 @@ public partial class DatabaseViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
+
+    /// <summary>Вкладка, которая открывается при редактировании: 0 — основное, 1 — S3.</summary>
+    public int InitialTabIndex { get; set; }
 
     private bool CanOkCommand()
     {
@@ -151,6 +154,7 @@ public partial class DatabaseViewModel : ViewModelBase
             BackupsFolder = BackupsFolder,
             MaxBackups = MaxBackups,
             IsSelected = IsSelected,
+            InitialTabIndex = InitialTabIndex,
         };
         clone.S3.ApplyFrom(S3);
         return clone;
