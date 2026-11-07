@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:services="clr-namespace:FamilyMoney.Services;assembly=FamilyMoney"
@@ -159,6 +159,26 @@
 							<Binding Path="CurrentPanel"
 									 Converter="{StaticResource isNotEqualToConverter}"
 									 ConverterParameter="{x:Static services:MainPanel.Categories}" />
+						</Border.IsEnabled>
+					</Border>
+
+					<Border Classes="SideBarMenuItem">
+						<StackPanel>
+							<mi:MaterialIcon Kind="ChartTimelineVariant" />
+							<TextBlock Text="Отчёты" />
+						</StackPanel>
+
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="Tapped">
+								<InvokeCommandAction Command="{Binding SwitchToCommand}"
+													 CommandParameter="{x:Static services:MainPanel.Reports}"/>
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
+
+						<Border.IsEnabled>
+							<Binding Path="CurrentPanel"
+									 Converter="{StaticResource isNotEqualToConverter}"
+									 ConverterParameter="{x:Static services:MainPanel.Reports}" />
 						</Border.IsEnabled>
 					</Border>
 
@@ -333,6 +353,9 @@
 
 				<views:CategoriesView DataContext="{Binding Categories}"
 					IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Categories}}" />
+
+				<views:ReportsView DataContext="{Binding Reports}"
+					IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Reports}}" />
 
 				<views:SettingsView DataContext="{Binding Settings}"
 					IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).CurrentPanel, Converter={StaticResource isEqualToConverter}, ConverterParameter={x:Static services:MainPanel.Settings}}" />

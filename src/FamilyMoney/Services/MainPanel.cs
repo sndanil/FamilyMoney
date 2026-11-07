@@ -4,5 +4,6 @@ public enum MainPanel
 {
     Transactions,
     Categories,
+    Reports,
     Settings,
 }

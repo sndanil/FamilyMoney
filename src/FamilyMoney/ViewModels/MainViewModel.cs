@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
@@ -25,6 +25,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly CategoriesViewModel _categoriesViewModel;
     private readonly AccountsViewModel _accountsViewModel;
     private readonly TransactionsViewModel _transactionsViewModel;
+    private readonly ReportsViewModel _reportsViewModel;
 
     [ObservableProperty]
     public partial int LeftSideWidth { get; set; } = 500;
@@ -51,6 +52,8 @@ public partial class MainViewModel : ViewModelBase
 
     public TransactionsViewModel Transactions => _transactionsViewModel;
 
+    public ReportsViewModel Reports => _reportsViewModel;
+
     public MainViewModel(
         IRepository repository,
         IStateManager stateManager,
@@ -60,6 +63,7 @@ public partial class MainViewModel : ViewModelBase
         CategoriesViewModel categoriesViewModel,
         AccountsViewModel accounts,
         TransactionsViewModel transactionsViewModel,
+        ReportsViewModel reportsViewModel,
         SettingsViewModel settingsViewModel)
     {
         _repository = repository;
@@ -71,6 +75,7 @@ public partial class MainViewModel : ViewModelBase
         _categoriesViewModel = categoriesViewModel;
         _accountsViewModel = accounts;
         _transactionsViewModel = transactionsViewModel;
+        _reportsViewModel = reportsViewModel;
         _period = period;
 
         PropertyChanged += MainViewModel_PropertyChanged;
@@ -79,6 +84,7 @@ public partial class MainViewModel : ViewModelBase
         {
             UpdateTitle();
             MainInit(resetAccountSelection: true);
+            _reportsViewModel.Reload();
             Settings.UpdateSyncStatus();
         });
 
@@ -108,6 +114,10 @@ public partial class MainViewModel : ViewModelBase
         else if (CurrentPanel == MainPanel.Categories)
         {
             _categoriesViewModel.EnsureLoaded();
+        }
+        else if (CurrentPanel == MainPanel.Reports)
+        {
+            _reportsViewModel.Enter();
         }
     }
 

@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
@@ -12,6 +12,7 @@
       <SolidColorBrush x:Key="LikeGridLinesBrush" Color="#E5E5E5" />
       <SolidColorBrush x:Key="PositiveBrush" Color="#4FAE4E" />
       <SolidColorBrush x:Key="NegativeBrush" Color="#E53935" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1B2733" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#707579" />
       <SolidColorBrush x:Key="HoverBackBrush" Color="#F4F4F5" />
     </ResourceDictionary>
@@ -26,6 +27,7 @@
       <SolidColorBrush x:Key="LikeGridLinesBrush" Color="#2B3740" />
       <SolidColorBrush x:Key="PositiveBrush" Color="#4FAE4E" />
       <SolidColorBrush x:Key="NegativeBrush" Color="#FF5252" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#708499" />
       <SolidColorBrush x:Key="HoverBackBrush" Color="#232E3C" />
     </ResourceDictionary>

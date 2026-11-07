@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Configuration;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Services;
 using FamilyMoney.Sync;
@@ -65,6 +65,8 @@ public static class AppInit
         services.AddTransient<SettingsViewModel>();
         services.AddSingleton<AccountsViewModel>();
         services.AddSingleton<TransactionsViewModel>();
+        services.AddSingleton<TimelineViewModel>();
+        services.AddSingleton<ReportsViewModel>();
         services.AddSingleton<MainViewModel>();
     }
 }
