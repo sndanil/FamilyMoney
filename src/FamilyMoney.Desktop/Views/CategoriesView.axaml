@@ -1,93 +1,448 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:cv="using:FamilyMoney.Converters"
-			 xmlns:views="clr-namespace:FamilyMoney.Views"
-			 xmlns:vm="using:FamilyMoney.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			 x:DataType="vm:CategoriesViewModel"
+             xmlns:cv="using:FamilyMoney.Converters"
+             xmlns:views="clr-namespace:FamilyMoney.Views"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+             x:DataType="vm:CategoriesViewModel"
              x:Class="FamilyMoney.Views.CategoriesView">
+
 	<UserControl.Resources>
 		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 	</UserControl.Resources>
-	<UserControl.DataTemplates>
-		<DataTemplate DataType="vm:BaseCategoryViewModel">
-			<Border Classes="Item">
-				<StackPanel Orientation="Horizontal">
-					<Image Stretch="Uniform"
-							Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-							IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
-						/>
-					<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
-				</StackPanel>
-			</Border>
-		</DataTemplate>
-	</UserControl.DataTemplates>
+
 	<UserControl.Styles>
-		<Style Selector="Image">
-			<Setter Property="Height" Value="20" />
-			<Setter Property="Width" Value="20" />
+		<Style Selector="TextBlock.PageTitle">
+			<Setter Property="FontSize" Value="24" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="TextBlock.PageSubtitle">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+		</Style>
+		<Style Selector="TextBlock.SectionLabel">
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+		</Style>
+
+		<Style Selector="Border.Card">
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="12" />
+		</Style>
+		<Style Selector="Border.CategoryIcon">
+			<Setter Property="Width" Value="36" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.CategoryIcon Image">
+			<Setter Property="Width" Value="24" />
+			<Setter Property="Height" Value="24" />
+		</Style>
+		<Style Selector="Border.CategoryIcon mi|MaterialIcon">
+			<Setter Property="Width" Value="18" />
+			<Setter Property="Height" Value="18" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+		</Style>
+		<Style Selector="Border.CategoryIconLarge">
+			<Setter Property="Width" Value="56" />
+			<Setter Property="Height" Value="56" />
+			<Setter Property="CornerRadius" Value="14" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.CategoryIconLarge Image">
+			<Setter Property="Width" Value="40" />
+			<Setter Property="Height" Value="40" />
+		</Style>
+		<Style Selector="Border.CategoryIconLarge mi|MaterialIcon">
+			<Setter Property="Width" Value="28" />
+			<Setter Property="Height" Value="28" />
+			<Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+		</Style>
+		<Style Selector="Border.CountBadge">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="7 2" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.CountBadge TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+			<Setter Property="FontSize" Value="11" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Border.TypeBadge">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="8 3" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.TypeBadge TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+			<Setter Property="FontSize" Value="10" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="Border.HiddenBadge">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="7 3" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Border.HiddenBadge TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+			<Setter Property="FontSize" Value="10" />
+		</Style>
+		<Style Selector="Border.SubCategoryRow">
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
+			<Setter Property="Padding" Value="0 9" />
+		</Style>
+
+		<Style Selector="Button.Primary">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="Padding" Value="14 0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Primary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+			<Setter Property="Opacity" Value="0.9" />
+		</Style>
+		<Style Selector="Button.Secondary">
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Padding" Value="12 0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.Secondary:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Button.TypeTab">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="Padding" Value="14 0" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.TypeTab:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Button.TypeTab.Active">
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+		</Style>
+
+		<Style Selector="ListBoxItem">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Margin" Value="2 0" />
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="ListBoxItem:selected">
+			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+		</Style>
+		<Style Selector="ListBoxItem:selected TextBlock.Secondary">
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="Opacity" Value="0.72" />
 		</Style>
 	</UserControl.Styles>
-	<Grid ColumnDefinitions="* * *" RowDefinitions="50 *">
-		<Border Classes="Header">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Доходы" />
-				<Button Command="{Binding CreateDebetCommand}" 
-						Content="Добавить" />
+
+	<Grid Margin="24" RowDefinitions="Auto,Auto,*">
+		<Grid ColumnDefinitions="*,Auto">
+			<StackPanel Spacing="4">
+				<TextBlock Text="Категории" Classes="PageTitle" />
+				<TextBlock Text="Категории и подкатегории" Classes="PageSubtitle" />
 			</StackPanel>
-		</Border>
-		<Border Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding DebetCategories}" Name="DebetCategories" >
-				<Interaction.Behaviors>
-					<EventTriggerBehavior EventName="DoubleTapped">
-						<InvokeCommandAction Command="{Binding EditCommand}"
-											 CommandParameter="{Binding #DebetCategories.SelectedItem}"/>
-					</EventTriggerBehavior>
-				</Interaction.Behaviors>
 
-			</ListBox>
-		</Border>
+			<Button Grid.Column="1"
+					Classes="Primary"
+					Command="{Binding CreateCategoryCommand}"
+					VerticalAlignment="Center">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
+					<TextBlock Text="Добавить категорию" VerticalAlignment="Center" />
+				</StackPanel>
+			</Button>
+		</Grid>
 
-		<Border Grid.Column="1" Classes="Header">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Расходы" />
-				<Button Command="{Binding CreateCreditCommand}"
-						Content="Добавить" />
-			</StackPanel>
-		</Border>
-		<Border Grid.Column="1" Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding CreditCategories}" Name="CreditCategories" >
-				<Interaction.Behaviors>
-					<EventTriggerBehavior EventName="DoubleTapped">
-						<InvokeCommandAction Command="{Binding EditCommand}"
-											 CommandParameter="{Binding #CreditCategories.SelectedItem}"/>
-					</EventTriggerBehavior>
-				</Interaction.Behaviors>
+		<StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0 16 0 0">
+			<Button Classes="TypeTab"
+					Classes.Active="{Binding IsDebetSelected}"
+					Command="{Binding SelectTypeCommand}"
+					CommandParameter="{x:Static vm:CategoryKind.Debet}">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<TextBlock Text="Доходы" VerticalAlignment="Center" />
+					<Border Classes="CountBadge">
+						<TextBlock Text="{Binding DebetCategories.Count}" />
+					</Border>
+				</StackPanel>
+			</Button>
 
-			</ListBox>
+			<Button Classes="TypeTab"
+					Classes.Active="{Binding IsCreditSelected}"
+					Command="{Binding SelectTypeCommand}"
+					CommandParameter="{x:Static vm:CategoryKind.Credit}">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<TextBlock Text="Расходы" VerticalAlignment="Center" />
+					<Border Classes="CountBadge">
+						<TextBlock Text="{Binding CreditCategories.Count}" />
+					</Border>
+				</StackPanel>
+			</Button>
 
-		</Border>
+			<Button Classes="TypeTab"
+					Classes.Active="{Binding IsTransferSelected}"
+					Command="{Binding SelectTypeCommand}"
+					CommandParameter="{x:Static vm:CategoryKind.Transfer}">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<TextBlock Text="Переводы" VerticalAlignment="Center" />
+					<Border Classes="CountBadge">
+						<TextBlock Text="{Binding TransferCategories.Count}" />
+					</Border>
+				</StackPanel>
+			</Button>
+		</StackPanel>
 
-		<Border Grid.Column="2" Classes="Header">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Переводы" />
-				<Button Command="{Binding CreateTransferCommand}"
-						Content="Добавить" />
-			</StackPanel>
-		</Border>
-		<Border Grid.Column="2" Grid.Row="1" Classes="Content">
-			<ListBox ItemsSource="{Binding TransferCategories}" Name="TransferCategories" >
-				<Interaction.Behaviors>
-					<EventTriggerBehavior EventName="DoubleTapped">
-						<InvokeCommandAction Command="{Binding EditCommand}"
-											 CommandParameter="{Binding #TransferCategories.SelectedItem}"/>
-					</EventTriggerBehavior>
-				</Interaction.Behaviors>
-			</ListBox>
-		</Border>
+		<Grid Grid.Row="2" ColumnDefinitions="360,16,*" Margin="0 16 0 0">
+			<!-- Список категорий -->
+			<Border Classes="Card">
+				<Grid RowDefinitions="Auto,Auto,Auto,*">
+					<Grid ColumnDefinitions="*,Auto" Margin="18 16 18 6">
+						<TextBlock Text="Категории" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+						<Border Grid.Column="1" Classes="CountBadge">
+							<TextBlock Text="{Binding VisibleCategories.Count}" />
+						</Border>
+					</Grid>
+
+					<TextBox Grid.Row="1"
+							 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+							 PlaceholderText="Поиск по названию"
+							 Margin="16 0 16 8"
+							 Height="36"
+							 CornerRadius="8" />
+
+					<CheckBox Grid.Row="2"
+							  Content="Показывать скрытые"
+							  IsChecked="{Binding ShowHidden}"
+							  Margin="16 0 16 8" />
+
+					<Grid Grid.Row="3">
+						<ListBox ItemsSource="{Binding VisibleCategories}"
+								 SelectedItem="{Binding SelectedCategory}"
+								 Background="Transparent"
+								 BorderThickness="0"
+								 Padding="0"
+								 Margin="8 0 8 10">
+							<Interaction.Behaviors>
+								<EventTriggerBehavior EventName="DoubleTapped">
+									<InvokeCommandAction Command="{Binding EditCommand}"
+														 CommandParameter="{Binding SelectedCategory}" />
+								</EventTriggerBehavior>
+							</Interaction.Behaviors>
+
+							<ListBox.ItemTemplate>
+								<DataTemplate x:DataType="vm:BaseCategoryViewModel">
+									<Border Padding="10" Background="Transparent">
+										<Grid ColumnDefinitions="Auto,*,Auto">
+											<Border Classes="CategoryIcon">
+												<Panel>
+													<Image Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+														   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+													<mi:MaterialIcon Kind="TagOutline"
+																	 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+												</Panel>
+											</Border>
+
+											<StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center" Spacing="2">
+												<TextBlock Text="{Binding Name}"
+														   FontWeight="SemiBold"
+														   TextTrimming="CharacterEllipsis" />
+												<TextBlock Classes="Secondary"
+														   FontSize="11"
+														   Text="{Binding SubCategories.Count, StringFormat='Подкатегорий: {0}'}" />
+											</StackPanel>
+
+											<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+												<mi:MaterialIcon Kind="EyeOff"
+																 Width="15"
+																 Height="15"
+																 Foreground="{DynamicResource TextSecondaryBrush}"
+																 IsVisible="{Binding IsHidden}"
+																 ToolTip.Tip="Скрыта" />
+											</StackPanel>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+						<StackPanel HorizontalAlignment="Center"
+									VerticalAlignment="Center"
+									Spacing="6"
+									IsVisible="{Binding HasNoVisibleCategories}">
+							<mi:MaterialIcon Kind="TagOffOutline"
+											 Width="32"
+											 Height="32"
+											 Foreground="{DynamicResource TextSecondaryBrush}" />
+							<TextBlock Text="Ничего не найдено"
+									   Classes="Secondary"
+									   HorizontalAlignment="Center" />
+						</StackPanel>
+					</Grid>
+				</Grid>
+			</Border>
+
+			<!-- Детали категории -->
+			<Border Grid.Column="2" Classes="Card">
+				<Grid>
+					<Grid IsVisible="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+						  RowDefinitions="Auto,Auto,*,Auto">
+						<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="24 20 24 0">
+							<Border Classes="CategoryIconLarge">
+								<Panel>
+									<Image Source="{Binding SelectedCategory.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+										   IsVisible="{Binding SelectedCategory.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+									<mi:MaterialIcon Kind="TagOutline"
+													 IsVisible="{Binding SelectedCategory.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+								</Panel>
+							</Border>
+
+							<StackPanel Grid.Column="1" Margin="14 0" VerticalAlignment="Center" Spacing="4">
+								<TextBlock Text="{Binding SelectedCategory.Name}"
+										   FontSize="20"
+										   FontWeight="SemiBold"
+										   TextTrimming="CharacterEllipsis" />
+								<TextBlock Text="{Binding SelectedCategory.SubCategories.Count, StringFormat='Подкатегорий: {0}'}"
+										   Classes="Secondary"
+										   FontSize="12" />
+							</StackPanel>
+
+							<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+								<Border Classes="TypeBadge">
+									<TextBlock Text="{Binding SelectedTypeTitle}" />
+								</Border>
+								<Border Classes="HiddenBadge" IsVisible="{Binding SelectedCategory.IsHidden}">
+									<StackPanel Orientation="Horizontal" Spacing="4">
+										<mi:MaterialIcon Kind="EyeOff" Width="12" Height="12" />
+										<TextBlock Text="Скрыта" VerticalAlignment="Center" />
+									</StackPanel>
+								</Border>
+							</StackPanel>
+						</Grid>
+
+						<Border Grid.Row="1"
+								Height="1"
+								Margin="24 16"
+								Background="{DynamicResource LikeGridLinesBrush}" />
+
+						<ScrollViewer Grid.Row="2" Margin="24 0">
+							<StackPanel Spacing="8">
+								<TextBlock Text="ПОДКАТЕГОРИИ" Classes="SectionLabel" />
+
+								<Border Background="{DynamicResource HoverBackBrush}"
+										CornerRadius="10"
+										Padding="14 4">
+									<StackPanel>
+										<ItemsControl ItemsSource="{Binding SelectedCategory.SubCategories}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
+													<Border Classes="SubCategoryRow">
+														<Grid ColumnDefinitions="*,Auto">
+															<TextBlock Text="{Binding Name}"
+																	   FontSize="12"
+																	   TextTrimming="CharacterEllipsis" />
+															<TextBlock Grid.Column="1"
+																	   Classes="Secondary"
+																	   FontSize="11"
+																	   Text="{Binding LastSum, StringFormat='Последняя сумма: #,##0.00'}"
+																	   IsVisible="{Binding LastSum, Converter={StaticResource isNotZeroConverter}}" />
+														</Grid>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+
+										<StackPanel Spacing="4"
+													Margin="0 10"
+													IsVisible="{Binding SelectedCategory.HasNoSubCategories}">
+											<TextBlock Text="Подкатегорий пока нет" FontWeight="SemiBold" />
+											<TextBlock Text="Они создаются при вводе транзакции."
+													   Classes="Secondary"
+													   FontSize="11" />
+										</StackPanel>
+									</StackPanel>
+								</Border>
+							</StackPanel>
+						</ScrollViewer>
+
+						<Border Grid.Row="3"
+								BorderBrush="{DynamicResource LikeGridLinesBrush}"
+								BorderThickness="0 1 0 0"
+								Padding="24 14">
+							<Grid ColumnDefinitions="*,Auto">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<Button Classes="Secondary"
+											Content="Изменить"
+											Command="{Binding EditCommand}"
+											CommandParameter="{Binding SelectedCategory}" />
+									<Button Classes="Secondary"
+											Command="{Binding ToggleHiddenCommand}"
+											CommandParameter="{Binding SelectedCategory}">
+										<StackPanel Orientation="Horizontal" Spacing="6">
+											<TextBlock Text="Скрыть"
+													   IsVisible="{Binding !SelectedCategory.IsHidden}" />
+											<TextBlock Text="Показать"
+													   IsVisible="{Binding SelectedCategory.IsHidden}" />
+										</StackPanel>
+									</Button>
+								</StackPanel>
+
+								<TextBlock Grid.Column="1"
+										   Text="Подкатегории добавляются при вводе транзакции."
+										   Classes="Secondary"
+										   FontSize="11"
+										   VerticalAlignment="Center" />
+							</Grid>
+						</Border>
+					</Grid>
+
+					<StackPanel HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Spacing="10"
+								IsVisible="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNull}}">
+						<mi:MaterialIcon Kind="ShapeOutline"
+										 Width="48"
+										 Height="48"
+										 Foreground="{DynamicResource TextSecondaryBrush}" />
+						<TextBlock Text="Выберите категорию слева"
+								   FontSize="16"
+								   FontWeight="SemiBold"
+								   HorizontalAlignment="Center" />
+						<TextBlock Text="Здесь появятся её подкатегории и действия."
+								   Classes="Secondary"
+								   HorizontalAlignment="Center" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
 	</Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
@@ -13,6 +14,13 @@ using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
+public enum CategoryKind
+{
+    Debet,
+    Credit,
+    Transfer,
+}
+
 public partial class CategoriesViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
@@ -24,6 +32,39 @@ public partial class CategoriesViewModel : ViewModelBase
     public ObservableCollection<DebetCategoryViewModel> DebetCategories { get => _debetCategories; set => _debetCategories = value; }
     public ObservableCollection<CreditCategoryViewModel> CreditCategories { get => _creditCategories; set => _creditCategories = value; }
     public ObservableCollection<TransferCategoryViewModel> TransferCategories { get => _transferCategories; set => _transferCategories = value; }
+
+    /// <summary>Категории выбранного типа с учётом поиска и показа скрытых.</summary>
+    public ObservableCollection<BaseCategoryViewModel> VisibleCategories { get; } = [];
+
+    [ObservableProperty]
+    public partial CategoryKind SelectedType { get; set; } = CategoryKind.Debet;
+
+    [ObservableProperty]
+    public partial BaseCategoryViewModel? SelectedCategory { get; set; }
+
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool ShowHidden { get; set; }
+
+    public bool IsDebetSelected => SelectedType == CategoryKind.Debet;
+
+    public bool IsCreditSelected => SelectedType == CategoryKind.Credit;
+
+    public bool IsTransferSelected => SelectedType == CategoryKind.Transfer;
+
+    public string SelectedTypeTitle => SelectedType switch
+    {
+        CategoryKind.Debet => "Доход",
+        CategoryKind.Credit => "Расход",
+        CategoryKind.Transfer => "Перевод",
+        _ => string.Empty,
+    };
+
+    public bool HasVisibleCategories => VisibleCategories.Count > 0;
+
+    public bool HasNoVisibleCategories => !HasVisibleCategories;
 
     private bool _isLoaded;
 
@@ -54,11 +95,138 @@ public partial class CategoriesViewModel : ViewModelBase
         CreditCategories.Clear();
         TransferCategories.Clear();
 
-        var categories = _repository.GetCategories();
+        var categories = _repository.GetCategories().ToList();
 
         DebetCategories.AddRange(GetByTypes<DebetCategory, DebetCategoryViewModel>(categories));
         CreditCategories.AddRange(GetByTypes<CreditCategory, CreditCategoryViewModel>(categories));
         TransferCategories.AddRange(GetByTypes<TransferCategory, TransferCategoryViewModel>(categories));
+
+        LoadSubCategories(categories);
+        RefreshVisibleCategories();
+    }
+
+    partial void OnSelectedTypeChanged(CategoryKind value)
+    {
+        OnPropertyChanged(nameof(IsDebetSelected));
+        OnPropertyChanged(nameof(IsCreditSelected));
+        OnPropertyChanged(nameof(IsTransferSelected));
+        OnPropertyChanged(nameof(SelectedTypeTitle));
+        RefreshVisibleCategories();
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        RefreshVisibleCategories();
+    }
+
+    partial void OnShowHiddenChanged(bool value)
+    {
+        RefreshVisibleCategories();
+    }
+
+    private void RefreshVisibleCategories()
+    {
+        IEnumerable<BaseCategoryViewModel> source = SelectedType switch
+        {
+            CategoryKind.Debet => DebetCategories,
+            CategoryKind.Credit => CreditCategories,
+            CategoryKind.Transfer => TransferCategories,
+            _ => [],
+        };
+
+        var search = SearchText.Trim();
+        var filtered = source
+            .Where(c => ShowHidden || !c.IsHidden)
+            .Where(c => search.Length == 0 || c.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var previous = SelectedCategory;
+        VisibleCategories.Clear();
+
+        foreach (var category in filtered)
+        {
+            VisibleCategories.Add(category);
+        }
+
+        OnPropertyChanged(nameof(HasVisibleCategories));
+        OnPropertyChanged(nameof(HasNoVisibleCategories));
+
+        if (previous != null && VisibleCategories.Contains(previous))
+        {
+            SelectedCategory = previous;
+        }
+        else
+        {
+            SelectedCategory = VisibleCategories.FirstOrDefault();
+        }
+    }
+
+    private void LoadSubCategories(IEnumerable<Category> categories)
+    {
+        var allSubCategories = _repository.GetSubCategories().ToList();
+        var from = DateTime.Today.AddYears(-1);
+        var lastSums = _repository.GetLastSumsBySubCategories(from, allSubCategories.Select(s => s.Id))
+            .ToDictionary(s => s.SubCategoryId);
+
+        var byCategory = allSubCategories
+            .Where(s => s.CategoryId != null)
+            .GroupBy(s => s.CategoryId!.Value)
+            .ToDictionary(g => g.Key, g => g.OrderBy(s => s.Name).ToList());
+
+        foreach (var category in AllCategories())
+        {
+            category.SubCategories.Clear();
+
+            if (!byCategory.TryGetValue(category.Id, out var subCategories))
+            {
+                continue;
+            }
+
+            foreach (var subCategory in subCategories)
+            {
+                var viewModel = new BaseSubCategoryViewModel
+                {
+                    Id = subCategory.Id,
+                    CategoryId = subCategory.CategoryId,
+                    Name = subCategory.Name,
+                    Category = category,
+                    LastSum = lastSums.TryGetValue(subCategory.Id, out var sum) ? sum.Sum : 0m,
+                };
+
+                category.SubCategories.Add(viewModel);
+            }
+        }
+    }
+
+    private IEnumerable<BaseCategoryViewModel> AllCategories()
+    {
+        return DebetCategories.Cast<BaseCategoryViewModel>()
+            .Concat(CreditCategories)
+            .Concat(TransferCategories);
+    }
+
+    [RelayCommand]
+    public async Task SelectTypeAsync(CategoryKind type)
+    {
+        SelectedType = type;
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public async Task CreateCategoryAsync()
+    {
+        switch (SelectedType)
+        {
+            case CategoryKind.Debet:
+                await CreateCategory(DebetCategories);
+                break;
+            case CategoryKind.Credit:
+                await CreateCategory(CreditCategories);
+                break;
+            case CategoryKind.Transfer:
+                await CreateCategory(TransferCategories);
+                break;
+        }
     }
 
     [RelayCommand]
@@ -79,7 +247,7 @@ public partial class CategoriesViewModel : ViewModelBase
         await CreateCategory(TransferCategories);
     }
 
-    private async Task CreateCategory<C>(ObservableCollection<C> categories) where C: BaseCategoryViewModel, new()
+    private async Task CreateCategory<C>(ObservableCollection<C> categories) where C : BaseCategoryViewModel, new()
     {
         var category = new C
         {
@@ -91,11 +259,13 @@ public partial class CategoriesViewModel : ViewModelBase
         {
             SaveCategory(result, null);
             categories.Add((C)result);
+            RefreshVisibleCategories();
+            SelectedCategory = result;
         }
     }
 
     [RelayCommand]
-    public async Task EditAsync(BaseCategoryViewModel editCategory)
+    public async Task EditAsync(BaseCategoryViewModel? editCategory)
     {
         if (editCategory == null)
         {
@@ -103,7 +273,7 @@ public partial class CategoriesViewModel : ViewModelBase
         }
 
         BaseCategoryViewModel category = new DebetCategoryViewModel();
-        if (editCategory is CreditCategoryViewModel) 
+        if (editCategory is CreditCategoryViewModel)
         {
             category = new CreditCategoryViewModel();
         }
@@ -121,7 +291,22 @@ public partial class CategoriesViewModel : ViewModelBase
         if (result != null)
         {
             SaveCategory(result, editCategory);
+            RefreshVisibleCategories();
         }
+    }
+
+    [RelayCommand]
+    public async Task ToggleHiddenAsync(BaseCategoryViewModel? category)
+    {
+        if (category == null)
+        {
+            return;
+        }
+
+        category.IsHidden = !category.IsHidden;
+        SaveCategory(category, category);
+        RefreshVisibleCategories();
+        await Task.CompletedTask;
     }
 
     private void SaveCategory(BaseCategoryViewModel categoryForSave, BaseCategoryViewModel? categoryForUpdate)
@@ -173,7 +358,7 @@ public partial class CategoriesViewModel : ViewModelBase
         }
     }
 
-    private IEnumerable<T> GetByTypes<C, T>(IEnumerable<Category> categories)where C : Category where T: BaseCategoryViewModel, new()
+    private IEnumerable<T> GetByTypes<C, T>(IEnumerable<Category> categories) where C : Category where T : BaseCategoryViewModel, new()
     {
         return categories.OfType<C>().Select(c =>
         {

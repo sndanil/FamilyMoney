@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.DataAccess;
@@ -6,12 +6,28 @@ using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.Utils;
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
 public abstract partial class BaseCategoryViewModel : ViewModelBase
 {
+    public BaseCategoryViewModel()
+    {
+        SubCategories.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasSubCategories));
+            OnPropertyChanged(nameof(HasNoSubCategories));
+        };
+    }
+
+    public ObservableCollection<BaseSubCategoryViewModel> SubCategories { get; } = [];
+
+    public bool HasSubCategories => SubCategories.Count > 0;
+
+    public bool HasNoSubCategories => !HasSubCategories;
+
     [ObservableProperty]
     public partial Guid Id { get; set; }
 

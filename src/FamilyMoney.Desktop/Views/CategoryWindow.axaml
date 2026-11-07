@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:cv="using:FamilyMoney.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,13 +7,14 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		Width="600" Height="400"
 		WindowStartupLocation="CenterOwner"
+		CanMaximize="False"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="using:FamilyMoney.ViewModels"
 		x:DataType="vm:BaseCategoryViewModel"		
         x:Class="FamilyMoney.Views.CategoryWindow"
 		Classes="Dialog"
-        Title="">
+        Title="Параметры категории">
 	<Window.Resources>
 		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 	</Window.Resources>
