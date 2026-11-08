@@ -10,9 +10,17 @@
   <ContentPage.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
     <cv:DateTimeToDateTimeOffsetConverter x:Key="dateTimeToDateTimeOffsetConverter" />
+    <Thickness x:Key="DatePickerHostPadding">0 4.5 0 0</Thickness>
+    <Thickness x:Key="DatePickerHostMonthPadding">9 4.5 0 0</Thickness>
   </ContentPage.Resources>
 
   <ContentPage.Styles>
+    <Style Selector="DatePicker TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="DatePicker Button">
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
     <Style Selector="TextBlock.SectionTitle">
       <Setter Property="FontSize" Value="12" />
       <Setter Property="FontWeight" Value="SemiBold" />
