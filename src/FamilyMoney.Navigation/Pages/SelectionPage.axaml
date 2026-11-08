@@ -1,0 +1,190 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:s="using:System"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:pages="using:FamilyMoney.Navigation.Pages"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.SelectionPage"
+             x:DataType="pages:SelectionViewModel"
+             Header="{Binding Title}">
+  <ContentPage.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:LevelToIndentConverter x:Key="levelToIndentConverter" />
+  </ContentPage.Resources>
+
+  <ContentPage.Styles>
+    <Style Selector="Border.SelectionItem">
+      <Setter Property="Padding" Value="12 10" />
+    </Style>
+    <Style Selector="Border.SelectionItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.ClearSearch">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="8 1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="ListBoxItem:selected">
+      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+    </Style>
+    <Style Selector="TextBlock.GroupName">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </ContentPage.Styles>
+
+  <ContentPage.DataTemplates>
+    <DataTemplate x:DataType="vm:AccountViewModel">
+      <Border Classes="SelectionItem">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              Margin="{Binding Level, Converter={StaticResource levelToIndentConverter}}">
+          <Border Width="34" Height="34" CornerRadius="9" Background="{DynamicResource GroupBackBrush}">
+            <Panel>
+              <Image Width="24" Height="24"
+                     Stretch="Uniform"
+                     Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                     IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <mi:MaterialIcon Kind="Wallet"
+                               Width="18"
+                               Height="18"
+                               Foreground="{DynamicResource AccentBrush}"
+                               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+            </Panel>
+          </Border>
+
+          <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center" Spacing="2">
+            <TextBlock Text="{Binding Name}"
+                       Classes.GroupName="{Binding IsGroup}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding Sum, StringFormat='#,##0.00'}"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       IsVisible="{Binding !IsGroup}" />
+          </StackPanel>
+
+          <mi:MaterialIcon Grid.Column="2"
+                           Kind="ChevronRight"
+                           Width="18"
+                           Height="18"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           IsVisible="{Binding !IsGroup}" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="vm:BaseCategoryViewModel">
+      <Border Classes="SelectionItem">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="34" Height="34" CornerRadius="9" Background="{DynamicResource GroupBackBrush}">
+            <Panel>
+              <Image Width="24" Height="24"
+                     Stretch="Uniform"
+                     Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                     IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <mi:MaterialIcon Kind="TagOutline"
+                               Width="18"
+                               Height="18"
+                               Foreground="{DynamicResource AccentBrush}"
+                               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+            </Panel>
+          </Border>
+
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Name}"
+                     Margin="10 0"
+                     VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+
+          <mi:MaterialIcon Grid.Column="2"
+                           Kind="ChevronRight"
+                           Width="18"
+                           Height="18"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
+      <Border Classes="SelectionItem">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="{Binding Name}"
+                     VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding LastSum, StringFormat='#,##0.00'}"
+                     FontSize="11"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="s:String">
+      <Border Classes="SelectionItem">
+        <Grid ColumnDefinitions="Auto,*">
+          <mi:MaterialIcon Kind="CommentTextOutline"
+                           Width="18"
+                           Height="18"
+                           Margin="0 1 10 0"
+                           VerticalAlignment="Top"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding}"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </ContentPage.DataTemplates>
+
+  <Grid RowDefinitions="Auto,*" Background="{DynamicResource MainBackBrush}">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="12 8 12 4">
+      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+               PlaceholderText="{Binding SearchPlaceholder}"
+               Height="44"
+               CornerRadius="10" />
+      <Button Grid.Column="1"
+              Classes="ClearSearch"
+              IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+              Click="ClearSearchClick">
+        <mi:MaterialIcon Kind="Close" Width="18" Height="18" />
+      </Button>
+    </Grid>
+
+    <Grid Grid.Row="1">
+      <ListBox x:Name="SelectionList"
+               ItemsSource="{Binding FilteredItems}"
+               SelectedItem="{Binding SelectedItem}"
+               SelectionChanged="SelectionList_SelectionChanged"
+               Background="Transparent"
+               BorderThickness="0"
+               Padding="0 4" />
+
+      <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Spacing="8"
+                  IsVisible="{Binding HasNoItems}">
+        <mi:MaterialIcon Kind="MagnifyClose"
+                         Width="36"
+                         Height="36"
+                         Foreground="{DynamicResource TextSecondaryBrush}" />
+        <TextBlock Text="{Binding EmptyText}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   MaxWidth="260" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</ContentPage>

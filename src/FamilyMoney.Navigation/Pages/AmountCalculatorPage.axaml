@@ -1,0 +1,92 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FamilyMoney.Navigation.Pages.AmountCalculatorPage"
+             Header="Калькулятор">
+  <ContentPage.Styles>
+    <Style Selector="Button.CalcKey">
+      <Setter Property="MinHeight" Value="56" />
+      <Setter Property="Margin" Value="4" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="IsTabStop" Value="False" />
+    </Style>
+    <Style Selector="Button.CalcOperator">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.CalcAction">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.CalcApply">
+      <Setter Property="Height" Value="52" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </ContentPage.Styles>
+
+  <Grid Background="{DynamicResource MainBackBrush}">
+    <Grid RowDefinitions="Auto,*,Auto"
+          MaxWidth="520"
+          MaxHeight="760"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Center"
+          Margin="12 8 12 12">
+    <Border Background="{DynamicResource GroupBackBrush}"
+            BorderBrush="{DynamicResource LikeGridLinesBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="16 10"
+            MinHeight="64">
+      <TextBlock x:Name="DisplayText"
+                 Text="0"
+                 FontSize="30"
+                 FontWeight="SemiBold"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Center"
+                 TextTrimming="CharacterEllipsis" />
+    </Border>
+
+    <Grid Grid.Row="1"
+          Margin="0 12 0 12"
+          RowDefinitions="*,*,*,*,*"
+          ColumnDefinitions="*,*,*,*">
+      <Button Grid.Row="0" Grid.Column="0" Classes="CalcKey CalcAction" Content="C" Click="ClearClick" />
+      <Button Grid.Row="0" Grid.Column="1" Classes="CalcKey CalcAction" Content="⌫" Click="BackspaceClick" />
+      <Button Grid.Row="0" Grid.Column="2" Classes="CalcKey CalcOperator" Content="÷" Tag="/" Click="OperatorClick" />
+      <Button Grid.Row="0" Grid.Column="3" Classes="CalcKey CalcOperator" Content="×" Tag="*" Click="OperatorClick" />
+
+      <Button Grid.Row="1" Grid.Column="0" Classes="CalcKey" Content="7" Tag="7" Click="DigitClick" />
+      <Button Grid.Row="1" Grid.Column="1" Classes="CalcKey" Content="8" Tag="8" Click="DigitClick" />
+      <Button Grid.Row="1" Grid.Column="2" Classes="CalcKey" Content="9" Tag="9" Click="DigitClick" />
+      <Button Grid.Row="1" Grid.Column="3" Classes="CalcKey CalcOperator" Content="−" Tag="-" Click="OperatorClick" />
+
+      <Button Grid.Row="2" Grid.Column="0" Classes="CalcKey" Content="4" Tag="4" Click="DigitClick" />
+      <Button Grid.Row="2" Grid.Column="1" Classes="CalcKey" Content="5" Tag="5" Click="DigitClick" />
+      <Button Grid.Row="2" Grid.Column="2" Classes="CalcKey" Content="6" Tag="6" Click="DigitClick" />
+      <Button Grid.Row="2" Grid.Column="3" Classes="CalcKey CalcOperator" Content="+" Tag="+" Click="OperatorClick" />
+
+      <Button Grid.Row="3" Grid.Column="0" Classes="CalcKey" Content="1" Tag="1" Click="DigitClick" />
+      <Button Grid.Row="3" Grid.Column="1" Classes="CalcKey" Content="2" Tag="2" Click="DigitClick" />
+      <Button Grid.Row="3" Grid.Column="2" Classes="CalcKey" Content="3" Tag="3" Click="DigitClick" />
+      <Button Grid.Row="3" Grid.Column="3" Grid.RowSpan="2"
+              Classes="CalcKey CalcOperator" Content="="
+              VerticalAlignment="Stretch"
+              Click="EqualsClick" />
+
+      <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+              Classes="CalcKey" Content="0" Tag="0" Click="DigitClick" />
+      <Button Grid.Row="4" Grid.Column="2" Classes="CalcKey" Content="," Click="DecimalClick" />
+    </Grid>
+
+    <Button Grid.Row="2" Classes="CalcApply" Content="Применить" Click="ApplyClick" />
+    </Grid>
+  </Grid>
+</ContentPage>

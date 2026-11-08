@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="FamilyMoney.Navigation.Controls.AmountEntry"
+             x:Name="Root"
+             Focusable="False">
+  <Border Background="{DynamicResource GroupBackBrush}"
+          BorderBrush="{DynamicResource LikeGridLinesBrush}"
+          BorderThickness="1"
+          CornerRadius="10"
+          Padding="10 0"
+          MinHeight="52">
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBox Name="AmountTextBox"
+               Text="{Binding #Root.DisplayText, Mode=TwoWay}"
+               Background="Transparent"
+               BorderThickness="0"
+               Padding="0"
+               Height="50"
+               FontSize="24"
+               FontWeight="SemiBold"
+               HorizontalContentAlignment="Right"
+               VerticalContentAlignment="Center"
+               PlaceholderText="0,00"
+               LostFocus="AmountTextBox_OnLostFocus"
+               KeyDown="AmountTextBox_OnKeyDown"
+               GotFocus="AmountTextBox_OnGotFocus"
+               TextChanged="AmountTextBox_OnTextChanged" />
+
+      <Button Grid.Column="1"
+              Name="CalculatorButton"
+              Width="42"
+              Height="42"
+              Padding="0"
+              Margin="6 0 0 0"
+              CornerRadius="10"
+              Background="Transparent"
+              BorderThickness="0"
+              VerticalAlignment="Center"
+              ToolTip.Tip="Калькулятор"
+              Click="CalculatorButton_OnClick">
+        <mi:MaterialIcon Kind="Calculator" Width="22" Height="22" />
+      </Button>
+    </Grid>
+  </Border>
+</UserControl>

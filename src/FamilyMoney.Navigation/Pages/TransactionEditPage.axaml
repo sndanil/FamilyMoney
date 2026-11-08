@@ -1,7 +1,7 @@
-﻿<ContentPage xmlns="https://github.com/avaloniaui"
+<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:s="using:System"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.TransactionEditPage"
@@ -9,27 +9,66 @@
              Header="Транзакция">
   <ContentPage.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
-    <cv:IsNotAccountGroupConverter x:Key="accountConverter" />
-    <cv:NumericUpDownValueConverter x:Key="numericUpDownValueConverter" />
+    <cv:DateTimeToDateTimeOffsetConverter x:Key="dateTimeToDateTimeOffsetConverter" />
   </ContentPage.Resources>
 
   <ContentPage.Styles>
-    <Style Selector="TextBlock.Label">
+    <Style Selector="TextBlock.SectionTitle">
       <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-      <Setter Property="Margin" Value="2 8 0 2" />
     </Style>
-    <Style Selector="ComboBox">
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Style Selector="TextBlock.Label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Margin" Value="2 0 0 0" />
     </Style>
-    <Style Selector="NumericUpDown">
-      <Setter Property="FormatString" Value="#,##0.00" />
-      <Setter Property="HorizontalContentAlignment" Value="Right" />
-      <Setter Property="Increment" Value="1" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Style Selector="Border.Section">
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="12" />
     </Style>
-    <Style Selector="Border.IsGroup">
+    <Style Selector="Button.Field">
       <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Height" Value="48" />
+      <Setter Property="Padding" Value="10 0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Field:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Border.FieldIcon">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+    </Style>
+    <Style Selector="TextBlock.FieldValue">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="TextBlock.FieldPlaceholder">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Button.ClearField">
+      <Setter Property="Width" Value="40" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Border.TagChip">
       <Setter Property="CornerRadius" Value="8" />
@@ -37,271 +76,334 @@
       <Setter Property="Margin" Value="0 0 6 6" />
       <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
     </Style>
-    <Style Selector="mi|MaterialIcon">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="16" />
+    <Style Selector="Button.TagAdd">
+      <Setter Property="Width" Value="44" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="CommandBarButton.Primary">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="CornerRadius" Value="20" />
     </Style>
   </ContentPage.Styles>
 
-  <ContentPage.DataTemplates>
-    <DataTemplate DataType="vm:AccountViewModel">
-      <Border Classes.IsGroup="{Binding IsGroup}" MinHeight="32">
-        <Grid ColumnDefinitions="Auto * Auto" Margin="4 0">
-          <Image Width="24" Height="24"
-                 Margin="0 0 8 0"
-                 Stretch="Uniform"
-                 VerticalAlignment="Center"
-                 Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-          <TextBlock Grid.Column="1"
-                     Text="{Binding Name}"
-                     VerticalAlignment="Center"
-                     TextTrimming="CharacterEllipsis" />
-          <TextBlock Grid.Column="2"
-                     Margin="8 0 4 0"
-                     VerticalAlignment="Center"
-                     Text="{Binding Sum, StringFormat='#,##0.00'}"
-                     IsVisible="{Binding !IsGroup}" />
-        </Grid>
-      </Border>
-    </DataTemplate>
-    <DataTemplate DataType="vm:BaseCategoryViewModel">
-      <StackPanel Orientation="Horizontal" MinHeight="28">
-        <Image Width="24" Height="24"
-               Stretch="Uniform"
-               VerticalAlignment="Center"
-               Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-               IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8 0" />
-      </StackPanel>
-    </DataTemplate>
-  </ContentPage.DataTemplates>
+  <Grid RowDefinitions="Auto,Auto,*" Background="{DynamicResource MainBackBrush}">
+    <Grid x:Name="VoiceTopBar"
+          Grid.Row="0"
+          ColumnDefinitions="*,Auto"
+          Margin="12 4 12 0"
+          IsVisible="False">
+      <Button x:Name="VoiceButton"
+              Grid.Column="1"
+              Width="42"
+              Height="42"
+              Padding="0"
+              CornerRadius="21"
+              VerticalContentAlignment="Center"
+              HorizontalContentAlignment="Center"
+              ToolTip.Tip="Заполнить голосом"
+              Click="VoiceButtonClick">
+        <mi:MaterialIcon x:Name="VoiceButtonIcon" Kind="Microphone" Width="21" Height="21" />
+      </Button>
+    </Grid>
 
-  <Grid Background="{DynamicResource MainBackBrush}">
-    <ScrollViewer>
-      <StackPanel Margin="12 0 12 88">
-        <Grid x:Name="VoicePanel"
-              ColumnDefinitions="* Auto"
-              Margin="0 8 0 0"
-              IsVisible="False">
-          <TextBlock x:Name="VoiceStatusText"
-                     TextWrapping="Wrap"
-                     VerticalAlignment="Center"
-                     FontSize="13"
-                     Foreground="{DynamicResource TextSecondaryBrush}"
-                     Text="Можно сказать: «Счёт наличные, категория Ашан, сумма десять»" />
-          <Button Grid.Column="1"
-                  x:Name="VoiceButton"
-                  Margin="8 0 0 0"
-                  Width="44"
-                  Height="44"
-                  CornerRadius="22"
-                  ToolTip.Tip="Заполнить голосом"
-                  Click="VoiceButtonClick">
-            <mi:MaterialIcon x:Name="VoiceButtonIcon" Kind="Microphone" Width="22" Height="22" />
-          </Button>
-        </Grid>
-
-        <TextBlock Classes="Label" Text="Счёт" />
-        <ComboBox SelectedItem="{Binding Account}"
-                  ItemsSource="{Binding FlatAccounts}">
-          <ComboBox.Styles>
-            <Style Selector="ComboBoxItem">
-              <Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
-              <Setter Property="Padding" Value="4 2" />
-            </Style>
-          </ComboBox.Styles>
-        </ComboBox>
-
-        <TextBlock Classes="Label" Text="Дата" />
-        <Grid ColumnDefinitions="Auto * Auto">
-          <Button Command="{Binding PrevDayCommand}" VerticalAlignment="Stretch">
-            <mi:MaterialIcon Kind="ChevronLeft" />
-          </Button>
-          <CalendarDatePicker Grid.Column="1"
-                              Margin="6 0"
-                              SelectedDate="{Binding Date}"
-                              CustomDateFormatString="dd.MM.yyyy"
-                              HorizontalAlignment="Stretch" />
-          <Button Grid.Column="2" Command="{Binding NextDayCommand}" VerticalAlignment="Stretch">
-            <mi:MaterialIcon Kind="ChevronRight" />
-          </Button>
-        </Grid>
-
-        <TextBlock Classes="Label" Text="Категория" />
-        <ComboBox ItemsSource="{Binding Categories}"
-                  SelectedItem="{Binding Category}" />
-
-        <TextBlock Classes="Label" Text="Подкатегория" />
-        <Grid ColumnDefinitions="* Auto Auto">
-          <AutoCompleteBox x:Name="SubCategoryCompleteBox"
-                           SelectedItem="{Binding SubCategory}"
-                           Text="{Binding SubCategoryText, Mode=OneWayToSource}"
-                           IsTextCompletionEnabled="True"
-                           FilterMode="Custom"
-                           ItemsSource="{Binding SubCategories}"
-                           PlaceholderText="Подкатегория">
-            <AutoCompleteBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
-                <TextBlock Text="{Binding Name}"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis" />
-              </DataTemplate>
-            </AutoCompleteBox.ItemTemplate>
-          </AutoCompleteBox>
-          <Button Grid.Column="1"
-                  Margin="6 0 0 0"
-                  VerticalAlignment="Stretch"
-                  Click="ShowSubCategoryDropDownClick"
-                  IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}">
-            <mi:MaterialIcon Kind="ChevronDown" />
-          </Button>
-          <Button Grid.Column="2"
-                  Margin="6 0 0 0"
-                  VerticalAlignment="Stretch"
-                  Click="ClearSubCategoryClick"
-                  IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}">
-            <mi:MaterialIcon Kind="Close" />
-          </Button>
-        </Grid>
-
-        <TextBlock Classes="Label" Text="Сумма" />
-        <NumericUpDown x:Name="SumPicker"
-                       Value="{Binding Sum, Converter={StaticResource numericUpDownValueConverter}}" />
-
-        <StackPanel IsVisible="{Binding IsTransfer}">
-          <TextBlock Classes="Label" Text="Счёт зачисления" />
-          <ComboBox SelectedItem="{Binding ToAccount}"
-                    ItemsSource="{Binding FlatAccounts}">
-            <ComboBox.Styles>
-              <Style Selector="ComboBoxItem">
-                <Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
-                <Setter Property="Padding" Value="4 2" />
-              </Style>
-            </ComboBox.Styles>
-          </ComboBox>
-
-          <TextBlock Classes="Label" Text="Сумма зачисления" />
-          <NumericUpDown Value="{Binding ToSum, Converter={StaticResource numericUpDownValueConverter}}" />
-        </StackPanel>
-
-        <TextBlock Classes="Label" Text="Комментарий" />
-        <Grid ColumnDefinitions="* Auto">
-          <TextBox AcceptsReturn="True"
-                   TextWrapping="Wrap"
-                   MinHeight="64"
-                   Text="{Binding Comment}" />
-          <Button Grid.Column="1"
-                  Margin="6 0 0 0"
-                  VerticalAlignment="Top"
-                  IsVisible="{Binding Comments.Count}">
-            <mi:MaterialIcon Kind="ChevronDown" />
-            <Button.Flyout>
-              <MenuFlyout ItemsSource="{Binding Comments}">
-                <MenuFlyout.ItemTemplate>
-                  <DataTemplate x:DataType="s:String">
-                    <MenuItem Header="{Binding .}" Click="CommentClick" />
-                  </DataTemplate>
-                </MenuFlyout.ItemTemplate>
-              </MenuFlyout>
-            </Button.Flyout>
-          </Button>
-        </Grid>
-
-        <TextBlock Classes="Label" Text="Теги" />
-        <Grid ColumnDefinitions="* Auto">
-          <TextBox Text="{Binding TagInput, Mode=TwoWay}"
-                   PlaceholderText="Новый тег" />
-          <Button Grid.Column="1"
-                  Margin="6 0 0 0"
-                  VerticalAlignment="Stretch"
-                  Command="{Binding AddTagCommand}">
-            <mi:MaterialIcon Kind="Plus" />
-          </Button>
-        </Grid>
-        <ItemsControl ItemsSource="{Binding Tags}" Margin="0 8 0 0">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="x:String">
-              <Border Classes="TagChip">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <TextBlock Text="{Binding}" VerticalAlignment="Center" />
-                  <Button Padding="2"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).RemoveTagCommand}"
-                          CommandParameter="{Binding}">
-                    <mi:MaterialIcon Kind="Close" Width="12" Height="12" />
-                  </Button>
-                </StackPanel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <ItemsControl ItemsSource="{Binding SelectableSuggestedTags}"
-                      IsVisible="{Binding HasSelectableSuggestedTags}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="x:String">
-              <Button Padding="8 4"
-                      Margin="0 0 6 6"
-                      CornerRadius="8"
-                      Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).SelectTagCommand}"
-                      CommandParameter="{Binding}">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <mi:MaterialIcon Kind="Plus" Width="12" Height="12" />
-                  <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="12" />
-                </StackPanel>
-              </Button>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-    </ScrollViewer>
-
-    <Border VerticalAlignment="Bottom"
-            HorizontalAlignment="Center"
-            Margin="16 0 16 16"
-            Padding="10 2"
-            CornerRadius="24"
+    <Border x:Name="VoiceBanner"
+            Grid.Row="1"
+            Margin="12 6 12 0"
+            Padding="10 8"
+            CornerRadius="10"
+            Background="{DynamicResource GroupBackBrush}"
             BorderBrush="{DynamicResource LikeGridLinesBrush}"
             BorderThickness="1"
-            BoxShadow="0 2 12 0 #20000000">
-      <Border.Background>
-        <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
-      </Border.Background>
-      <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
-        <CommandBar.PrimaryCommands>
-          <CommandBarButton Width="100" CornerRadius="20" x:Name="DeleteButton" Label="Удалить">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="Delete" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-            <CommandBarButton.Flyout>
-              <MenuFlyout>
-                <MenuItem Header="Удалить транзакцию" Click="DeleteConfirmClick" />
-              </MenuFlyout>
-            </CommandBarButton.Flyout>
-          </CommandBarButton>
-          <CommandBarButton Width="100" CornerRadius="20" x:Name="CopyButton" Label="Копировать" Click="CopyClick">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="ContentCopy" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-          <CommandBarButton Width="100" CornerRadius="20" Label="Сохранить" Command="{Binding OkCommand}">
-            <CommandBarButton.Icon>
-              <mi:MaterialIcon Kind="ContentSave" Width="20" Height="20" />
-            </CommandBarButton.Icon>
-          </CommandBarButton>
-        </CommandBar.PrimaryCommands>
-      </CommandBar>
+            IsVisible="False">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock x:Name="VoiceStatusText"
+                   TextWrapping="Wrap"
+                   FontSize="12"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource TextSecondaryBrush}" />
+        <Button Grid.Column="1"
+                Width="28"
+                Height="28"
+                Padding="0"
+                Margin="8 0 0 0"
+                CornerRadius="14"
+                Background="Transparent"
+                BorderThickness="0"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center"
+                Click="CloseVoiceBannerClick">
+          <mi:MaterialIcon Kind="Close" Width="14" Height="14" />
+        </Button>
+      </Grid>
     </Border>
+
+    <Grid Grid.Row="2">
+      <ScrollViewer>
+        <StackPanel Margin="12 8 12 88" Spacing="12">
+          <!-- Основное -->
+          <Border Classes="Section">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="SectionTitle" Text="Основное" />
+
+              <TextBlock Classes="Label" Text="Счёт" />
+              <Button Classes="Field" Click="SelectAccountClick">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="FieldIcon">
+                    <Panel>
+                      <Image Width="24" Height="24"
+                             Stretch="Uniform"
+                             Source="{Binding Account.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                             IsVisible="{Binding Account.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      <mi:MaterialIcon Kind="Wallet"
+                                       Width="17" Height="17"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       IsVisible="{Binding Account.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
+                    <TextBlock Text="Выберите счёт"
+                               Classes="FieldPlaceholder"
+                               IsVisible="{Binding Account, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <TextBlock Text="{Binding Account.Name}"
+                               Classes="FieldValue"
+                               IsVisible="{Binding Account, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  </StackPanel>
+                  <mi:MaterialIcon Grid.Column="2" Kind="ChevronRight" Width="18" Height="18"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+              </Button>
+
+              <TextBlock Classes="Label" Text="Дата" />
+              <DatePicker SelectedDate="{Binding Date, Converter={StaticResource dateTimeToDateTimeOffsetConverter}}"
+                          Height="48"
+                          HorizontalAlignment="Stretch" />
+
+              <TextBlock Classes="Label" Text="Категория" />
+              <Button Classes="Field" Click="SelectCategoryClick">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="FieldIcon">
+                    <Panel>
+                      <Image Width="24" Height="24"
+                             Stretch="Uniform"
+                             Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                             IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      <mi:MaterialIcon Kind="TagOutline"
+                                       Width="17" Height="17"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
+                    <TextBlock Text="Выберите категорию"
+                               Classes="FieldPlaceholder"
+                               IsVisible="{Binding Category, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <TextBlock Text="{Binding Category.Name}"
+                               Classes="FieldValue"
+                               IsVisible="{Binding Category, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  </StackPanel>
+                  <mi:MaterialIcon Grid.Column="2" Kind="ChevronRight" Width="18" Height="18"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+              </Button>
+
+              <TextBlock Classes="Label" Text="Подкатегория" />
+              <Grid ColumnDefinitions="*,Auto">
+                <Button Grid.Column="0" Classes="Field" Click="SelectSubCategoryClick">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="Без подкатегории"
+                               Classes="FieldPlaceholder"
+                               IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <TextBlock Text="{Binding SubCategory.Name}"
+                               Classes="FieldValue"
+                               IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <mi:MaterialIcon Grid.Column="1" Kind="ChevronRight" Width="18" Height="18"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" />
+                  </Grid>
+                </Button>
+                <Button Grid.Column="1"
+                        Classes="ClearField"
+                        IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Click="ClearSubCategoryClick"
+                        ToolTip.Tip="Очистить подкатегорию">
+                  <mi:MaterialIcon Kind="Close" Width="17" Height="17" />
+                </Button>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- Сумма -->
+          <Border Classes="Section">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="SectionTitle" Text="Сумма" />
+              <controls:AmountEntry x:Name="SumPicker"
+                                    Value="{Binding Sum}"
+                                    CalculatorRequested="OpenSumCalculator" />
+            </StackPanel>
+          </Border>
+
+          <!-- Перевод -->
+          <Border Classes="Section" IsVisible="{Binding IsTransfer}">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="SectionTitle" Text="Перевод" />
+
+              <TextBlock Classes="Label" Text="Счёт зачисления" />
+              <Button Classes="Field" Click="SelectToAccountClick">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="FieldIcon">
+                    <Panel>
+                      <Image Width="24" Height="24"
+                             Stretch="Uniform"
+                             Source="{Binding ToAccount.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                             IsVisible="{Binding ToAccount.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      <mi:MaterialIcon Kind="Wallet"
+                                       Width="17" Height="17"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       IsVisible="{Binding ToAccount.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
+                    <TextBlock Text="Выберите счёт"
+                               Classes="FieldPlaceholder"
+                               IsVisible="{Binding ToAccount, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <TextBlock Text="{Binding ToAccount.Name}"
+                               Classes="FieldValue"
+                               IsVisible="{Binding ToAccount, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  </StackPanel>
+                  <mi:MaterialIcon Grid.Column="2" Kind="ChevronRight" Width="18" Height="18"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+              </Button>
+
+              <TextBlock Classes="Label" Text="Сумма зачисления" />
+              <controls:AmountEntry x:Name="ToSumPicker"
+                                    Value="{Binding ToSum}"
+                                    CalculatorRequested="OpenToSumCalculator" />
+            </StackPanel>
+          </Border>
+
+          <!-- Детали -->
+          <Border Classes="Section">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="SectionTitle" Text="Детали" />
+
+              <TextBlock Classes="Label" Text="Комментарий" />
+              <TextBox x:Name="CommentTextBox"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       MinLines="3"
+                       MaxLines="3"
+                       Text="{Binding Comment}"
+                       DoubleTapped="CommentDoubleTapped" />
+              <TextBlock Text="Дважды коснитесь, чтобы выбрать из последних комментариев."
+                         FontSize="10"
+                         Foreground="{DynamicResource TextSecondaryBrush}" />
+
+              <TextBlock Classes="Label" Text="Теги" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox x:Name="TagInputTextBox"
+                         Text="{Binding TagInput, Mode=TwoWay}"
+                         PlaceholderText="Новый тег"
+                         KeyDown="TagInputKeyDown" />
+                <Button Grid.Column="1"
+                        Classes="TagAdd"
+                        Margin="6 0 0 0"
+                        Command="{Binding AddTagCommand}">
+                  <mi:MaterialIcon Kind="Plus" Width="20" Height="20" />
+                </Button>
+              </Grid>
+
+              <ItemsControl ItemsSource="{Binding Tags}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <Border Classes="TagChip">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                        <Button Padding="2"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).RemoveTagCommand}"
+                                CommandParameter="{Binding}">
+                          <mi:MaterialIcon Kind="Close" Width="12" Height="12" />
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl ItemsSource="{Binding SelectableSuggestedTags}"
+                            IsVisible="{Binding HasSelectableSuggestedTags}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <Button Padding="8 4"
+                            Margin="0 0 6 6"
+                            CornerRadius="8"
+                            Command="{Binding $parent[ItemsControl].((vm:BaseTransactionViewModel)DataContext).SelectTagCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <mi:MaterialIcon Kind="Plus" Width="12" Height="12" />
+                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="12" />
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Border VerticalAlignment="Bottom"
+              HorizontalAlignment="Center"
+              Margin="8 0 8 12"
+              Padding="8 2"
+              CornerRadius="24"
+              BorderBrush="{DynamicResource LikeGridLinesBrush}"
+              BorderThickness="1"
+              BoxShadow="0 2 12 0 #20000000">
+        <Border.Background>
+          <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
+        </Border.Background>
+        <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
+          <CommandBar.PrimaryCommands>
+            <CommandBarButton Width="88" CornerRadius="20" x:Name="DeleteButton" Label="Удалить">
+              <CommandBarButton.Icon>
+                <mi:MaterialIcon Kind="Delete" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
+              </CommandBarButton.Icon>
+              <CommandBarButton.Flyout>
+                <MenuFlyout>
+                  <MenuItem Header="Удалить транзакцию" Click="DeleteConfirmClick" />
+                </MenuFlyout>
+              </CommandBarButton.Flyout>
+            </CommandBarButton>
+            <CommandBarButton Width="88" CornerRadius="20" x:Name="CopyButton" Label="Копировать" Click="CopyClick">
+              <CommandBarButton.Icon>
+                <mi:MaterialIcon Kind="ContentCopy" Width="20" Height="20" />
+              </CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton Width="128" Classes="Primary" Label="Сохранить" Command="{Binding OkCommand}">
+              <CommandBarButton.Icon>
+                <mi:MaterialIcon Kind="ContentSave" Width="20" Height="20" />
+              </CommandBarButton.Icon>
+            </CommandBarButton>
+          </CommandBar.PrimaryCommands>
+        </CommandBar>
+      </Border>
+    </Grid>
   </Grid>
 </ContentPage>
