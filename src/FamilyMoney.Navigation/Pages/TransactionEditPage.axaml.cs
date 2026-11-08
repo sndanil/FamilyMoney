@@ -47,13 +47,15 @@ public partial class TransactionEditPage : ContentPage
 
         TextInputOptions.SetReturnKeyType(TagInputTextBox, TextInputReturnKeyType.Done);
 
-        Header = viewModel switch
+        var typeTitle = viewModel switch
         {
             TransferTransactionViewModel => "Перевод",
             DebetTransactionViewModel => "Доход",
             CreditTransactionViewModel => "Расход",
             _ => "Транзакция",
         };
+
+        Header = viewModel.IsCopy ? $"Копия · {typeTitle}" : typeTitle;
 
         var hasRow = row != null;
         DeleteButton.IsVisible = hasRow;
@@ -216,11 +218,25 @@ public partial class TransactionEditPage : ContentPage
 
     private async void CopyClick(object? sender, RoutedEventArgs e)
     {
+        if (_closing)
+        {
+            return;
+        }
+
         var row = _row;
-        Close(null);
+        _closing = true;
+        Cleanup();
+        _result.TrySetResult(null);
+
+        // Сначала закрываем текущую страницу, затем открываем копию,
+        // иначе push/pop могут гоняться за одну и ту же навигацию.
+        if (Navigation is { } navigation)
+        {
+            await navigation.PopAsync();
+        }
+
         if (row?.Parent != null)
         {
-            // CopyCommand откроет новую страницу редактирования с предзаполненной копией.
             await row.Parent.CopyCommand.ExecuteAsync(row);
         }
     }

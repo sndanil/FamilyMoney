@@ -329,8 +329,13 @@ public partial class TransactionsViewModel : ViewModelBase
                 viewModel.Tags.Add(tag);
             }
             viewModel.RefreshSuggestedTags();
+            viewModel.Account = viewModel.FlatAccounts?.FirstOrDefault(a => !a.IsGroup && a.Id == entity!.AccountId)
+                ?? viewModel.Account;
             viewModel.Sum = entity!.Sum;
             viewModel.Comment = entity.Comment;
+            viewModel.ToSum = entity is TransferTransaction transferEntity ? transferEntity.ToSum : viewModel.ToSum;
+            viewModel.Date = DateTime.Today;
+            viewModel.IsCopy = true;
 
             return (entity, viewModel);
         });

@@ -61,6 +61,9 @@ public partial class BaseTransactionViewModel : ViewModelBase
     public partial BaseSubCategoryViewModel? SubCategory { get; set; }
 
     [ObservableProperty]
+    public partial bool IsCopy { get; set; }
+
+    [ObservableProperty]
     public partial DateTime? Date { get; set; }
 
     [ObservableProperty]
