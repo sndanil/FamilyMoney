@@ -122,11 +122,29 @@
           <StackPanel VerticalAlignment="Center" Spacing="2">
             <TextBlock Text="{Binding Name}"
                        TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding Category.Name}"
-                       FontSize="11"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       TextTrimming="CharacterEllipsis"
-                       IsVisible="{Binding #Root.((pages:SelectionViewModel)DataContext).ShowSubCategoryParent}" />
+            <Grid ColumnDefinitions="Auto,*"
+                  IsVisible="{Binding #Root.((pages:SelectionViewModel)DataContext).ShowSubCategoryParent}">
+              <Border Width="16" Height="16" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                <Panel>
+                  <Image Width="16" Height="16"
+                         Stretch="Uniform"
+                         Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                         IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <mi:MaterialIcon Kind="TagOutline"
+                                   Width="14"
+                                   Height="14"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
+                </Panel>
+              </Border>
+              <TextBlock Grid.Column="1"
+                         Text="{Binding Category.Name}"
+                         Margin="6 0 0 0"
+                         FontSize="11"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         TextTrimming="CharacterEllipsis" />
+            </Grid>
           </StackPanel>
           <TextBlock Grid.Column="1"
                      Text="{Binding LastSum, StringFormat='#,##0.00'}"
