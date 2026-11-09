@@ -7,7 +7,6 @@
         Width="620"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
-        CanMaximize="False"
         ExtendClientAreaToDecorationsHint="True"
         xmlns:vm="using:FamilyMoney.ViewModels.Settings"
         x:DataType="vm:DatabaseViewModel"

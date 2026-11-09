@@ -24,8 +24,14 @@
 		<StyleInclude Source="avares://FamilyMoney.Navigation/Themes/AppThemeStyles.axaml" />
 		<mi:MaterialIconStyles />
 
-		<!-- Окна с CanMaximize="False": не показываем неактивные кнопки maximize/fullscreen,
-		     но оставляем их место, чтобы «свернуть» и «закрыть» оставались у правого края. -->
+		<!-- У диалогов CanMinimize и CanMaximize выключены. IsVisible здесь нельзя:
+		     в Avalonia 12.0.4 стиль не участвует в измерении декораций, панель кнопок
+		     остаётся широкой, а «закрыть» оказывается у её левого края.
+		     Кнопки оставляем в вёрстке и гасим, чтобы «закрыть» стояла справа. -->
+		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_MinimizeButton:disabled">
+			<Setter Property="Opacity" Value="0" />
+			<Setter Property="IsHitTestVisible" Value="False" />
+		</Style>
 		<Style Selector="chrome|WindowDrawnDecorations /template/ Button#PART_MaximizeButton:disabled">
 			<Setter Property="Opacity" Value="0" />
 			<Setter Property="IsHitTestVisible" Value="False" />
@@ -43,6 +49,8 @@
 
 		<Style Selector="Window.Dialog">
 			<Setter Property="Background" Value="{DynamicResource DialogBackBrush}"	 />
+			<Setter Property="CanMinimize" Value="False" />
+			<Setter Property="CanMaximize" Value="False" />
 		</Style>
 
 		<Style Selector="mi|MaterialIcon">

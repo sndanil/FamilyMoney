@@ -7,7 +7,6 @@
 		Width="600"
 		SizeToContent="Height"
 		WindowStartupLocation="CenterOwner"
-		CanMaximize="False"
 		ExtendClientAreaToDecorationsHint="True"
         xmlns:s="using:System"
 		xmlns:bh="using:FamilyMoney.Behaviours"

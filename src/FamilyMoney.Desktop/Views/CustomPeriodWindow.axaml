@@ -6,7 +6,6 @@
 		Width="613"
 		SizeToContent="Height"
 		WindowStartupLocation="CenterOwner"
-		CanMaximize="False"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="using:FamilyMoney.ViewModels"
