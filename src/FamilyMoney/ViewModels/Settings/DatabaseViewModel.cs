@@ -47,9 +47,16 @@ public partial class DatabaseViewModel : ViewModelBase
 
     public string BackupLimitText => MaxBackups <= 0 ? "не создаются" : $"до {MaxBackups}";
 
+    /// <summary>Куда положен файл: «На этом устройстве», «Яндекс.Диск» и т.п., без сырого пути.</summary>
+    public string LocationText => DatabasePaths.Describe(Path);
+
     partial void OnNameChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
 
-    partial void OnPathChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
+    partial void OnPathChanged(string value)
+    {
+        OnPropertyChanged(nameof(BackupDirectory));
+        OnPropertyChanged(nameof(LocationText));
+    }
 
     partial void OnBackupsFolderChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
 

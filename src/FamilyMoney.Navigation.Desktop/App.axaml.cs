@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FamilyMoney.Configuration;
 using FamilyMoney.Navigation;
 using FamilyMoney.Navigation.Desktop.Services;
 using FamilyMoney.Services;
@@ -22,6 +23,7 @@ public partial class App : Application
     {
         AppInit.InitHost(ConfigureServices, Design.IsDesignMode);
         var host = AppInit.GlobalHost ?? throw new InvalidOperationException("Host initialization failed.");
+        DatabasePathAdoption.Apply(host.Services.GetRequiredService<IGlobalConfiguration>());
 
         var mainViewModel = host.Services.GetRequiredService<MainViewModel>();
         var mainView = new MainView { DataContext = mainViewModel };
@@ -48,6 +50,11 @@ public partial class App : Application
         {
             var mainView = sp.GetRequiredService<MainViewHolder>().View;
             return new AvaloniaFilePickerService(() => TopLevel.GetTopLevel(mainView));
+        });
+        services.AddSingleton<IQrScannerService>(sp =>
+        {
+            var mainView = sp.GetRequiredService<MainViewHolder>().View;
+            return new DesktopQrScannerService(() => TopLevel.GetTopLevel(mainView));
         });
     }
 }

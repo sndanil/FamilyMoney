@@ -1,40 +1,199 @@
 <ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:settingsVm="using:FamilyMoney.ViewModels.Settings"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.SettingsPage"
              x:DataType="vm:MainViewModel"
              Header="Параметры">
-  <Grid RowDefinitions="auto *" Margin="8" Background="{DynamicResource MainBackBrush}">
-    <StackPanel Spacing="8">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Content="Синхронизировать"
-                Classes="Accent"
-                Command="{Binding Settings.SyncNowCommand}" />
-        <Button Content="Сканировать QR-код"
-                Command="{Binding Settings.ImportFromQrCommand}"
-                IsVisible="{Binding Settings.IsQrImportAvailable}" />
-      </StackPanel>
-      <TextBlock Text="{Binding Settings.SyncStatus}" TextWrapping="Wrap" />
-      <TextBlock Text="Предупреждать об окончании вклада за" />
-      <NumericUpDown Minimum="0"
-                     Maximum="3650"
-                     Increment="1"
-                     FormatString="0"
-                     Width="120"
-                     HorizontalAlignment="Left"
-                     Value="{Binding Settings.DepositWarningDays}" />
-      <TextBlock Text="Базы данных" FontWeight="SemiBold" />
+  <ContentPage.Resources>
+    <cv:SyncStatusCaptionConverter x:Key="syncStatusCaption" />
+  </ContentPage.Resources>
+
+  <ContentPage.Styles>
+    <Style Selector="Border.Card">
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="Border.IconWell">
+      <Setter Property="Width" Value="40" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.IconWell mi|MaterialIcon">
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Border.Badge">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Padding" Value="8 3" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.Badge TextBlock">
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.Title">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.Caption">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Button.Flat">
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Padding" Value="12 0" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter x:Name="Content"
+                              Content="{TemplateBinding Content}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.Flat:pointerover /template/ ContentPresenter#Content">
+      <Setter Property="Opacity" Value="0.85" />
+    </Style>
+    <Style Selector="Button.Flat:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.Flat:disabled /template/ ContentPresenter#Content">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.Quiet">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.Quiet:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.Step">
+      <Setter Property="Width" Value="44" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+  </ContentPage.Styles>
+
+  <ScrollViewer Background="{DynamicResource MainBackBrush}">
+    <StackPanel Margin="12" Spacing="12">
+      <Border Classes="Card">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Classes="IconWell">
+              <mi:MaterialIcon Kind="CloudSync" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12 0 0 0" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="Title" Text="Синхронизация" />
+              <TextBlock Classes="Caption"
+                         Text="{Binding Settings.SyncStatus, Converter={StaticResource syncStatusCaption}}" />
+            </StackPanel>
+          </Grid>
+          <Button Classes="Flat"
+                  Content="Синхронизировать"
+                  Command="{Binding Settings.SyncNowCommand}" />
+          <Button Classes="Flat Quiet"
+                  Content="Сканировать QR-код"
+                  Command="{Binding Settings.ImportFromQrCommand}"
+                  IsVisible="{Binding Settings.IsQrImportAvailable}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="Card">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Classes="IconWell">
+              <mi:MaterialIcon Kind="CalendarClock" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12 0 0 0" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="Title" Text="Вклады" />
+              <TextBlock Classes="Caption" Text="За сколько дней до окончания подсвечивать вклад" />
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="44,*,44">
+            <Button Classes="Flat Step"
+                    Content="−"
+                    Click="OnDepositDaysDecrease" />
+            <Border Grid.Column="1"
+                    Margin="8 0"
+                    Background="{DynamicResource CardBackBrush}"
+                    CornerRadius="10">
+              <TextBlock HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         FontSize="18"
+                         FontWeight="SemiBold"
+                         Text="{Binding Settings.DepositWarningDays, StringFormat={}{0:0}}" />
+            </Border>
+            <Button Grid.Column="2"
+                    Classes="Flat Step"
+                    Content="+"
+                    Click="OnDepositDaysIncrease" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <TextBlock Text="Базы данных"
+                 FontWeight="SemiBold"
+                 Margin="4 4 0 0" />
+
+      <ItemsControl ItemsSource="{Binding Settings.Databases}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="settingsVm:DatabaseViewModel">
+            <Border Classes="Card" Margin="0 0 0 8">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Classes="IconWell">
+                  <mi:MaterialIcon Kind="Database" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="12 0 8 0" VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="{Binding Name}"
+                             FontWeight="SemiBold"
+                             FontSize="16"
+                             TextWrapping="Wrap" />
+                  <TextBlock Classes="Caption" Text="{Binding LocationText}" />
+                </StackPanel>
+                <Border Grid.Column="2" Classes="Badge" IsVisible="{Binding IsSelected}">
+                  <TextBlock Text="Активная" />
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </StackPanel>
-    <ListBox Grid.Row="1" ItemsSource="{Binding Settings.Databases}" Margin="0 8 0 0">
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="settingsVm:DatabaseViewModel">
-          <StackPanel Spacing="2" Margin="4">
-            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding Path}" Classes="Secondary" FontSize="11" />
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </Grid>
+  </ScrollViewer>
 </ContentPage>

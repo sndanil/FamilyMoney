@@ -16,9 +16,7 @@ public sealed class DatabaseConfiguration
 
     public string GetResolvedPath()
     {
-        return System.IO.Path.IsPathRooted(Path)
-            ? Path
-            : System.IO.Path.Combine(GlobalConfiguration.HomeFolder, Path);
+        return DatabasePaths.Resolve(Path, Name, GlobalConfiguration.HomeFolder);
     }
 
     /// <summary>
@@ -27,7 +25,7 @@ public sealed class DatabaseConfiguration
     /// </summary>
     public string GetResolvedBackupsFolder()
     {
-        var folder = string.IsNullOrWhiteSpace(BackupsFolder) ? "Backups" : BackupsFolder;
+        var folder = DatabasePaths.NormalizeBackupFolder(BackupsFolder);
         if (System.IO.Path.IsPathRooted(folder))
         {
             return folder;

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.Android.Services;
+using FamilyMoney.Configuration;
 using FamilyMoney.Navigation;
 using FamilyMoney.Services;
 using FamilyMoney.ViewModels;
@@ -23,6 +24,7 @@ public partial class App : Application
     {
         AppInit.InitHost(ConfigureServices, Design.IsDesignMode);
         var host = AppInit.GlobalHost ?? throw new InvalidOperationException("Host initialization failed.");
+        DatabasePathAdoption.Apply(host.Services.GetRequiredService<IGlobalConfiguration>());
 
         var mainViewModel = host.Services.GetRequiredService<MainViewModel>();
         var mainView = new MainView { DataContext = mainViewModel };

@@ -30,6 +30,8 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.2" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.8.1" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="ZXing.Net" Version="0.16.10" />
   </ItemGroup>
 
   <ItemGroup>

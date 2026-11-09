@@ -262,6 +262,7 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         var config = payload.ToConfiguration();
+        DatabasePaths.AdoptDatabase(config, GlobalConfiguration.HomeFolder);
         var database = Databases.FirstOrDefault(d => d.SyncId == config.SyncId);
         if (database == null)
         {
