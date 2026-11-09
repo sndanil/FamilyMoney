@@ -56,6 +56,16 @@ public interface IRepository
     SubCategory GetOrCreateSubCategory(Guid? categoryId, string name, Func<SubCategory> factory);
     IEnumerable<SubCategory> GetSubCategories();
     void UpdateSubCategory(SubCategory subCategory);
+
+    /// <summary>
+    /// Число неудалённых транзакций по каждой подкатегории. Для неизвестного id возвращается 0.
+    /// </summary>
+    IReadOnlyDictionary<Guid, int> CountActiveTransactionsBySubCategories(IEnumerable<Guid> subCategoryIds);
+
+    /// <summary>
+    /// Переписывает транзакции источников на целевую подкатегорию и помечает источники удалёнными.
+    /// </summary>
+    void MergeSubCategories(Guid targetId, IReadOnlyCollection<Guid> sourceIds);
     IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds);
     IEnumerable<SubCategoryCommentSuggestions> GetCommentSuggestionsBySubCategories(DateTime from);
 

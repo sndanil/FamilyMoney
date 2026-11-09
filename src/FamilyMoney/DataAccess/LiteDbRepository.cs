@@ -658,6 +658,119 @@ public class LiteDbRepository : IRepository
         EnqueueEntity(db, subCategory);
     }
 
+    public IReadOnlyDictionary<Guid, int> CountActiveTransactionsBySubCategories(IEnumerable<Guid> subCategoryIds)
+    {
+        ArgumentNullException.ThrowIfNull(subCategoryIds);
+        var ids = subCategoryIds.Distinct().ToList();
+        var result = ids.ToDictionary(id => id, _ => 0);
+        if (ids.Count == 0)
+        {
+            return result;
+        }
+
+        using var db = OpenDatabase();
+        var collection = db.GetCollection<Transaction>(nameof(Transaction));
+        var transactions = collection.Query()
+            .Where(SubCategoryIdsEqual(ids))
+            .Where(t => t.DeletedAt == null)
+            .ToList();
+
+        foreach (var transaction in transactions)
+        {
+            if (transaction.SubCategoryId is Guid id && result.ContainsKey(id))
+            {
+                result[id]++;
+            }
+        }
+
+        return result;
+    }
+
+    public void MergeSubCategories(Guid targetId, IReadOnlyCollection<Guid> sourceIds)
+    {
+        ArgumentNullException.ThrowIfNull(sourceIds);
+        var sources = sourceIds.Distinct().ToList();
+        if (sources.Count == 0)
+        {
+            throw new InvalidOperationException("Нужно выбрать хотя бы одну подкатегорию для объединения.");
+        }
+
+        if (sources.Contains(targetId))
+        {
+            throw new InvalidOperationException("Оставшаяся подкатегория не может быть среди удаляемых.");
+        }
+
+        using var db = OpenDatabase();
+        if (!db.BeginTrans())
+        {
+            throw new InvalidOperationException("Не удалось начать объединение подкатегорий.");
+        }
+
+        try
+        {
+            var subCategories = db.GetCollection<SubCategory>(nameof(SubCategory));
+            var target = subCategories.FindOne(s => s.Id == targetId);
+            if (target == null || target.DeletedAt != null)
+            {
+                throw new InvalidOperationException("Оставшаяся подкатегория не найдена.");
+            }
+
+            var sourceEntities = new List<SubCategory>(sources.Count);
+            foreach (var sourceId in sources)
+            {
+                var source = subCategories.FindOne(s => s.Id == sourceId);
+                if (source == null || source.DeletedAt != null)
+                {
+                    throw new InvalidOperationException("Подкатегория для объединения не найдена.");
+                }
+
+                if (source.CategoryId != target.CategoryId || source.GetType() != target.GetType())
+                {
+                    throw new InvalidOperationException("Объединять можно только подкатегории одной категории.");
+                }
+
+                sourceEntities.Add(source);
+            }
+
+            var transactions = db.GetCollection<Transaction>(nameof(Transaction));
+            var affected = transactions.Query()
+                .Where(SubCategoryIdsEqual(sources))
+                .ToList();
+            var changedAt = DateTime.UtcNow;
+            foreach (var transaction in affected)
+            {
+                transaction.SubCategoryId = targetId;
+                transaction.LastChange = changedAt;
+                transactions.Upsert(transaction);
+                EnqueueEntity(db, transaction);
+            }
+
+            foreach (var source in sourceEntities)
+            {
+                MarkDeleted(source);
+                subCategories.Upsert(source);
+                EnqueueEntity(db, source);
+            }
+
+            db.Commit();
+        }
+        catch
+        {
+            db.Rollback();
+            throw;
+        }
+    }
+
+    private static BsonExpression SubCategoryIdsEqual(IReadOnlyList<Guid> ids)
+    {
+        if (ids.Count == 1)
+        {
+            return Query.EQ(nameof(Transaction.SubCategoryId), ids[0]);
+        }
+
+        return Query.Or(ids.Select(id => Query.EQ(nameof(Transaction.SubCategoryId), id)).ToArray());
+    }
+
     public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(DateTime from, IEnumerable<Guid> subCategoryIds)
     {
         using var db = OpenDatabase();

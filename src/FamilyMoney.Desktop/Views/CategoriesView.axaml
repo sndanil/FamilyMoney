@@ -385,8 +385,13 @@
 											<ItemsControl.ItemTemplate>
 												<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
 													<Border Classes="SubCategoryRow">
-														<Grid ColumnDefinitions="*,Auto">
-															<StackPanel IsVisible="{Binding !IsEditing}"
+														<Grid ColumnDefinitions="Auto,*,Auto">
+															<CheckBox IsChecked="{Binding IsSelected}"
+																	  IsVisible="{Binding !IsEditing}"
+																	  VerticalAlignment="Center"
+																	  Margin="0 0 8 0" />
+															<StackPanel Grid.Column="1"
+																		IsVisible="{Binding !IsEditing}"
 																		VerticalAlignment="Center"
 																		Spacing="2">
 																<TextBlock Text="{Binding Name}"
@@ -398,14 +403,14 @@
 																		   IsVisible="{Binding LastSum, Converter={StaticResource isNotZeroConverter}}" />
 															</StackPanel>
 
-															<TextBox Grid.Column="0"
+															<TextBox Grid.Column="1"
 																	 Classes="InlineEdit"
 																	 Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
 																	 IsVisible="{Binding IsEditing}"
 																	 VerticalContentAlignment="Center"
 																	 KeyDown="SubCategoryNameKeyDown" />
 
-															<StackPanel Grid.Column="1"
+															<StackPanel Grid.Column="2"
 																		Orientation="Horizontal"
 																		Spacing="2"
 																		VerticalAlignment="Center">
@@ -461,7 +466,7 @@
 								BorderBrush="{DynamicResource LikeGridLinesBrush}"
 								BorderThickness="0 1 0 0"
 								Padding="24 14">
-							<Grid ColumnDefinitions="*,Auto">
+							<StackPanel Spacing="10">
 								<StackPanel Orientation="Horizontal" Spacing="8">
 									<Button Classes="Secondary"
 											Content="Изменить"
@@ -477,14 +482,20 @@
 													   IsVisible="{Binding SelectedCategory.IsHidden}" />
 										</StackPanel>
 									</Button>
+									<Button Classes="Secondary"
+											Content="Объединить"
+											Command="{Binding MergeSubCategoriesCommand}" />
+									<TextBlock Text="{Binding SelectedSubCategoryCount, StringFormat='Выбрано: {0}'}"
+											   Classes="Secondary"
+											   FontSize="12"
+											   VerticalAlignment="Center"
+											   IsVisible="{Binding HasSelectedSubCategories}" />
 								</StackPanel>
 
-								<TextBlock Grid.Column="1"
-										   Text="Подкатегории добавляются при вводе транзакции."
+								<TextBlock Text="Подкатегории добавляются при вводе транзакции."
 										   Classes="Secondary"
-										   FontSize="11"
-										   VerticalAlignment="Center" />
-							</Grid>
+										   FontSize="11" />
+							</StackPanel>
 						</Border>
 					</Grid>
 

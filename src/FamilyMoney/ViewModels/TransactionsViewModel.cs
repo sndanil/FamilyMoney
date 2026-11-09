@@ -200,6 +200,20 @@ public partial class TransactionsViewModel : ViewModelBase
             await Task.CompletedTask;
         });
 
+        WeakReferenceMessenger.Default.Register<TransactionsViewModel, SubCategoriesMergedMessage>(this, async (t, m) =>
+        {
+            lock (t._listsCacheLock)
+            {
+                foreach (var id in m.RemovedIds)
+                {
+                    t._subCategoriesCache.Remove(id);
+                }
+            }
+
+            t.InvalidateListsCache(categories: false, subCategories: true);
+            await t.RefreshTransactions(t._stateManager.GetMainState());
+        });
+
         WeakReferenceMessenger.Default.Register<TransactionsViewModel, TransactionChangedMessage>(this, async (t, _) =>
         {
             // Суммы, комментарии и теги подкатегорий выводятся из транзакций.

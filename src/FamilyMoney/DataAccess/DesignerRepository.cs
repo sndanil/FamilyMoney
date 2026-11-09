@@ -142,6 +142,16 @@ public class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
+    public IReadOnlyDictionary<Guid, int> CountActiveTransactionsBySubCategories(IEnumerable<Guid> subCategoryIds)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void MergeSubCategories(Guid targetId, IReadOnlyCollection<Guid> sourceIds)
+    {
+        throw new NotImplementedException();
+    }
+
     public void UpdateTransaction(Transaction transaction)
     {
         throw new NotImplementedException();

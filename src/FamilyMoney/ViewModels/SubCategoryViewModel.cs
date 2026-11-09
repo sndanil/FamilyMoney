@@ -33,6 +33,9 @@ public partial class BaseSubCategoryViewModel : ViewModelBase
     public partial bool IsEditing { get; set; }
 
     [ObservableProperty]
+    public partial bool IsSelected { get; set; }
+
+    [ObservableProperty]
     public partial string EditName { get; set; } = string.Empty;
 
     public void FillFrom(Guid id, IRepository repository)

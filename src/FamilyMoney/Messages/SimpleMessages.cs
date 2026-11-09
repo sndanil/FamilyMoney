@@ -20,6 +20,8 @@ public record CategoryUpdateMessage(Guid? CategoryId);
 
 public record SubCategoryRenamedMessage(Guid Id, string Name);
 
+public record SubCategoriesMergedMessage(Guid TargetId, IReadOnlyList<Guid> RemovedIds);
+
 public record TransactionChangedMessage(Transaction? Before, Transaction? After);
 
 public record SetFocusOnMessage(string PropertyName);

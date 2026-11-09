@@ -45,6 +45,12 @@ public partial class MainWindow : Window
             m?.Reply(dialog.ShowDialog<BaseCategoryViewModel?>(w));
         });
 
+        WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<MergeSubCategoriesViewModel>>(this, static (w, m) =>
+        {
+            var dialog = new MergeSubCategoriesWindow { DataContext = m?.From };
+            m?.Reply(dialog.ShowDialog<MergeSubCategoriesViewModel?>(w));
+        });
+
         WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<BaseTransactionViewModel>>(this, static (w, m) =>
         {
             var dialog = new TransactionWindow { DataContext = m?.From };

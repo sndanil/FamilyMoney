@@ -8,6 +8,7 @@ using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -69,6 +70,11 @@ public partial class CategoriesViewModel : ViewModelBase
 
     public bool HasNoVisibleCategories => !HasVisibleCategories;
 
+    public int SelectedSubCategoryCount =>
+        SelectedCategory?.SubCategories.Count(s => s.IsSelected) ?? 0;
+
+    public bool HasSelectedSubCategories => SelectedSubCategoryCount > 0;
+
     private bool _isLoaded;
 
     public CategoriesViewModel(IRepository repository)
@@ -111,6 +117,8 @@ public partial class CategoriesViewModel : ViewModelBase
     partial void OnSelectedCategoryChanged(BaseCategoryViewModel? value)
     {
         RenameError = null;
+        ClearSubCategorySelection();
+        NotifyMergeState();
     }
 
     partial void OnSelectedTypeChanged(CategoryKind value)
@@ -200,6 +208,7 @@ public partial class CategoriesViewModel : ViewModelBase
                     Category = category,
                     LastSum = lastSums.TryGetValue(subCategory.Id, out var sum) ? sum.Sum : 0m,
                 };
+                viewModel.PropertyChanged += OnSubCategoryPropertyChanged;
 
                 category.SubCategories.Add(viewModel);
             }
@@ -382,6 +391,90 @@ public partial class CategoriesViewModel : ViewModelBase
         subCategory.IsEditing = false;
         RenameError = null;
         WeakReferenceMessenger.Default.Send(new SubCategoryRenamedMessage(subCategory.Id, name));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMergeSubCategories))]
+    public async Task MergeSubCategoriesAsync()
+    {
+        var category = SelectedCategory;
+        if (category == null)
+        {
+            return;
+        }
+
+        var selected = category.SubCategories.Where(s => s.IsSelected).ToList();
+        if (selected.Count < 2)
+        {
+            return;
+        }
+
+        var counts = _repository.CountActiveTransactionsBySubCategories(selected.Select(s => s.Id));
+        var dialog = new MergeSubCategoriesViewModel(selected
+            .Select(s => (s.Id, s.Name, counts.TryGetValue(s.Id, out var count) ? count : 0))
+            .ToList());
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<MergeSubCategoriesViewModel>(dialog));
+        if (result?.SelectedCandidate == null)
+        {
+            return;
+        }
+
+        var targetId = result.SelectedCandidate.Id;
+        var sourceIds = selected.Select(s => s.Id).Where(id => id != targetId).ToList();
+        try
+        {
+            _repository.MergeSubCategories(targetId, sourceIds);
+        }
+        catch (InvalidOperationException ex)
+        {
+            RenameError = ex.Message;
+            return;
+        }
+
+        foreach (var sourceId in sourceIds)
+        {
+            var source = category.SubCategories.FirstOrDefault(s => s.Id == sourceId);
+            if (source != null)
+            {
+                category.SubCategories.Remove(source);
+            }
+        }
+
+        foreach (var item in category.SubCategories)
+        {
+            item.IsSelected = false;
+        }
+
+        RenameError = null;
+        NotifyMergeState();
+        WeakReferenceMessenger.Default.Send(new SubCategoriesMergedMessage(targetId, sourceIds));
+    }
+
+    private bool CanMergeSubCategories() => SelectedSubCategoryCount >= 2;
+
+    private void OnSubCategoryPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(BaseSubCategoryViewModel.IsSelected))
+        {
+            NotifyMergeState();
+        }
+    }
+
+    private void ClearSubCategorySelection()
+    {
+        foreach (var category in AllCategories())
+        {
+            foreach (var subCategory in category.SubCategories)
+            {
+                subCategory.IsSelected = false;
+            }
+        }
+    }
+
+    private void NotifyMergeState()
+    {
+        OnPropertyChanged(nameof(SelectedSubCategoryCount));
+        OnPropertyChanged(nameof(HasSelectedSubCategories));
+        MergeSubCategoriesCommand.NotifyCanExecuteChanged();
     }
 
     private void SaveCategory(BaseCategoryViewModel categoryForSave, BaseCategoryViewModel? categoryForUpdate)
