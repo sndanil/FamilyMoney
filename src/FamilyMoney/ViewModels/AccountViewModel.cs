@@ -97,6 +97,8 @@ public partial class AccountViewModel : ViewModelBase
 
     public string? DepositCaption => CurrentDepositCaption.Text;
 
+    public string? DepositCaptionCompact => CurrentCompactDepositCaption.Text;
+
     public bool HasDepositDetails => !IsGroup && CurrentDepositCaption.HasText;
 
     public bool IsDepositEndingSoon => !IsGroup && CurrentDepositCaption.Kind == DepositTermKind.Soon;
@@ -105,6 +107,9 @@ public partial class AccountViewModel : ViewModelBase
 
     private DepositCaption CurrentDepositCaption =>
         DepositCaptionFormatter.Format(EndsOn, AnnualRate, _depositWarningDays, DateTime.Today);
+
+    private DepositCaption CurrentCompactDepositCaption =>
+        DepositCaptionFormatter.FormatCompact(EndsOn, AnnualRate, _depositWarningDays, DateTime.Today);
 
     public void SetDepositWarningDays(int days)
     {
@@ -227,6 +232,7 @@ public partial class AccountViewModel : ViewModelBase
     private void NotifyDepositDetails()
     {
         OnPropertyChanged(nameof(DepositCaption));
+        OnPropertyChanged(nameof(DepositCaptionCompact));
         OnPropertyChanged(nameof(HasDepositDetails));
         OnPropertyChanged(nameof(IsDepositEndingSoon));
         OnPropertyChanged(nameof(IsDepositExpired));

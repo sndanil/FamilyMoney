@@ -19,6 +19,24 @@ public static class DepositCaptionFormatter
 {
     public static DepositCaption Format(DateTime? endsOn, decimal? annualRate, int warningDays, DateTime today)
     {
+        return FormatCore(endsOn, annualRate, warningDays, today, compact: false);
+    }
+
+    /// <summary>
+    /// Короткая строка для узкого списка: близкий срок без полной даты, иначе дата с двузначным годом.
+    /// </summary>
+    public static DepositCaption FormatCompact(DateTime? endsOn, decimal? annualRate, int warningDays, DateTime today)
+    {
+        return FormatCore(endsOn, annualRate, warningDays, today, compact: true);
+    }
+
+    private static DepositCaption FormatCore(
+        DateTime? endsOn,
+        decimal? annualRate,
+        int warningDays,
+        DateTime today,
+        bool compact)
+    {
         var rateText = annualRate is { } rate ? FormatRate(rate) : null;
         if (endsOn is not { } ends)
         {
@@ -27,7 +45,6 @@ public static class DepositCaptionFormatter
 
         var date = ends.Date;
         var days = (date - today.Date).Days;
-        var dateText = date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
         var threshold = Math.Max(0, warningDays);
         var kind = days < 0
             ? DepositTermKind.Expired
@@ -35,14 +52,20 @@ public static class DepositCaptionFormatter
                 ? DepositTermKind.Soon
                 : DepositTermKind.Calm;
 
-        var parts = new List<string>
-        {
-            kind == DepositTermKind.Expired ? $"истёк {dateText}" : $"до {dateText}",
-        };
-
-        if (kind == DepositTermKind.Soon)
+        var parts = new List<string>();
+        if (compact && kind == DepositTermKind.Soon)
         {
             parts.Add($"{days} дн.");
+        }
+        else
+        {
+            var pattern = compact ? "dd.MM.yy" : "dd.MM.yyyy";
+            var dateText = date.ToString(pattern, CultureInfo.InvariantCulture);
+            parts.Add(kind == DepositTermKind.Expired ? $"истёк {dateText}" : $"до {dateText}");
+            if (!compact && kind == DepositTermKind.Soon)
+            {
+                parts.Add($"{days} дн.");
+            }
         }
 
         if (rateText != null)

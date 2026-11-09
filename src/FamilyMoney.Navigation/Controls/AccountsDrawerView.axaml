@@ -212,7 +212,7 @@
                     <TextBlock Classes="DepositCaption"
                                Classes.Soon="{Binding IsDepositEndingSoon}"
                                Classes.Expired="{Binding IsDepositExpired}"
-                               Text="{Binding DepositCaption}"
+                               Text="{Binding DepositCaptionCompact}"
                                IsVisible="{Binding HasDepositDetails}" />
                   </StackPanel>
                   <TextBlock Grid.Column="3"
@@ -279,7 +279,7 @@
                           <TextBlock Classes="DepositCaption"
                                      Classes.Soon="{Binding IsDepositEndingSoon}"
                                      Classes.Expired="{Binding IsDepositExpired}"
-                                     Text="{Binding DepositCaption}"
+                                     Text="{Binding DepositCaptionCompact}"
                                      IsVisible="{Binding HasDepositDetails}" />
                         </StackPanel>
                         <TextBlock Grid.Column="2"

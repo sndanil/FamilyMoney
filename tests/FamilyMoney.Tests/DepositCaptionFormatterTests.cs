@@ -90,6 +90,52 @@ public class DepositCaptionFormatterTests
     }
 
     [Fact]
+    public void Compact_SoonDropsTheDate()
+    {
+        var caption = DepositCaptionFormatter.FormatCompact(new DateTime(2026, 7, 13), 16m, 14, new DateTime(2026, 7, 1));
+
+        Assert.Equal("12 дн. · 16%", caption.Text);
+        Assert.Equal(DepositTermKind.Soon, caption.Kind);
+    }
+
+    [Fact]
+    public void Compact_SoonWithoutRate_IsOnlyTheDayCount()
+    {
+        var today = new DateTime(2026, 7, 13);
+        var caption = DepositCaptionFormatter.FormatCompact(today, null, 0, today);
+
+        Assert.Equal("0 дн.", caption.Text);
+        Assert.Equal(DepositTermKind.Soon, caption.Kind);
+    }
+
+    [Fact]
+    public void Compact_CalmUsesShortYear()
+    {
+        var caption = DepositCaptionFormatter.FormatCompact(new DateTime(2026, 11, 12), 15m, 7, new DateTime(2026, 7, 1));
+
+        Assert.Equal("до 12.11.26 · 15%", caption.Text);
+        Assert.Equal(DepositTermKind.Calm, caption.Kind);
+    }
+
+    [Fact]
+    public void Compact_ExpiredUsesShortYear()
+    {
+        var caption = DepositCaptionFormatter.FormatCompact(new DateTime(2026, 7, 1), 16.5m, 7, new DateTime(2026, 7, 2));
+
+        Assert.Equal("истёк 01.07.26 · 16,5%", caption.Text);
+        Assert.Equal(DepositTermKind.Expired, caption.Kind);
+    }
+
+    [Fact]
+    public void Compact_RateOnly_MatchesFullCaption()
+    {
+        var caption = DepositCaptionFormatter.FormatCompact(null, 16.5m, 7, new DateTime(2026, 7, 1));
+
+        Assert.Equal("16,5%", caption.Text);
+        Assert.Equal(DepositTermKind.None, caption.Kind);
+    }
+
+    [Fact]
     public void Expired_UsesPrefixWithoutRemainingDays()
     {
         var caption = DepositCaptionFormatter.Format(new DateTime(2026, 7, 1), 16.5m, 7, new DateTime(2026, 7, 2));
