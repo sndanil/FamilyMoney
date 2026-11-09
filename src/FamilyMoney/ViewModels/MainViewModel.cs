@@ -20,6 +20,7 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
+    private readonly IDatabaseBackup _databaseBackup;
     private readonly IGlobalConfiguration _configuration;
     private readonly ISyncService _syncService;
 
@@ -58,6 +59,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(
         IRepository repository,
+        IDatabaseBackup databaseBackup,
         IStateManager stateManager,
         IGlobalConfiguration configuration,
         ISyncService syncService,
@@ -69,6 +71,7 @@ public partial class MainViewModel : ViewModelBase
         SettingsViewModel settingsViewModel)
     {
         _repository = repository;
+        _databaseBackup = databaseBackup;
         _stateManager = stateManager;
         _configuration = configuration;
         _syncService = syncService;
@@ -97,6 +100,8 @@ public partial class MainViewModel : ViewModelBase
         });
 
         UpdateTitle();
+        // Снимок до обновления схемы: если миграция повредит файл, останется прежняя копия.
+        _databaseBackup.BackupAll();
         MainInit();
     }
 

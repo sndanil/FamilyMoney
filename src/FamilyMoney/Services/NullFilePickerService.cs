@@ -7,6 +7,16 @@ public sealed class NullFilePickerService : IFilePickerService
         return Task.FromResult<string?>(null);
     }
 
+    public Task<string?> PickSaveBackupFileAsync(string suggestedDirectory, string suggestedFileName, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<string?>(null);
+    }
+
+    public Task<string?> PickBackupFileAsync(string suggestedDirectory, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<string?>(null);
+    }
+
     public Task<string?> PickDatabaseFileAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>(null);

@@ -8,6 +8,7 @@ using FamilyMoney.ViewModels.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 
 namespace FamilyMoney;
@@ -38,6 +39,34 @@ public static class AppInit
         return GlobalHost;
     }
 
+    /// <summary>Снимает резервные копии перед закрытием. Сбой не мешает завершению приложения.</summary>
+    public static void BackupDatabases()
+    {
+        var host = GlobalHost;
+        if (host == null)
+        {
+            return;
+        }
+
+        try
+        {
+            host.Services.GetRequiredService<IDatabaseBackup>().BackupAll();
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                host.Services.GetService<ILoggerFactory>()
+                    ?.CreateLogger(nameof(AppInit))
+                    .LogError(ex, "Backup failed");
+            }
+            catch (Exception)
+            {
+                // Завершение приложения не должно зависеть от журнала.
+            }
+        }
+    }
+
     private static void ConfigureServices(IServiceCollection services, bool isDesignMode)
     {
         services.AddSingleton<IGlobalConfiguration, GlobalConfiguration>();
@@ -55,6 +84,7 @@ public static class AppInit
             services.AddSingleton<ISyncObjectStoreFactory, S3SyncObjectStoreFactory>();
         }
 
+        services.AddSingleton<IDatabaseBackup, NullDatabaseBackup>();
         services.AddSingleton<LocalSyncStateStore>();
         services.AddSingleton<SyncImageSynchronizer>();
         services.AddSingleton<ISyncService, SyncService>();

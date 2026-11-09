@@ -68,6 +68,11 @@
 									Margin="6 0 0 0"
 									Command="{Binding BrowseBackupsFolderCommand}" />
 						</Grid>
+						<TextBlock Text="Относительный путь создаётся рядом с файлом базы, в отдельной папке этой базы."
+								   FontSize="11"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   TextWrapping="Wrap"
+								   Margin="0 -8 0 12" />
 
 						<TextBlock Text="Максимум резервных копий" Classes="FieldLabel" />
 						<NumericUpDown Name="MaxBackups"
@@ -75,6 +80,10 @@
 									   FormatString="#,##0"
 									   Minimum="0"
 									   Value="{Binding MaxBackups}" />
+						<TextBlock Text="0 — не создавать копии."
+								   FontSize="11"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   Margin="0 -8 0 12" />
 					</StackPanel>
 				</ScrollViewer>
 			</TabItem>

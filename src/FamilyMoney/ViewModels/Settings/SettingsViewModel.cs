@@ -15,7 +15,7 @@ namespace FamilyMoney.ViewModels.Settings;
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IGlobalConfiguration _configuration;
-    private readonly IRepository _repository;
+    private readonly IDatabaseBackup _databaseBackup;
     private readonly IFilePickerService _filePickerService;
     private readonly ISyncService _syncService;
     private readonly IQrScannerService? _qrScanner;
@@ -27,7 +27,9 @@ public partial class SettingsViewModel : ViewModelBase
         nameof(EditDatabaseCommand),
         nameof(ConfigureS3Command),
         nameof(DeleteDatabaseCommand),
-        nameof(SetActiveDatabaseCommand))]
+        nameof(SetActiveDatabaseCommand),
+        nameof(BackupNowCommand),
+        nameof(RestoreBackupCommand))]
     public partial DatabaseViewModel? SelectedDatabase { get; set; }
 
     [ObservableProperty]
@@ -37,19 +39,27 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string SyncStatus { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(BackupNowCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestoreBackupCommand))]
+    public partial bool IsBackingUp { get; set; }
+
+    [ObservableProperty]
+    public partial string BackupStatus { get; set; } = string.Empty;
+
     public bool IsSyncAvailable => _syncService.IsEnabled;
 
     public bool IsQrImportAvailable => _qrScanner != null;
 
     public SettingsViewModel(
         IGlobalConfiguration configuration,
-        IRepository repository,
+        IDatabaseBackup databaseBackup,
         IFilePickerService filePickerService,
         ISyncService syncService,
         IQrScannerService? qrScanner = null)
     {
         _configuration = configuration;
-        _repository = repository;
+        _databaseBackup = databaseBackup;
         _filePickerService = filePickerService;
         _syncService = syncService;
         _qrScanner = qrScanner;
@@ -289,6 +299,110 @@ public partial class SettingsViewModel : ViewModelBase
 
     private bool CanSyncNow() => IsSyncAvailable && !IsSyncing;
 
+    [RelayCommand(CanExecute = nameof(CanBackupNow))]
+    public async Task BackupNowAsync()
+    {
+        if (SelectedDatabase == null)
+        {
+            return;
+        }
+
+        var configuration = SelectedDatabase.ToConfiguration();
+        if (!File.Exists(configuration.GetResolvedPath()))
+        {
+            BackupStatus = "Файл базы не найден.";
+            return;
+        }
+
+        var directory = configuration.GetResolvedBackupDirectory();
+        Directory.CreateDirectory(directory);
+        var destination = await _filePickerService.PickSaveBackupFileAsync(
+            directory,
+            configuration.GetSuggestedBackupFileName(DateTime.Now));
+        if (destination == null)
+        {
+            return;
+        }
+
+        var syncId = configuration.SyncId;
+        IsBackingUp = true;
+        BackupStatus = "Создание резервной копии...";
+        try
+        {
+            var result = await Task.Run(() => _databaseBackup.BackupToFile(configuration, destination));
+            if (SelectedDatabase?.SyncId == syncId)
+            {
+                BackupStatus = result.Message;
+            }
+        }
+        finally
+        {
+            IsBackingUp = false;
+        }
+    }
+
+    private bool CanBackupNow()
+    {
+        return SelectedDatabase != null && SelectedDatabase.MaxBackups > 0 && !IsBackingUp;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRestoreBackup))]
+    public async Task RestoreBackupAsync()
+    {
+        if (SelectedDatabase == null)
+        {
+            return;
+        }
+
+        var configuration = SelectedDatabase.ToConfiguration();
+        var directory = configuration.GetResolvedBackupDirectory();
+        Directory.CreateDirectory(directory);
+        var backupPath = await _filePickerService.PickBackupFileAsync(directory);
+        if (backupPath == null)
+        {
+            return;
+        }
+
+        var syncId = configuration.SyncId;
+        var wasActive = SelectedDatabase.IsSelected;
+        IsBackingUp = true;
+        BackupStatus = "Восстановление базы...";
+        try
+        {
+            var result = await Task.Run(() => _databaseBackup.RestoreFromFile(configuration, backupPath));
+            if (SelectedDatabase?.SyncId == syncId)
+            {
+                BackupStatus = result.Message;
+            }
+
+            if (result.Success && wasActive)
+            {
+                WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+            }
+        }
+        finally
+        {
+            IsBackingUp = false;
+        }
+    }
+
+    private bool CanRestoreBackup()
+    {
+        return SelectedDatabase != null && !IsBackingUp;
+    }
+
+    partial void OnSelectedDatabaseChanged(DatabaseViewModel? value)
+    {
+        if (IsBackingUp)
+        {
+            return;
+        }
+
+        BackupStatus = value?.MaxBackups <= 0
+            ? "Резервные копии выключены: максимум равен 0."
+            : string.Empty;
+    }
+
     private bool CanSwitchToDatabase(DatabaseViewModel? database)
     {
         return database != null && !database.IsSelected;
@@ -322,7 +436,7 @@ public partial class SettingsViewModel : ViewModelBase
             && previousIndex >= 0
             && previousIndex < root.Databases.Length)
         {
-            _repository.DoBackup(root.Databases[previousIndex]);
+            _databaseBackup.Backup(root.Databases[previousIndex]);
         }
 
         var newRoot = new RootConfiguration
@@ -334,6 +448,11 @@ public partial class SettingsViewModel : ViewModelBase
         };
 
         _configuration.Save(newRoot);
+        BackupNowCommand.NotifyCanExecuteChanged();
+        if (!IsBackingUp && SelectedDatabase?.MaxBackups <= 0)
+        {
+            BackupStatus = "Резервные копии выключены: максимум равен 0.";
+        }
 
         if (selectedIndex != previousIndex)
         {

@@ -18,9 +18,22 @@ public interface IRepository
 {
     void UpdateDbSchema();
 
+    /// <summary>
+    /// Резервные копии всех настроенных баз. Файл, не изменившийся с прошлой копии, пропускается.
+    /// </summary>
     void DoBackup();
 
+    /// <summary>Резервная копия одной базы. Ошибка не прерывает вызывающий сценарий.</summary>
     void DoBackup(DatabaseConfiguration configuration);
+
+    /// <summary>Ручная копия одной базы, даже если файл не менялся с прошлого снимка.</summary>
+    DatabaseBackupResult BackupNow(DatabaseConfiguration configuration);
+
+    /// <summary>Ручная копия в выбранный файл. Лимит применяется только к штатной папке копий.</summary>
+    DatabaseBackupResult BackupToFile(DatabaseConfiguration configuration, string destinationPath);
+
+    /// <summary>Заменяет файл базы выбранной резервной копией. Прежнее состояние сохраняется в папку копий.</summary>
+    DatabaseBackupResult RestoreFromFile(DatabaseConfiguration configuration, string backupPath);
     void UpdateImage(Guid id, string fileName, Stream stream);
 
     Stream? TryGetImage(Guid id);

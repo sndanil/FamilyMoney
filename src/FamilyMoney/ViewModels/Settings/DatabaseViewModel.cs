@@ -42,6 +42,21 @@ public partial class DatabaseViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
+    /// <summary>Каталог, в который реально пишутся копии этой базы.</summary>
+    public string BackupDirectory => ToConfiguration().GetResolvedBackupDirectory();
+
+    public string BackupLimitText => MaxBackups <= 0 ? "не создаются" : $"до {MaxBackups}";
+
+    partial void OnNameChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
+
+    partial void OnPathChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
+
+    partial void OnBackupsFolderChanged(string value) => OnPropertyChanged(nameof(BackupDirectory));
+
+    partial void OnSyncIdChanged(Guid value) => OnPropertyChanged(nameof(BackupDirectory));
+
+    partial void OnMaxBackupsChanged(int value) => OnPropertyChanged(nameof(BackupLimitText));
+
     /// <summary>Вкладка, которая открывается при редактировании: 0 — основное, 1 — S3.</summary>
     public int InitialTabIndex { get; set; }
 

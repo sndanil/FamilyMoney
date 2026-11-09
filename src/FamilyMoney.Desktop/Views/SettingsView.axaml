@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -291,7 +291,7 @@
 												<Grid ColumnDefinitions="170,*">
 													<TextBlock Text="Папка резервных копий" Classes="InfoLabel" />
 													<SelectableTextBlock Grid.Column="1"
-																		 Text="{Binding SelectedDatabase.BackupsFolder}"
+																		 Text="{Binding SelectedDatabase.BackupDirectory}"
 																		 FontSize="12"
 																		 TextWrapping="Wrap" />
 												</Grid>
@@ -302,7 +302,7 @@
 													<TextBlock Text="Резервных копий" Classes="InfoLabel" />
 													<TextBlock Grid.Column="1"
 															   Classes="InfoValue"
-															   Text="{Binding SelectedDatabase.MaxBackups, StringFormat='до {0}'}" />
+															   Text="{Binding SelectedDatabase.BackupLimitText}" />
 												</Grid>
 											</Border>
 
@@ -324,6 +324,48 @@
 												</Grid>
 											</Border>
 										</StackPanel>
+									</Border>
+								</StackPanel>
+
+								<StackPanel Spacing="8">
+									<TextBlock Text="РЕЗЕРВНАЯ КОПИЯ" Classes="SectionLabel" />
+
+									<Border Classes="SyncCard">
+										<Grid ColumnDefinitions="*,Auto">
+											<StackPanel Spacing="4">
+												<TextBlock Text="Сохранить снимок базы" FontWeight="SemiBold" />
+												<TextBlock Text="{Binding BackupStatus}"
+														   Classes="Secondary"
+														   TextWrapping="Wrap"
+														   IsVisible="{Binding BackupStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+												<TextBlock Text="Оба действия открывают папку резервных копий этой базы."
+														   Classes="Secondary"
+														   FontSize="11"
+														   TextWrapping="Wrap"
+														   IsVisible="{Binding BackupStatus, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+											</StackPanel>
+
+											<StackPanel Grid.Column="1"
+														Spacing="6"
+														Margin="16 0 0 0"
+														VerticalAlignment="Center"
+														Orientation="Horizontal">
+												<Button Classes="Primary"
+														Command="{Binding BackupNowCommand}">
+													<StackPanel Orientation="Horizontal" Spacing="6">
+														<mi:MaterialIcon Kind="ContentSave" Width="15" Height="15" />
+														<TextBlock Text="Создать копию" VerticalAlignment="Center" />
+													</StackPanel>
+												</Button>
+												<Button Classes="Outline"
+														Command="{Binding RestoreBackupCommand}">
+													<StackPanel Orientation="Horizontal" Spacing="6">
+														<mi:MaterialIcon Kind="BackupRestore" Width="15" Height="15" />
+														<TextBlock Text="Восстановить" VerticalAlignment="Center" />
+													</StackPanel>
+												</Button>
+											</StackPanel>
+										</Grid>
 									</Border>
 								</StackPanel>
 

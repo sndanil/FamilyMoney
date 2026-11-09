@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace FamilyMoney.DataAccess;
 
@@ -36,8 +37,6 @@ public class LiteDbRepository : IRepository
     private DatabaseConfiguration DatabaseConfiguration => _configuration.GetSelectedDatabase();
 
     private string DatabasePath => DatabaseConfiguration.GetResolvedPath();
-
-    private string BackupsFolder => DatabaseConfiguration.GetResolvedBackupsFolder();
 
     public SyncPendingChanges GetPendingSyncChanges()
     {
@@ -189,36 +188,331 @@ public class LiteDbRepository : IRepository
 
     public void DoBackup()
     {
-        DoBackup(DatabaseConfiguration);
+        foreach (var configuration in _configuration.Get().Databases)
+        {
+            if (configuration != null)
+            {
+                DoBackup(configuration);
+            }
+        }
     }
 
     public void DoBackup(DatabaseConfiguration configuration)
     {
+        try
+        {
+            CreateBackup(configuration, force: false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backup failed for database {Database}", configuration.Name);
+        }
+    }
+
+    public DatabaseBackupResult BackupNow(DatabaseConfiguration configuration)
+    {
+        if (configuration.MaxBackups <= 0)
+        {
+            return new DatabaseBackupResult(false, "Резервные копии выключены: максимум равен 0.");
+        }
+
+        if (!File.Exists(configuration.GetResolvedPath()))
+        {
+            return new DatabaseBackupResult(false, "Файл базы не найден.");
+        }
+
+        try
+        {
+            var backupPath = CreateBackup(configuration, force: true);
+            if (backupPath == null)
+            {
+                return new DatabaseBackupResult(false, "Не удалось создать копию.");
+            }
+
+            return new DatabaseBackupResult(true, "Создана копия " + Path.GetFileName(backupPath) + ".");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backup failed for database {Database}", configuration.Name);
+            return new DatabaseBackupResult(false, "Не удалось создать копию: " + ex.Message);
+        }
+    }
+
+    public DatabaseBackupResult BackupToFile(DatabaseConfiguration configuration, string destinationPath)
+    {
+        if (configuration.MaxBackups <= 0)
+        {
+            return new DatabaseBackupResult(false, "Резервные копии выключены: максимум равен 0.");
+        }
+
+        if (string.IsNullOrWhiteSpace(destinationPath))
+        {
+            return new DatabaseBackupResult(false, "Не выбран файл резервной копии.");
+        }
+
         var databasePath = configuration.GetResolvedPath();
         if (!File.Exists(databasePath))
         {
-            return;
+            return new DatabaseBackupResult(false, "Файл базы не найден.");
         }
 
-        var backupsFolder = configuration.GetResolvedBackupsFolder();
-        if (!Directory.Exists(backupsFolder))
+        var destination = Path.GetFullPath(destinationPath);
+        if (string.IsNullOrEmpty(Path.GetExtension(destination)))
         {
-            Directory.CreateDirectory(backupsFolder);
+            destination += ".db";
         }
 
-        var backupPath = Path.Combine(backupsFolder, "Backup_" + DateTime.Now.ToString("yyyy_MM_dd", CultureInfo.InvariantCulture) + ".db");
-        if (!File.Exists(backupPath))
+        if (PathsEqual(destination, Path.GetFullPath(databasePath)))
         {
-            File.Copy(databasePath, backupPath);
+            return new DatabaseBackupResult(false, "Нельзя сохранить копию поверх файла базы.");
         }
 
-        foreach (var file in Directory.GetFiles(backupsFolder).OrderByDescending(b => b).Skip(configuration.MaxBackups))
+        try
         {
-            if (File.Exists(file))
+            var destinationDirectory = Path.GetDirectoryName(destination);
+            if (!string.IsNullOrEmpty(destinationDirectory))
             {
-                File.Delete(file);
+                Directory.CreateDirectory(destinationDirectory);
             }
+
+            using (var db = new LiteDatabase(databasePath))
+            {
+                db.Checkpoint();
+            }
+
+            File.Copy(databasePath, destination, overwrite: true);
+
+            var managedDirectory = Path.GetFullPath(configuration.GetResolvedBackupDirectory());
+            if (!string.IsNullOrEmpty(destinationDirectory)
+                && PathsEqual(Path.GetFullPath(destinationDirectory), managedDirectory))
+            {
+                var others = ListBackupFiles(managedDirectory)
+                    .Where(file => !PathsEqual(file.FullName, destination))
+                    .Skip(Math.Max(0, configuration.MaxBackups - 1));
+                foreach (var file in others)
+                {
+                    file.Delete();
+                }
+            }
+
+            _logger.LogInformation("Backup created at {Path}", destination);
+            return new DatabaseBackupResult(true, "Создана копия " + Path.GetFileName(destination) + ".");
         }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backup failed for database {Database}", configuration.Name);
+            return new DatabaseBackupResult(false, "Не удалось создать копию: " + ex.Message);
+        }
+    }
+
+    public DatabaseBackupResult RestoreFromFile(DatabaseConfiguration configuration, string backupPath)
+    {
+        if (string.IsNullOrWhiteSpace(backupPath) || !File.Exists(backupPath))
+        {
+            return new DatabaseBackupResult(false, "Файл резервной копии не найден.");
+        }
+
+        var source = Path.GetFullPath(backupPath);
+        var databasePath = Path.GetFullPath(configuration.GetResolvedPath());
+        if (PathsEqual(source, databasePath))
+        {
+            return new DatabaseBackupResult(false, "Выбран файл текущей базы, а не резервная копия.");
+        }
+
+        try
+        {
+            EnsureDatabaseFile(source);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Backup file {Path} cannot be opened", source);
+            return new DatabaseBackupResult(false, "Выбранный файл не является базой данных.");
+        }
+
+        try
+        {
+            var directory = Path.GetDirectoryName(databasePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            string? safetyName = null;
+            if (File.Exists(databasePath))
+            {
+                using (var db = new LiteDatabase(databasePath))
+                {
+                    db.Checkpoint();
+                }
+
+                safetyName = Path.GetFileName(SaveSafetyCopy(configuration, databasePath, source));
+            }
+
+            InstallDatabaseFile(source, databasePath);
+            _logger.LogInformation("Database {Database} restored from {Path}", configuration.Name, source);
+            var message = safetyName == null
+                ? "База восстановлена из " + Path.GetFileName(source) + "."
+                : "База восстановлена из " + Path.GetFileName(source) + ". Прежнее состояние сохранено в " + safetyName + ".";
+            return new DatabaseBackupResult(true, message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Restore failed for database {Database}", configuration.Name);
+            return new DatabaseBackupResult(false, "Не удалось восстановить базу: " + ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Снимок одной базы рядом с её файлом. Без force повторно не копирует файл с тем же содержимым.
+    /// При MaxBackups не больше нуля ничего не делает. Возвращает путь созданного файла.
+    /// </summary>
+    private string? CreateBackup(DatabaseConfiguration configuration, bool force)
+    {
+        if (configuration.MaxBackups <= 0)
+        {
+            return null;
+        }
+
+        var databasePath = configuration.GetResolvedPath();
+        if (!File.Exists(databasePath))
+        {
+            _logger.LogInformation("Backup skipped, database file is missing: {Path}", databasePath);
+            return null;
+        }
+
+        var backupDirectory = configuration.GetResolvedBackupDirectory();
+        Directory.CreateDirectory(backupDirectory);
+
+        var source = new FileInfo(databasePath);
+        var newest = ListBackupFiles(backupDirectory).FirstOrDefault();
+        if (!force && newest != null && HasSameContent(source, newest))
+        {
+            _logger.LogInformation("Backup skipped, database {Database} is unchanged", configuration.Name);
+            return null;
+        }
+
+        using (var db = new LiteDatabase(databasePath))
+        {
+            db.Checkpoint();
+        }
+
+        source.Refresh();
+        var backupPath = Path.Combine(backupDirectory, configuration.GetSuggestedBackupFileName(DateTime.Now));
+        if (File.Exists(backupPath))
+        {
+            backupPath = Path.Combine(
+                backupDirectory,
+                DateTime.Now.ToString("yyyyMMdd_HHmmss_fff", CultureInfo.InvariantCulture) + ".db");
+        }
+
+        File.Copy(databasePath, backupPath, overwrite: false);
+
+        foreach (var file in ListBackupFiles(backupDirectory).Skip(configuration.MaxBackups))
+        {
+            file.Delete();
+        }
+
+        _logger.LogInformation("Backup created at {Path}", backupPath);
+        return backupPath;
+    }
+
+    private static List<FileInfo> ListBackupFiles(string backupDirectory)
+    {
+        return Directory.EnumerateFiles(backupDirectory, "*.db")
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ThenByDescending(file => file.Name, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Одинаковое время и размер — быстрый путь после копирования с сохранением даты.
+    /// Если время сдвинулось, а размер тот же, сравнивается хеш: открытие базы
+    /// не должно создавать новую копию, а правка того же размера должна.
+    /// </summary>
+    private static bool HasSameContent(FileInfo source, FileInfo backup)
+    {
+        if (source.Length != backup.Length)
+        {
+            return false;
+        }
+
+        if (source.LastWriteTimeUtc == backup.LastWriteTimeUtc)
+        {
+            return true;
+        }
+
+        return HashFile(source.FullName).AsSpan().SequenceEqual(HashFile(backup.FullName));
+    }
+
+    private static byte[] HashFile(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        return SHA256.HashData(stream);
+    }
+
+    private string SaveSafetyCopy(DatabaseConfiguration configuration, string databasePath, string sourcePath)
+    {
+        var backupDirectory = configuration.GetResolvedBackupDirectory();
+        Directory.CreateDirectory(backupDirectory);
+        var safetyPath = Path.Combine(backupDirectory, configuration.GetSuggestedBackupFileName(DateTime.Now));
+        var attempt = 0;
+        while (File.Exists(safetyPath) || PathsEqual(safetyPath, sourcePath) || PathsEqual(safetyPath, databasePath))
+        {
+            attempt++;
+            safetyPath = Path.Combine(
+                backupDirectory,
+                DateTime.Now.ToString("yyyyMMdd_HHmmss_fff", CultureInfo.InvariantCulture) + "_" + attempt.ToString(CultureInfo.InvariantCulture) + ".db");
+        }
+
+        File.Copy(databasePath, safetyPath, overwrite: false);
+        return safetyPath;
+    }
+
+    private static void EnsureDatabaseFile(string path)
+    {
+        using var db = new LiteDatabase(new ConnectionString
+        {
+            Filename = path,
+            ReadOnly = true,
+        });
+        _ = db.GetCollectionNames().ToList();
+    }
+
+    private static void InstallDatabaseFile(string sourcePath, string databasePath)
+    {
+        var temp = databasePath + ".restore";
+        File.Copy(sourcePath, temp, overwrite: true);
+        try
+        {
+            if (!File.Exists(databasePath))
+            {
+                File.Move(temp, databasePath);
+                return;
+            }
+
+            File.Replace(temp, databasePath, destinationBackupFileName: null, ignoreMetadataErrors: true);
+        }
+        catch
+        {
+            if (File.Exists(temp))
+            {
+                File.Delete(temp);
+            }
+
+            throw;
+        }
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return string.Equals(
+            left.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+            right.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+            comparison);
     }
 
     public void UpdateImage(Guid id, string fileName, Stream stream)

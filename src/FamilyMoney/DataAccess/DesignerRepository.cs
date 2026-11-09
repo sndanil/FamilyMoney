@@ -30,6 +30,21 @@ public class DesignerRepository : IRepository
     {
     }
 
+    public DatabaseBackupResult BackupNow(DatabaseConfiguration configuration)
+    {
+        return new DatabaseBackupResult(false, "Резервная копия в этой версии не создаётся.");
+    }
+
+    public DatabaseBackupResult BackupToFile(DatabaseConfiguration configuration, string destinationPath)
+    {
+        return new DatabaseBackupResult(false, "Резервная копия в этой версии не создаётся.");
+    }
+
+    public DatabaseBackupResult RestoreFromFile(DatabaseConfiguration configuration, string backupPath)
+    {
+        return new DatabaseBackupResult(false, "Восстановление в этой версии недоступно.");
+    }
+
     public Account GetAccount(Guid id)
     {
         throw new NotImplementedException();

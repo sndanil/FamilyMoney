@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FamilyMoney.DataAccess;
 using FamilyMoney.Desktop.Services;
 using FamilyMoney.Services;
 using FamilyMoney.ViewModels;
@@ -30,7 +31,11 @@ public partial class App : Application
             {
                 DataContext = host.Services.GetRequiredService<MainViewModel>(),
             };
-            desktop.Exit += (_, _) => host.Dispose();
+            desktop.Exit += (_, _) =>
+            {
+                AppInit.BackupDatabases();
+                host.Dispose();
+            };
 
             host.RunAsync();
         }
@@ -40,6 +45,11 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        if (!Design.IsDesignMode)
+        {
+            services.AddSingleton<IDatabaseBackup, RepositoryDatabaseBackup>();
+        }
+
         services.AddSingleton<IFilePickerService>(sp =>
         {
             return new AvaloniaFilePickerService(() =>
