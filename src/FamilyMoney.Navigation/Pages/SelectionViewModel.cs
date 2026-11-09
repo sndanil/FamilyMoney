@@ -7,24 +7,37 @@ using FamilyMoney.ViewModels;
 
 namespace FamilyMoney.Navigation.Pages;
 
+/// <summary>Новое имя подкатегории, которого ещё нет в списке.</summary>
+public sealed record NewSubCategorySelection(string Name)
+{
+    public string Caption => "Создать «" + Name + "»";
+}
+
 public partial class SelectionViewModel : ObservableObject
 {
     private readonly IReadOnlyList<object> _items;
+    private readonly bool _allowCreate;
 
     public SelectionViewModel(
         IEnumerable<object> items,
         object? selectedItem,
         string title,
         string searchPlaceholder,
-        string emptyText)
+        string emptyText,
+        bool allowCreate = false,
+        bool showSubCategoryParent = false)
     {
         _items = items.ToList();
+        _allowCreate = allowCreate;
+        ShowSubCategoryParent = showSubCategoryParent;
         SelectedItem = selectedItem;
         Title = title;
         SearchPlaceholder = searchPlaceholder;
         EmptyText = emptyText;
         RefreshFilteredItems();
     }
+
+    public bool ShowSubCategoryParent { get; }
 
     public string Title { get; }
 
@@ -54,7 +67,15 @@ public partial class SelectionViewModel : ObservableObject
             ? _items
             : _items.Where(item => GetName(item).Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
 
+        var hasExactName = search.Length > 0
+            && _items.Any(item => string.Equals(GetName(item), search, StringComparison.OrdinalIgnoreCase));
+
         FilteredItems.Clear();
+        if (_allowCreate && search.Length > 0 && !hasExactName)
+        {
+            FilteredItems.Add(new NewSubCategorySelection(search));
+        }
+
         foreach (var item in filtered)
         {
             FilteredItems.Add(item);

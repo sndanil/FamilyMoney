@@ -93,9 +93,25 @@ public partial class BaseTransactionViewModel : ViewModelBase
         Tags.CollectionChanged += (_, _) => NotifySuggestedTagsChanged();
     }
 
+    public bool HasSubCategoryValue => SubCategory != null || !string.IsNullOrWhiteSpace(SubCategoryText);
+
+    public bool HasNewSubCategoryText => SubCategory == null && !string.IsNullOrWhiteSpace(SubCategoryText);
+
     partial void OnSubCategoryChanged(BaseSubCategoryViewModel? value)
     {
         Comments = value?.Comments ?? [];
+        NotifySubCategoryValue();
+    }
+
+    partial void OnSubCategoryTextChanged(string? value)
+    {
+        NotifySubCategoryValue();
+    }
+
+    private void NotifySubCategoryValue()
+    {
+        OnPropertyChanged(nameof(HasSubCategoryValue));
+        OnPropertyChanged(nameof(HasNewSubCategoryText));
     }
 
     private bool CanOkCommand()

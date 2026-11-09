@@ -291,24 +291,59 @@ public partial class TransactionEditPage : ContentPage
             "Поиск категории",
             "Категории не найдены"));
 
-        if (result is BaseCategoryViewModel category)
+        if (result is not BaseCategoryViewModel category || category.Id == _viewModel.Category?.Id)
         {
-            _viewModel.Category = category;
+            return;
         }
+
+        _viewModel.SubCategory = null;
+        _viewModel.SubCategoryText = null;
+        _viewModel.Category = category;
     }
 
     private async void SelectSubCategoryClick(object? sender, RoutedEventArgs e)
     {
+        var category = _viewModel.Category;
+        var subCategories = _viewModel.SubCategories ?? [];
+        IEnumerable<BaseSubCategoryViewModel> visible = category == null
+            ? subCategories
+            : subCategories.Where(subCategory => subCategory.CategoryId == category.Id);
+
         var result = await PickAsync(new SelectionViewModel(
-            (_viewModel.SubCategories ?? []).Cast<object>(),
+            visible.Cast<object>(),
             _viewModel.SubCategory,
             "Подкатегория",
             "Поиск подкатегории",
-            "Подкатегории не найдены"));
+            "Подкатегории не найдены",
+            allowCreate: true,
+            showSubCategoryParent: category == null));
 
         if (result is BaseSubCategoryViewModel subCategory)
         {
+            ApplySubCategory(subCategory);
+        }
+        else if (result is NewSubCategorySelection created)
+        {
+            _viewModel.SubCategory = null;
+            _viewModel.SubCategoryText = created.Name;
+        }
+    }
+
+    private void ApplySubCategory(BaseSubCategoryViewModel subCategory)
+    {
+        _skipCategoryChange = true;
+        try
+        {
             _viewModel.SubCategory = subCategory;
+            _viewModel.SubCategoryText = subCategory.Name;
+            if (_viewModel.Category == null)
+            {
+                _viewModel.Category = _viewModel.Categories?.FirstOrDefault(category => category.Id == subCategory.CategoryId);
+            }
+        }
+        finally
+        {
+            _skipCategoryChange = false;
         }
     }
 

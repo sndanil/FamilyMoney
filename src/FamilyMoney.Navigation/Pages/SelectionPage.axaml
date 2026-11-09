@@ -6,6 +6,7 @@
              xmlns:pages="using:FamilyMoney.Navigation.Pages"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.SelectionPage"
+             x:Name="Root"
              x:DataType="pages:SelectionViewModel"
              Header="{Binding Title}">
   <ContentPage.Resources>
@@ -118,14 +119,39 @@
     <DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
       <Border Classes="SelectionItem">
         <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="{Binding Name}"
-                     VerticalAlignment="Center"
-                     TextTrimming="CharacterEllipsis" />
+          <StackPanel VerticalAlignment="Center" Spacing="2">
+            <TextBlock Text="{Binding Name}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding Category.Name}"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextTrimming="CharacterEllipsis"
+                       IsVisible="{Binding #Root.((pages:SelectionViewModel)DataContext).ShowSubCategoryParent}" />
+          </StackPanel>
           <TextBlock Grid.Column="1"
                      Text="{Binding LastSum, StringFormat='#,##0.00'}"
                      FontSize="11"
+                     Margin="12 0 0 0"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="pages:NewSubCategorySelection">
+      <Border Classes="SelectionItem">
+        <Grid ColumnDefinitions="Auto,*">
+          <mi:MaterialIcon Kind="Plus"
+                           Width="18"
+                           Height="18"
+                           Foreground="{DynamicResource AccentBrush}"
+                           VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Caption}"
+                     Margin="10 0 0 0"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     TextWrapping="Wrap" />
         </Grid>
       </Border>
     </DataTemplate>

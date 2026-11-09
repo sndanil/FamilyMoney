@@ -251,17 +251,20 @@
                   <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Text="Без подкатегории"
                                Classes="FieldPlaceholder"
-                               IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNull}}" />
+                               IsVisible="{Binding !HasSubCategoryValue}" />
                     <TextBlock Text="{Binding SubCategory.Name}"
                                Classes="FieldValue"
                                IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <TextBlock Text="{Binding SubCategoryText}"
+                               Classes="FieldValue"
+                               IsVisible="{Binding HasNewSubCategoryText}" />
                     <mi:MaterialIcon Grid.Column="1" Kind="ChevronRight" Width="18" Height="18"
                                      Foreground="{DynamicResource TextSecondaryBrush}" />
                   </Grid>
                 </Button>
                 <Button Grid.Column="1"
                         Classes="ClearField"
-                        IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        IsVisible="{Binding HasSubCategoryValue}"
                         Click="ClearSubCategoryClick"
                         ToolTip.Tip="Очистить подкатегорию">
                   <mi:MaterialIcon Kind="Close" Width="17" Height="17" />
