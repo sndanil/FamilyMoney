@@ -16,6 +16,14 @@
                 IsVisible="{Binding Settings.IsQrImportAvailable}" />
       </StackPanel>
       <TextBlock Text="{Binding Settings.SyncStatus}" TextWrapping="Wrap" />
+      <TextBlock Text="Предупреждать об окончании вклада за" />
+      <NumericUpDown Minimum="0"
+                     Maximum="3650"
+                     Increment="1"
+                     FormatString="0"
+                     Width="120"
+                     HorizontalAlignment="Left"
+                     Value="{Binding Settings.DepositWarningDays}" />
       <TextBlock Text="Базы данных" FontWeight="SemiBold" />
     </StackPanel>
     <ListBox Grid.Row="1" ItemsSource="{Binding Settings.Databases}" Margin="0 8 0 0">

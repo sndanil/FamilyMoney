@@ -21,4 +21,8 @@ internal sealed class AccountSyncModel
     public bool IsGroup { get; set; }
 
     public bool IsNotSummable { get; set; }
+
+    public DateTime? EndsOn { get; set; }
+
+    public decimal? AnnualRate { get; set; }
 }

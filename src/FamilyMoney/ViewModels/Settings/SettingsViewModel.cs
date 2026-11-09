@@ -47,6 +47,11 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string BackupStatus { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial decimal DepositWarningDays { get; set; } = RootConfiguration.DefaultDepositWarningDays;
+
+    private bool _suppressDepositWarningWrite;
+
     public bool IsSyncAvailable => _syncService.IsEnabled;
 
     public bool IsQrImportAvailable => _qrScanner != null;
@@ -86,6 +91,9 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         SelectedDatabase = Databases.FirstOrDefault(d => d.IsSelected) ?? Databases.FirstOrDefault();
+        _suppressDepositWarningWrite = true;
+        DepositWarningDays = root.GetDepositWarningDays();
+        _suppressDepositWarningWrite = false;
         RefreshSyncState();
     }
 
@@ -445,6 +453,7 @@ public partial class SettingsViewModel : ViewModelBase
             SelectedDatabaseIndex = selectedIndex,
             Transactions = root.Transactions,
             AccountsPaneWidth = root.AccountsPaneWidth,
+            DepositWarningDays = NormalizeDepositWarningDays(DepositWarningDays),
         };
 
         _configuration.Save(newRoot);
@@ -458,5 +467,36 @@ public partial class SettingsViewModel : ViewModelBase
         {
             WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
         }
+    }
+
+    partial void OnDepositWarningDaysChanged(decimal value)
+    {
+        if (_suppressDepositWarningWrite)
+        {
+            return;
+        }
+
+        var days = NormalizeDepositWarningDays(value);
+        if (value != days)
+        {
+            DepositWarningDays = days;
+            return;
+        }
+
+        var root = _configuration.Get();
+        if (root.GetDepositWarningDays() == days)
+        {
+            return;
+        }
+
+        root.DepositWarningDays = days;
+        _configuration.Save(root);
+        WeakReferenceMessenger.Default.Send(new DepositWarningDaysChangedMessage(days));
+    }
+
+    private static int NormalizeDepositWarningDays(decimal value)
+    {
+        var days = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+        return Math.Clamp(days, 0, RootConfiguration.MaxDepositWarningDays);
     }
 }

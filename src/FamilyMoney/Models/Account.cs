@@ -26,5 +26,14 @@ public sealed class Account : ISyncable
     // (IAccountLocalSettingsStore) и не синхронизируются между устройствами.
 
     public bool IsNotSummable { get; set; }
+
+    /// <summary>Дата окончания вклада. Пусто у обычных счетов и групп.</summary>
+    public DateTime? EndsOn { get; set; }
+
+    /// <summary>
+    /// Ставка в процентах так, как её указывает пользователь: 16,5 — это 16,5%.
+    /// Пусто, если ставка не задана; 0 — настоящая нулевая ставка.
+    /// </summary>
+    public decimal? AnnualRate { get; set; }
 }
 

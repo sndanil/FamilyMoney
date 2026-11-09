@@ -162,7 +162,7 @@
 		</Style>
 	</UserControl.Styles>
 
-	<Grid Margin="24" RowDefinitions="Auto,*">
+	<Grid Margin="24" RowDefinitions="Auto,Auto,*">
 		<Grid ColumnDefinitions="*,Auto">
 			<StackPanel Spacing="4">
 				<TextBlock Text="Базы данных" Classes="PageTitle" />
@@ -180,7 +180,27 @@
 			</Button>
 		</Grid>
 
-		<Grid Grid.Row="1" ColumnDefinitions="340,16,*" Margin="0 18 0 0">
+		<Border Grid.Row="1" Classes="Card" Margin="0 18 0 0" Padding="18 12">
+			<Grid ColumnDefinitions="*,Auto">
+				<StackPanel Spacing="2" VerticalAlignment="Center">
+					<TextBlock Text="Вклады" FontWeight="SemiBold" />
+					<TextBlock Classes="PageSubtitle"
+							   TextWrapping="Wrap"
+							   Text="За сколько дней до даты окончания подсвечивать вклад в списке счетов" />
+				</StackPanel>
+				<NumericUpDown Grid.Column="1"
+							   Width="120"
+							   Margin="16 0 0 0"
+							   VerticalAlignment="Center"
+							   Minimum="0"
+							   Maximum="3650"
+							   Increment="1"
+							   FormatString="0"
+							   Value="{Binding DepositWarningDays}" />
+			</Grid>
+		</Border>
+
+		<Grid Grid.Row="2" ColumnDefinitions="340,16,*" Margin="0 12 0 0">
 			<!-- Список баз -->
 			<Border Classes="Card">
 				<Grid RowDefinitions="Auto,*">

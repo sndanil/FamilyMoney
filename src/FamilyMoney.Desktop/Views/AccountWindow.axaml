@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-		Width="600" Height="400"
+		Width="600" Height="480"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
@@ -22,13 +22,59 @@
 			<Setter Property="Margin" Value="20 0" />
 		</Style>
 	</Window.Styles>
-	<Grid RowDefinitions="auto auto * auto auto">
+	<Grid RowDefinitions="auto,auto,auto,*,auto,auto">
 		<TextBlock Text="Группа счетов" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding IsGroup}"/>
 		<TextBlock Text="Счёт" Margin="0 10" HorizontalAlignment="Center" IsVisible="{Binding !IsGroup}"/>
 
 		<TextBox Text="{Binding Name}" Margin="15 35 15 5" PlaceholderText="Наименование" HorizontalAlignment="Stretch"/>
-		<CheckBox Grid.Row="1" IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
-		<Image Grid.Row="2"
+
+		<StackPanel Grid.Row="1" Margin="15 8 15 0" Spacing="8" IsVisible="{Binding !IsGroup}">
+			<Grid ColumnDefinitions="140,*,Auto" Height="36">
+				<TextBlock Text="Дата окончания" VerticalAlignment="Center" />
+				<CalendarDatePicker Grid.Column="1"
+									SelectedDate="{Binding EndsOn}"
+									CustomDateFormatString="dd.MM.yyyy"
+									PlaceholderText="не указана"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Center" />
+				<Button Grid.Column="2"
+						Width="32"
+						Height="32"
+						Margin="6 0 0 0"
+						Padding="0"
+						Background="Transparent"
+						Command="{Binding ClearEndsOnCommand}"
+						ToolTip.Tip="Очистить дату"
+						IsVisible="{Binding EndsOn, Converter={x:Static ObjectConverters.IsNotNull}}">
+					<mi:MaterialIcon Kind="Close" Width="16" Height="16" />
+				</Button>
+			</Grid>
+			<Grid ColumnDefinitions="140,*,Auto" Height="36">
+				<TextBlock Text="Ставка, %" VerticalAlignment="Center" />
+				<TextBox Grid.Column="1"
+						 Text="{Binding AnnualRateText, UpdateSourceTrigger=PropertyChanged}"
+						 PlaceholderText="не указана"
+						 VerticalAlignment="Center" />
+				<Button Grid.Column="2"
+						Width="32"
+						Height="32"
+						Margin="6 0 0 0"
+						Padding="0"
+						Background="Transparent"
+						Command="{Binding ClearAnnualRateCommand}"
+						ToolTip.Tip="Очистить ставку"
+						IsVisible="{Binding AnnualRateText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+					<mi:MaterialIcon Kind="Close" Width="16" Height="16" />
+				</Button>
+			</Grid>
+			<TextBlock Text="{Binding AnnualRateError}"
+					   Foreground="{DynamicResource NegativeBrush}"
+					   FontSize="12"
+					   IsVisible="{Binding AnnualRateError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+
+		<CheckBox Grid.Row="2" IsChecked="{Binding IsNotSummable}">Не суммировать</CheckBox>
+		<Image Grid.Row="3"
 			Name="ImageControl"
 			DragDrop.AllowDrop="True"
 			Stretch="Uniform"
@@ -36,14 +82,14 @@
 			VerticalAlignment="Center"
 			/>
 		
-		<mi:MaterialIcon Grid.Row="2" Kind="Image"
+		<mi:MaterialIcon Grid.Row="3" Kind="Image"
 			Width="100" Height="100"
 			 VerticalAlignment="Stretch"
 			 HorizontalAlignment="Stretch"
 			 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}"			 
 		/>
 
-		<Button Grid.Row="3" 
+		<Button Grid.Row="4" 
 				Classes="DialogButton" 
 				Width="250"
 				Content="Загрузить картинку из файла" 
@@ -53,7 +99,7 @@
 				/>
 
 		<StackPanel
-			Grid.Row="4"
+			Grid.Row="5"
 			Orientation="Horizontal"
 			HorizontalAlignment="Right"
 			Margin="0 5 0 10"

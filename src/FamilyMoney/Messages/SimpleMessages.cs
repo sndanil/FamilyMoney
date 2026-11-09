@@ -14,6 +14,8 @@ public record MainStateChangedMessage(MainState State);
 
 public record DatabaseChangedMessage;
 
+public record DepositWarningDaysChangedMessage(int Days);
+
 public record CategoryUpdateMessage(Guid? CategoryId);
 
 public record SubCategoryRenamedMessage(Guid Id, string Name);

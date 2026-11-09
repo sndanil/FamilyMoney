@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -25,6 +26,8 @@ public partial class AccountsViewModel : ViewModelBase
     private readonly IRepository _repository;
     private readonly IStateManager _stateManager;
     private readonly IAccountLocalSettingsStore _localSettings;
+    private readonly IGlobalConfiguration _configuration;
+    private int _depositWarningDays;
 
     [ObservableProperty]
     public partial AccountViewModel? DraggingAccount { get; set; }
@@ -54,11 +57,17 @@ public partial class AccountsViewModel : ViewModelBase
         }
     }
 
-    public AccountsViewModel(IRepository repository, IStateManager stateManager, IAccountLocalSettingsStore localSettings)
+    public AccountsViewModel(
+        IRepository repository,
+        IStateManager stateManager,
+        IAccountLocalSettingsStore localSettings,
+        IGlobalConfiguration configuration)
     {
         _repository = repository;
         _stateManager = stateManager;
         _localSettings = localSettings;
+        _configuration = configuration;
+        _depositWarningDays = configuration.Get().GetDepositWarningDays();
 
         SubscribeMessages();
     }
@@ -124,6 +133,7 @@ public partial class AccountsViewModel : ViewModelBase
         _total.Children.Clear();
         var accounts = _repository!.GetAccounts();
         _total.AddFromAccount(_repository, _localSettings, accounts);
+        ApplyDepositWarningDays();
         RefreshVisibleOrder();
 
         return [.. _total.Children];
@@ -222,6 +232,26 @@ public partial class AccountsViewModel : ViewModelBase
                 a.RefreshAccountSumsFromRepository();
             }
         });
+
+        WeakReferenceMessenger.Default.Register<AccountsViewModel, DepositWarningDaysChangedMessage>(this, (a, m) =>
+        {
+            a._depositWarningDays = m.Days;
+            a.ApplyDepositWarningDays();
+        });
+    }
+
+    private void ApplyDepositWarningDays()
+    {
+        Apply(_total);
+
+        void Apply(AccountViewModel account)
+        {
+            account.SetDepositWarningDays(_depositWarningDays);
+            foreach (var child in account.Children)
+            {
+                Apply(child);
+            }
+        }
     }
 
     private void RefreshAccountSumsFromRepository()
@@ -261,6 +291,7 @@ public partial class AccountsViewModel : ViewModelBase
             Total.Children.Add(result);
             result.Parent = Total;
             result.Id = Guid.NewGuid();
+            result.SetDepositWarningDays(_depositWarningDays);
             Save(null, result);
             RefreshVisibleOrder();
         }
@@ -277,6 +308,7 @@ public partial class AccountsViewModel : ViewModelBase
             parent.Children.Add(result);
             result.Id = Guid.NewGuid();
             result.Parent = parent;
+            result.SetDepositWarningDays(_depositWarningDays);
             Save(null, result);
             RefreshVisibleOrder();
         }
@@ -299,6 +331,8 @@ public partial class AccountsViewModel : ViewModelBase
             IsGroup = editAccount.IsGroup,
             ImageData = editAccount.ImageData,
             IsNotSummable = editAccount.IsNotSummable,
+            EndsOn = editAccount.EndsOn,
+            AnnualRateText = DepositCaptionFormatter.FormatRateInput(editAccount.AnnualRate),
         };
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
         if (result != null)
@@ -420,11 +454,16 @@ public partial class AccountsViewModel : ViewModelBase
             _repository!.UpdateImage(other.Id.Value, other.Name, stream);
         }
 
+        var endsOn = other.IsGroup ? null : other.EndsOn?.Date;
+        var annualRate = other.IsGroup ? null : other.AnnualRate;
+
         if (one != null)
         {
             one.Name = other.Name;
             one.ImageData = other.ImageData;
             one.IsNotSummable = other.IsNotSummable;
+            one.EndsOn = endsOn;
+            one.AnnualRate = annualRate;
         }
 
         var state = _stateManager.GetMainState();
@@ -438,6 +477,8 @@ public partial class AccountsViewModel : ViewModelBase
             Name = other.Name,
             IsGroup = other.IsGroup,
             IsNotSummable = other.IsNotSummable,
+            EndsOn = endsOn,
+            AnnualRate = annualRate,
             Sum = other.IsGroup ? 0 : (existingAccount?.Sum ?? 0),
             Order = (other.Parent ?? Total).Children
                         .Select((account, index) => (account, index))

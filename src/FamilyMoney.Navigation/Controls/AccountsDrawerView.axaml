@@ -18,6 +18,10 @@
       <Setter Property="Height" Value="5" />
     </Style>
     <Style Selector="Border.Account">
+      <Setter Property="Height" Value="40" />
+    </Style>
+    <Style Selector="Border.Account.WithDeposit">
+      <Setter Property="Height" Value="NaN" />
       <Setter Property="MinHeight" Value="40" />
     </Style>
     <Style Selector="Border.GroupCard">
@@ -51,12 +55,25 @@
     </Style>
     <Style Selector="Border.Account Image">
       <Setter Property="Width" Value="32" />
+      <Setter Property="MaxHeight" Value="32" />
       <Setter Property="Margin" Value="10 4 0 4" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Border.Account TextBlock.Name">
       <Setter Property="Margin" Value="12 4 0 4" />
       <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.DepositCaption">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Margin" Value="12 0 8 4" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="TextBlock.DepositCaption.Soon">
+      <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+    </Style>
+    <Style Selector="TextBlock.DepositCaption.Expired">
+      <Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
     </Style>
     <Style Selector="Border.Account TextBlock.Group">
       <Setter Property="FontWeight" Value="Bold" />
@@ -144,6 +161,7 @@
                       Classes.Group="{Binding IsGroup}"
                       Classes.Selected="{Binding IsSelected}"
                       Classes.Hidden="{Binding IsHidden}"
+                      Classes.WithDeposit="{Binding HasDepositDetails}"
                       Tapped="OnAccountTapped">
                 <Border.IsVisible>
                   <MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -162,7 +180,7 @@
                   </ContextMenu>
                 </Border.ContextMenu>
 
-                <Grid ColumnDefinitions="Auto Auto * Auto">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
                   <Button Classes="Expander"
                           IsVisible="{Binding IsGroup}"
                           Command="{Binding ToggleExpandCommand}">
@@ -175,15 +193,27 @@
                          Stretch="Uniform"
                          Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
                          IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                  <StackPanel Grid.Column="2" Orientation="Horizontal" ClipToBounds="True">
-                    <TextBlock Classes="Name"
-                               Classes.Group="{Binding IsGroup}"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding Name}" />
-                    <mi:MaterialIcon Classes="HiddenIndicator"
-                                     Kind="EyeOff"
-                                     ToolTip.Tip="Скрытый"
-                                     IsVisible="{Binding IsHidden}" />
+                  <StackPanel Grid.Column="2"
+                              Orientation="Vertical"
+                              VerticalAlignment="Center"
+                              MinWidth="0">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Classes="Name"
+                                 Classes.Group="{Binding IsGroup}"
+                                 TextTrimming="CharacterEllipsis"
+                                 MinWidth="0"
+                                 Text="{Binding Name}" />
+                      <mi:MaterialIcon Grid.Column="1"
+                                       Classes="HiddenIndicator"
+                                       Kind="EyeOff"
+                                       ToolTip.Tip="Скрытый"
+                                       IsVisible="{Binding IsHidden}" />
+                    </Grid>
+                    <TextBlock Classes="DepositCaption"
+                               Classes.Soon="{Binding IsDepositEndingSoon}"
+                               Classes.Expired="{Binding IsDepositExpired}"
+                               Text="{Binding DepositCaption}"
+                               IsVisible="{Binding HasDepositDetails}" />
                   </StackPanel>
                   <TextBlock Grid.Column="3"
                              Classes="Sum"
@@ -208,6 +238,7 @@
                             Classes.Selected="{Binding IsSelected}"
                             Classes.Hidden="{Binding IsHidden}"
                             Classes.LastVisible="{Binding IsLastVisibleChild}"
+                            Classes.WithDeposit="{Binding HasDepositDetails}"
                             Tapped="OnAccountTapped">
                       <Border.IsVisible>
                         <MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -226,18 +257,30 @@
                         </ContextMenu>
                       </Border.ContextMenu>
 
-                      <Grid ColumnDefinitions="Auto * Auto">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
                         <Image Stretch="Uniform"
                                Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
                                IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" ClipToBounds="True">
-                          <TextBlock Classes="Name"
-                                     TextTrimming="CharacterEllipsis"
-                                     Text="{Binding Name}" />
-                          <mi:MaterialIcon Classes="HiddenIndicator"
-                                           Kind="EyeOff"
-                                           ToolTip.Tip="Скрытый"
-                                           IsVisible="{Binding IsHidden}" />
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Vertical"
+                                    VerticalAlignment="Center"
+                                    MinWidth="0">
+                          <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Classes="Name"
+                                       TextTrimming="CharacterEllipsis"
+                                       MinWidth="0"
+                                       Text="{Binding Name}" />
+                            <mi:MaterialIcon Grid.Column="1"
+                                             Classes="HiddenIndicator"
+                                             Kind="EyeOff"
+                                             ToolTip.Tip="Скрытый"
+                                             IsVisible="{Binding IsHidden}" />
+                          </Grid>
+                          <TextBlock Classes="DepositCaption"
+                                     Classes.Soon="{Binding IsDepositEndingSoon}"
+                                     Classes.Expired="{Binding IsDepositExpired}"
+                                     Text="{Binding DepositCaption}"
+                                     IsVisible="{Binding HasDepositDetails}" />
                         </StackPanel>
                         <TextBlock Grid.Column="2"
                                    Classes="Sum"

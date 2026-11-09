@@ -95,6 +95,8 @@ public static class SyncEntitySerializer
         Order = account.Order,
         IsGroup = account.IsGroup,
         IsNotSummable = account.IsNotSummable,
+        EndsOn = account.EndsOn,
+        AnnualRate = account.AnnualRate,
     };
 
     private static Account FromAccountSyncModel(AccountSyncModel model) => new()
@@ -107,6 +109,8 @@ public static class SyncEntitySerializer
         Order = model.Order,
         IsGroup = model.IsGroup,
         IsNotSummable = model.IsNotSummable,
+        EndsOn = model.EndsOn,
+        AnnualRate = model.AnnualRate,
         Sum = 0,
     };
 }

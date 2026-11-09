@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Models;
@@ -49,6 +50,21 @@ public partial class AccountViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsLastVisibleChild { get; set; }
 
+    [ObservableProperty]
+    public partial DateTime? EndsOn { get; set; }
+
+    [ObservableProperty]
+    public partial decimal? AnnualRate { get; set; }
+
+    [ObservableProperty]
+    public partial string AnnualRateText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
+    public partial string? AnnualRateError { get; set; }
+
+    private int _depositWarningDays = RootConfiguration.DefaultDepositWarningDays;
+
     public bool IsAloneGroup => Children.Count == 0;
 
     /// <summary>
@@ -79,7 +95,30 @@ public partial class AccountViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new AccountHideMessage(Id, IsHidden));
     }
 
-    private bool CanOkCommand() => !string.IsNullOrEmpty(Name);
+    public string? DepositCaption => CurrentDepositCaption.Text;
+
+    public bool HasDepositDetails => !IsGroup && CurrentDepositCaption.HasText;
+
+    public bool IsDepositEndingSoon => !IsGroup && CurrentDepositCaption.Kind == DepositTermKind.Soon;
+
+    public bool IsDepositExpired => !IsGroup && CurrentDepositCaption.Kind == DepositTermKind.Expired;
+
+    private DepositCaption CurrentDepositCaption =>
+        DepositCaptionFormatter.Format(EndsOn, AnnualRate, _depositWarningDays, DateTime.Today);
+
+    public void SetDepositWarningDays(int days)
+    {
+        var normalized = Math.Clamp(days, 0, RootConfiguration.MaxDepositWarningDays);
+        if (_depositWarningDays == normalized)
+        {
+            return;
+        }
+
+        _depositWarningDays = normalized;
+        NotifyDepositDetails();
+    }
+
+    private bool CanOkCommand() => !string.IsNullOrEmpty(Name) && (IsGroup || string.IsNullOrEmpty(AnnualRateError));
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
     public async Task OkAsync()
@@ -133,6 +172,63 @@ public partial class AccountViewModel : ViewModelBase
         IsHidden = localSettings.IsHidden(account.Id);
         IsExpanded = localSettings.IsExpanded(account.Id);
         IsNotSummable = account.IsNotSummable;
+        EndsOn = account.EndsOn?.Date;
+        AnnualRateText = DepositCaptionFormatter.FormatRateInput(account.AnnualRate);
         ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(account.Id));
+    }
+
+    partial void OnEndsOnChanged(DateTime? value)
+    {
+        if (value is { } date && date.TimeOfDay != TimeSpan.Zero)
+        {
+            EndsOn = date.Date;
+            return;
+        }
+
+        NotifyDepositDetails();
+    }
+
+    partial void OnAnnualRateChanged(decimal? value)
+    {
+        NotifyDepositDetails();
+    }
+
+    partial void OnAnnualRateTextChanged(string value)
+    {
+        if (DepositCaptionFormatter.TryParseRate(value, out var rate))
+        {
+            AnnualRateError = null;
+            AnnualRate = rate;
+        }
+        else
+        {
+            AnnualRateError = "Введите неотрицательное число";
+        }
+    }
+
+    partial void OnIsGroupChanged(bool value)
+    {
+        NotifyDepositDetails();
+        OkCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void ClearEndsOn()
+    {
+        EndsOn = null;
+    }
+
+    [RelayCommand]
+    private void ClearAnnualRate()
+    {
+        AnnualRateText = string.Empty;
+    }
+
+    private void NotifyDepositDetails()
+    {
+        OnPropertyChanged(nameof(DepositCaption));
+        OnPropertyChanged(nameof(HasDepositDetails));
+        OnPropertyChanged(nameof(IsDepositEndingSoon));
+        OnPropertyChanged(nameof(IsDepositExpired));
     }
 }
