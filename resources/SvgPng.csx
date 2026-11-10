@@ -44,7 +44,8 @@ static SKBitmap RenderPng(string pngPath, int size)
     var width = source.Width * scale;
     var height = source.Height * scale;
     var destination = SKRect.Create((size - width) / 2f, (size - height) / 2f, width, height);
-    canvas.DrawBitmap(source, destination, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
+    using var image = SKImage.FromBitmap(source);
+    canvas.DrawImage(image, destination, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
     return bitmap;
 }
 
