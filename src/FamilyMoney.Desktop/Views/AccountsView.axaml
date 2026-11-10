@@ -282,17 +282,23 @@
 									</Button>
 									<Image Grid.Column="2"
 										   Stretch="Uniform"
-										   Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-										   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+										   Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}">
+										<Image.IsVisible>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="!IsGroup" />
+												<Binding Path="ImageData" Converter="{x:Static ObjectConverters.IsNotNull}" />
+											</MultiBinding>
+										</Image.IsVisible>
+									</Image>
 									<StackPanel Grid.Column="3"
 												Orientation="Vertical"
 												VerticalAlignment="Center"
-												MinWidth="0">
+												MinWidth="0"
+												IsVisible="{Binding !IsGroup}">
 										<Grid ColumnDefinitions="*,Auto">
 											<TextBlock
 												   TextTrimming="CharacterEllipsis"
 												   MinWidth="0"
-												   Classes.Group="{Binding IsGroup}" 
 												   Text="{Binding Name}" 
 												   Name="AccountName"/>
 											<mi:MaterialIcon Grid.Column="1"
@@ -306,6 +312,25 @@
 												   Classes.Expired="{Binding IsDepositExpired}"
 												   Text="{Binding DepositCaption}"
 												   IsVisible="{Binding HasDepositDetails}" />
+									</StackPanel>
+									<StackPanel Grid.Column="0"
+												Grid.ColumnSpan="5"
+												Orientation="Horizontal"
+												VerticalAlignment="Center"
+												IsVisible="{Binding IsGroup}"
+												Classes.Group="True"
+												Classes.ShiftForMove="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHiddenReorder}">
+										<Image Stretch="Uniform"
+											   Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+											   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+										<TextBlock TextTrimming="CharacterEllipsis"
+												   Classes="Group"
+												   VerticalAlignment="Center"
+												   Text="{Binding Name}" />
+										<mi:MaterialIcon Classes="HiddenIndicator"
+														 Kind="EyeOff"
+														 ToolTip.Tip="Скрытый"
+														 IsVisible="{Binding IsHidden}" />
 									</StackPanel>
 									<SelectableTextBlock Grid.Column="4"
 												Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
