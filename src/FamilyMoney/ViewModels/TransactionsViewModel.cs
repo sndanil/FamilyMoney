@@ -348,7 +348,8 @@ public partial class TransactionsViewModel : ViewModelBase
             viewModel.Sum = entity!.Sum;
             viewModel.Comment = entity.Comment;
             viewModel.ToSum = entity is TransferTransaction transferEntity ? transferEntity.ToSum : viewModel.ToSum;
-            viewModel.Date = DateTime.Today;
+            // Дату не трогаем: CreateNewTransaction уже ставит последнюю сохранённую в этом запуске
+            // (или сегодня, если сохранений ещё не было; для периода в один день — дату этого дня).
             viewModel.IsCopy = true;
 
             return (entity, viewModel);
