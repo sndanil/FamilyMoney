@@ -717,6 +717,7 @@ public partial class TransactionsViewModel : ViewModelBase
                     selected, 
                     (_, _) => true);
                 lastDateGroup.Sum += transaction.Sum;
+                lastDateGroup.DebetSum += transaction.Sum;
             }
             else if (transaction is CreditTransaction)
             {
@@ -725,6 +726,7 @@ public partial class TransactionsViewModel : ViewModelBase
                     selected, 
                     (_, _) => false);
                 lastDateGroup.Sum -= transaction.Sum;
+                lastDateGroup.CreditSum += transaction.Sum;
             }
             else if (transaction is TransferTransaction transferTransaction)
             {

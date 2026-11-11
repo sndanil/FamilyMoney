@@ -20,6 +20,18 @@ public partial class TransactionsByDatesGroup : ViewModelBase
     [ObservableProperty]
     public partial decimal Sum { get; set; }
 
+    public decimal DebetSum { get; set; }
+
+    public decimal CreditSum { get; set; }
+
+    public bool HasDebet => DebetSum != 0;
+
+    public bool HasCredit => CreditSum != 0;
+
+    // Отдельный итог, когда за день были и приходы, и расходы.
+    // Если не было ни тех, ни других, в заголовке остаётся прежняя одна сумма.
+    public bool ShowTotal => HasDebet == HasCredit;
+
     [ObservableProperty]
     public partial ObservableCollection<TransactionRowViewModel> Transactions { get; set; } = [];
 

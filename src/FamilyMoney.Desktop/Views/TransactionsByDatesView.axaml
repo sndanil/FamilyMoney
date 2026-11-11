@@ -18,7 +18,7 @@
 	<UserControl.Styles>
 		<Style Selector="Border.Total">
 			<Setter Property="Margin" Value="2 2 2 0" />
-			<Setter Property="Height" Value="30" />
+			<Setter Property="MinHeight" Value="30" />
 			<Setter Property="CornerRadius" Value="5" />
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
@@ -121,15 +121,24 @@
 				<DataTemplate>
 					<StackPanel>
 						<Border Classes="Total">
-							<Grid ColumnDefinitions="* 115">
+							<Grid ColumnDefinitions="* Auto">
 								<TextBlock Classes="Title"
 										   MinWidth="70"
 										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-								<SelectableTextBlock Grid.Column="1"
-										   Classes="Sum"
-										   Classes.Debet="{Binding IsDebet}"
-										   Classes.Negative="{Binding !IsDebet}"
-										   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+								<StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
+									<SelectableTextBlock Classes="Sum Debet"
+											   IsVisible="{Binding HasDebet}"
+											   Text="{Binding DebetSum, StringFormat='#,##0.00'}" />
+									<SelectableTextBlock Classes="Sum"
+											   Classes.Negative="True"
+											   IsVisible="{Binding HasCredit}"
+											   Text="{Binding CreditSum, StringFormat='#,##0.00'}" />
+									<SelectableTextBlock Classes="Sum"
+											   Classes.Debet="{Binding IsDebet}"
+											   Classes.Negative="{Binding !IsDebet}"
+											   IsVisible="{Binding ShowTotal}"
+											   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+								</StackPanel>
 							</Grid>
 						</Border>
 
