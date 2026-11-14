@@ -230,6 +230,30 @@ public sealed class SyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task FolderProvider_SyncsRealDatabaseBetweenDevices()
+    {
+        var syncFolder = Path.Combine(_root, "shared-folder");
+        Directory.CreateDirectory(syncFolder);
+
+        var source = CreateRealFolderDevice("folder-a", syncFolder);
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            Name = "Из папки",
+        };
+        source.Repository.UpdateAccount(account);
+
+        var first = await source.Service.SyncAsync();
+        Assert.True(first.Success, first.Message);
+
+        var target = CreateRealFolderDevice("folder-b", syncFolder);
+        var second = await target.Service.SyncAsync();
+
+        Assert.True(second.Success, second.Message);
+        Assert.Contains(target.Repository.GetAccounts(), item => item.Id == account.Id);
+    }
+
+    [Fact]
     public async Task Pull_RestoresSnapshotForNewDevice()
     {
         var store = new FakeSyncStore();
@@ -486,6 +510,45 @@ public sealed class SyncServiceTests : IDisposable
         return new RealDevice(repository, stateStore, service);
     }
 
+    private RealDevice CreateRealFolderDevice(string name, string syncFolder)
+    {
+        var home = Path.Combine(_root, name);
+        Directory.CreateDirectory(home);
+
+        var database = new DatabaseConfiguration
+        {
+            SyncId = SyncId,
+            Name = name,
+            Path = Path.Combine(_root, name + ".db"),
+            BackupsFolder = "Backups",
+            MaxBackups = 10,
+            Sync = new SyncStorageConfiguration
+            {
+                Provider = SyncProvider.Folder,
+                Enabled = true,
+                Folder = new FolderStorageConfiguration { Path = syncFolder },
+            },
+        };
+
+        var configuration = new FakeConfiguration(database);
+        var repository = new LiteDbRepository(
+            configuration,
+            new AccountLocalSettingsStore(configuration),
+            NullLogger<LiteDbRepository>.Instance);
+        repository.UpdateDbSchema();
+
+        var stateStore = new LocalSyncStateStore(home);
+        var service = new SyncService(
+            configuration,
+            repository,
+            new SyncObjectStoreFactory(NullLoggerFactory.Instance),
+            stateStore,
+            new SyncImageSynchronizer(repository, NullLogger<SyncImageSynchronizer>.Instance),
+            NullLogger<SyncService>.Instance);
+
+        return new RealDevice(repository, stateStore, service);
+    }
+
     private static LocalSyncState LoadState(Device device) =>
         device.StateStore.Load(device.Database.SyncId, device.StateStore.DeviceId);
 
@@ -601,7 +664,7 @@ public sealed class SyncServiceTests : IDisposable
             _store = store;
         }
 
-        public ISyncObjectStore Create(S3StorageConfiguration configuration) => _store;
+        public ISyncObjectStore Create(SyncStorageConfiguration configuration) => _store;
     }
 
     private sealed class FakeSyncStore : ISyncObjectStore

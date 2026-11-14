@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Utils;
+using FamilyMoney.Utils;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -28,7 +28,14 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
 
     public RootConfiguration Get()
     {
-        return _rootConfiguration ??= _configuration.Get<RootConfiguration>() ?? CreateDefault();
+        var root = _rootConfiguration ??= _configuration.Get<RootConfiguration>() ?? CreateDefault();
+
+        foreach (var database in root.Databases)
+        {
+            database?.GetSyncConfiguration();
+        }
+
+        return root;
     }
 
     public DatabaseConfiguration GetSelectedDatabase()
@@ -50,6 +57,23 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
 
     public void Save(RootConfiguration configuration)
     {
+        // Старые версии приложения читают только S3. Держим это поле
+        // синхронизированным с новым блоком Sync.
+        foreach (var database in configuration.Databases)
+        {
+            if (database == null)
+            {
+                continue;
+            }
+
+            var sync = database.GetSyncConfiguration();
+            var s3 = sync.Provider == SyncProvider.S3
+                ? sync.S3
+                : new S3StorageConfiguration();
+            s3.Enabled = sync.Provider == SyncProvider.S3 && sync.Enabled;
+            database.S3 = s3;
+        }
+
         Directory.CreateDirectory(HomeFolder);
         var json = JsonSerializer.Serialize(configuration, JsonDefaults.Indented);
         File.WriteAllText(UserSettingsPath, json);

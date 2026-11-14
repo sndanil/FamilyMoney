@@ -1,4 +1,4 @@
-﻿namespace FamilyMoney.Configuration;
+namespace FamilyMoney.Configuration;
 
 public sealed class DatabaseConfiguration
 {
@@ -12,7 +12,39 @@ public sealed class DatabaseConfiguration
 
     public int MaxBackups { get; set; } = 10;
 
+    /// <summary>Активная настройка синхронизации. Старое поле S3 читается для миграции.</summary>
+    public SyncStorageConfiguration Sync { get; set; } = new();
+
     public S3StorageConfiguration S3 { get; set; } = new();
+
+    /// <summary>
+    /// Возвращает настройки синхронизации, перенося старую S3-конфигурацию
+    /// в новый формат при первом обращении.
+    /// </summary>
+    public SyncStorageConfiguration GetSyncConfiguration()
+    {
+        Sync ??= new SyncStorageConfiguration();
+        S3 ??= new S3StorageConfiguration();
+
+        if (Sync.Provider == SyncProvider.None
+            && (S3.Enabled
+                || !string.IsNullOrWhiteSpace(S3.ServiceUrl)
+                || !string.IsNullOrWhiteSpace(S3.Bucket)
+                || !string.IsNullOrWhiteSpace(S3.AccessKey)))
+        {
+            Sync.Provider = SyncProvider.S3;
+            Sync.Enabled = S3.Enabled;
+            Sync.S3 = S3;
+        }
+        else if (Sync.Provider == SyncProvider.S3
+                 && string.IsNullOrWhiteSpace(Sync.S3.Bucket)
+                 && !string.IsNullOrWhiteSpace(S3.Bucket))
+        {
+            Sync.S3 = S3;
+        }
+
+        return Sync;
+    }
 
     public string GetResolvedPath()
     {

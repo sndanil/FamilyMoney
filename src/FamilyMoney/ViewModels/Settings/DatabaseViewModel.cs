@@ -16,10 +16,10 @@ public partial class DatabaseViewModel : ViewModelBase
     public DatabaseViewModel(IFilePickerService? filePickerService = null)
     {
         _filePickerService = filePickerService;
-        S3.PropertyChanged += (_, _) => OkCommand.NotifyCanExecuteChanged();
+        Sync.PropertyChanged += (_, _) => OkCommand.NotifyCanExecuteChanged();
     }
 
-    public S3StorageViewModel S3 { get; } = new();
+    public SyncStorageViewModel Sync { get; } = new();
 
     [ObservableProperty]
     public partial Guid SyncId { get; set; }
@@ -41,6 +41,10 @@ public partial class DatabaseViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
+
+    /// <summary>Передавать ключи и пароли в QR. По умолчанию выключено.</summary>
+    [ObservableProperty]
+    public partial bool IncludeSecretsInQr { get; set; }
 
     /// <summary>Каталог, в который реально пишутся копии этой базы.</summary>
     public string BackupDirectory => ToConfiguration().GetResolvedBackupDirectory();
@@ -64,7 +68,7 @@ public partial class DatabaseViewModel : ViewModelBase
 
     partial void OnMaxBackupsChanged(int value) => OnPropertyChanged(nameof(BackupLimitText));
 
-    /// <summary>Вкладка, которая открывается при редактировании: 0 — основное, 1 — S3.</summary>
+    /// <summary>Вкладка, которая открывается при редактировании: 0 — основное, 1 — синхронизация.</summary>
     public int InitialTabIndex { get; set; }
 
     private bool CanOkCommand()
@@ -77,14 +81,7 @@ public partial class DatabaseViewModel : ViewModelBase
             return false;
         }
 
-        if (!S3.Enabled)
-        {
-            return true;
-        }
-
-        return !string.IsNullOrWhiteSpace(S3.Bucket)
-            && !string.IsNullOrWhiteSpace(S3.AccessKey)
-            && !string.IsNullOrWhiteSpace(S3.SecretKey);
+        return Sync.IsValid;
     }
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
@@ -131,6 +128,21 @@ public partial class DatabaseViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanBrowse))]
+    public async Task BrowseSyncFolderAsync()
+    {
+        if (_filePickerService is null)
+        {
+            return;
+        }
+
+        var path = await _filePickerService.PickFolderAsync();
+        if (path != null)
+        {
+            Sync.Folder.Path = PathHelper.ToStoredPath(path);
+        }
+    }
+
     private bool CanBrowse() => _filePickerService is not null;
 
     public void FillFrom(DatabaseConfiguration config)
@@ -140,11 +152,12 @@ public partial class DatabaseViewModel : ViewModelBase
         Path = config.Path;
         BackupsFolder = config.BackupsFolder;
         MaxBackups = config.MaxBackups;
-        S3.FillFrom(config.S3);
+        Sync.FillFrom(config.GetSyncConfiguration());
     }
 
     public DatabaseConfiguration ToConfiguration()
     {
+        var sync = Sync.ToConfiguration();
         return new DatabaseConfiguration
         {
             SyncId = SyncId == Guid.Empty ? Guid.NewGuid() : SyncId,
@@ -152,7 +165,10 @@ public partial class DatabaseViewModel : ViewModelBase
             Path = Path.Trim(),
             BackupsFolder = BackupsFolder.Trim(),
             MaxBackups = MaxBackups,
-            S3 = S3.ToConfiguration(),
+            Sync = sync,
+            S3 = sync.Provider == SyncProvider.S3
+                ? sync.S3
+                : new S3StorageConfiguration(),
         };
     }
 
@@ -163,7 +179,7 @@ public partial class DatabaseViewModel : ViewModelBase
         Path = source.Path;
         BackupsFolder = source.BackupsFolder;
         MaxBackups = source.MaxBackups;
-        S3.ApplyFrom(source.S3);
+        Sync.ApplyFrom(source.Sync);
     }
 
     public DatabaseViewModel Clone(IFilePickerService? filePickerService = null)
@@ -178,7 +194,7 @@ public partial class DatabaseViewModel : ViewModelBase
             IsSelected = IsSelected,
             InitialTabIndex = InitialTabIndex,
         };
-        clone.S3.ApplyFrom(S3);
+        clone.Sync.ApplyFrom(Sync);
         return clone;
     }
 

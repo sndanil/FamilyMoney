@@ -49,11 +49,8 @@ public sealed class SyncService : ISyncService
         get
         {
             var database = GetDatabase();
-            return database.S3.Enabled
-                && database.SyncId != Guid.Empty
-                && !string.IsNullOrWhiteSpace(database.S3.Bucket)
-                && !string.IsNullOrWhiteSpace(database.S3.AccessKey)
-                && !string.IsNullOrWhiteSpace(database.S3.SecretKey);
+            var sync = database.GetSyncConfiguration();
+            return database.SyncId != Guid.Empty && sync.IsConfigured;
         }
     }
 
@@ -61,7 +58,7 @@ public sealed class SyncService : ISyncService
     {
         if (!IsEnabled)
         {
-            return SyncResult.Skipped("Синхронизация S3 отключена.");
+            return SyncResult.Skipped("Синхронизация отключена или не настроена.");
         }
 
         if (!await _syncGate.WaitAsync(0, cancellationToken))
@@ -74,7 +71,7 @@ public sealed class SyncService : ISyncService
             var database = EnsureDatabaseSyncId();
             var state = _stateStore.Load(database.SyncId, _deviceId);
             var databasePath = database.GetResolvedPath();
-            var objectStore = _objectStoreFactory.Create(database.S3);
+            var objectStore = _objectStoreFactory.Create(database.GetSyncConfiguration());
             var operationId = state.PendingOperationId ?? Guid.NewGuid().ToString("N");
 
             await using var syncLock = await SyncLock.TryAcquireAsync(

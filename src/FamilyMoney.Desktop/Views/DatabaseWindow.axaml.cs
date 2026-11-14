@@ -32,12 +32,18 @@ public partial class DatabaseWindow : Window
 
     private void OnShowQrClick(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not DatabaseViewModel viewModel)
+        if (DataContext is not DatabaseViewModel viewModel || QrImage is null)
         {
             return;
         }
 
-        var json = DatabaseQrPayload.FromConfiguration(viewModel.ToConfiguration()).ToJson();
+        var includeSecrets = sender is CheckBox checkBox
+            ? checkBox.IsChecked == true
+            : viewModel.IncludeSecretsInQr;
+
+        var json = DatabaseQrPayload.FromConfiguration(
+            viewModel.ToConfiguration(),
+            includeSecrets).ToJson();
 
         using var generator = new QRCodeGenerator();
         using var qrData = generator.CreateQrCode(json, QRCodeGenerator.ECCLevel.M);

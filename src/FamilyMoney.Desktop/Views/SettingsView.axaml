@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -250,8 +250,8 @@
 															 Width="15"
 															 Height="15"
 															 Foreground="{DynamicResource AccentBrush}"
-															 IsVisible="{Binding S3.Enabled}"
-															 ToolTip.Tip="S3 включена" />
+															 IsVisible="{Binding Sync.Enabled}"
+															 ToolTip.Tip="Синхронизация включена" />
 										</StackPanel>
 									</Grid>
 								</Border>
@@ -328,18 +328,21 @@
 
 											<Border Classes="InfoRow Last">
 												<Grid ColumnDefinitions="170,*">
-													<TextBlock Text="Синхронизация S3" Classes="InfoLabel" />
+													<TextBlock Text="Синхронизация" Classes="InfoLabel" />
 													<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+														<TextBlock Text="{Binding SelectedDatabase.Sync.ProviderName}"
+																   Classes="Secondary"
+																   IsVisible="{Binding SelectedDatabase.Sync.Enabled}" />
 														<TextBlock Text="Включена"
 																   Classes="Positive"
-																   IsVisible="{Binding SelectedDatabase.S3.Enabled}" />
+																   IsVisible="{Binding SelectedDatabase.Sync.Enabled}" />
 														<TextBlock Text="Отключена"
 																   Classes="Secondary"
-																   IsVisible="{Binding !SelectedDatabase.S3.Enabled}" />
-														<TextBlock Text="{Binding SelectedDatabase.S3.Bucket}"
+																   IsVisible="{Binding !SelectedDatabase.Sync.Enabled}" />
+														<TextBlock Text="{Binding SelectedDatabase.Sync.EndpointText}"
 																   Classes="Secondary"
 																   TextTrimming="CharacterEllipsis"
-																   IsVisible="{Binding SelectedDatabase.S3.Enabled}" />
+																   IsVisible="{Binding SelectedDatabase.Sync.Enabled}" />
 													</StackPanel>
 												</Grid>
 											</Border>
@@ -395,11 +398,16 @@
 									<Border Classes="SyncCard" IsVisible="{Binding SelectedDatabase.IsSelected}">
 										<Grid ColumnDefinitions="*,Auto">
 											<StackPanel Spacing="4">
-												<TextBlock Text="S3-синхронизация" FontWeight="SemiBold" />
+												<TextBlock Text="Синхронизация" FontWeight="SemiBold" />
 												<TextBlock Text="{Binding SyncStatus}"
 														   Classes="Secondary"
 														   TextWrapping="Wrap" />
-												<TextBlock Text="S3 не настроена. Включите её в настройках базы."
+												<TextBlock Text="{Binding SyncTestStatus}"
+														   Classes="Secondary"
+														   FontSize="11"
+														   TextWrapping="Wrap"
+														   IsVisible="{Binding SyncTestStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+												<TextBlock Text="Синхронизация выключена или не настроена. Включите её в настройках базы."
 														   Classes="Secondary"
 														   FontSize="11"
 														   TextWrapping="Wrap"
@@ -416,9 +424,11 @@
 													</StackPanel>
 												</Button>
 												<Button Classes="Outline"
-														Content="Настроить S3"
-														Command="{Binding ConfigureS3Command}"
-														IsVisible="{Binding !IsSyncAvailable}" />
+														Content="Проверить подключение"
+														Command="{Binding TestSyncConnectionCommand}" />
+												<Button Classes="Outline"
+														Content="Настроить"
+														Command="{Binding ConfigureSyncCommand}" />
 											</StackPanel>
 										</Grid>
 									</Border>

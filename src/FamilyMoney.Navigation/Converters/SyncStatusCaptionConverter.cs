@@ -13,8 +13,8 @@ public sealed class SyncStatusCaptionConverter : IValueConverter
     {
         return value switch
         {
-            "S3 синхронизация включена" => "Включена",
-            "S3 синхронизация отключена" => "Выключена",
+            string text when text.StartsWith("Синхронизация включена", StringComparison.Ordinal) => "Включена",
+            string text when text.StartsWith("Синхронизация отключена", StringComparison.Ordinal) => "Выключена",
             string text => text,
             _ => string.Empty,
         };

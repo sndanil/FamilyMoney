@@ -60,11 +60,11 @@
 | Модель настроек | `src/FamilyMoney/Configuration/S3StorageConfiguration.cs` | поля S3 (URL, bucket, регион, ключи) |
 | Настройки базы | `src/FamilyMoney/Configuration/DatabaseConfiguration.cs:15` | свойство `S3` |
 | Реализация | `src/FamilyMoney/Sync/S3SyncObjectStore.cs` | адаптер FluentStorage → `ISyncObjectStore` |
-| Фабрика | `src/FamilyMoney/Sync/S3SyncObjectStoreFactory.cs`, `NullSyncObjectStoreFactory.cs` | выбор реализации |
+| Фабрика | `src/FamilyMoney/Sync/SyncObjectStoreFactory.cs`, `NullSyncObjectStoreFactory.cs` | выбор реализации по провайдеру |
 | Проверка включения | `src/FamilyMoney/Sync/SyncService.cs:41-52` | требует `Bucket`, `AccessKey`, `SecretKey` |
 | UI базы | `src/FamilyMoney/ViewModels/Settings/S3StorageViewModel.cs`, `src/FamilyMoney.Desktop/Views/DatabaseWindow.axaml:90-118` | вкладка «S3» |
 | Тексты и кнопки | `src/FamilyMoney.Desktop/Views/SettingsView.axaml:329-424`, `src/FamilyMoney.Navigation/Pages/SettingsPage.axaml` | «Синхронизация S3» |
-| QR-код | `src/FamilyMoney/Configuration/DatabaseQrPayload.cs:28` | передача S3-настроек между устройствами |
+| QR-код | `src/FamilyMoney/Configuration/DatabaseQrPayload.cs` | передача настроек базы и синхронизации между устройствами |
 | DI | `src/FamilyMoney/AppInit.cs:84,90` | регистрация фабрики и сервиса |
 
 Всё остальное от S3 не зависит:
@@ -136,9 +136,10 @@ checkpoint (или временная копия через существующ
 
 ### 2.6 Секреты лежат открыто
 
-`AccessKey`/`SecretKey` хранятся в JSON настроек и **попадают в QR-код** (`DatabaseQrPayload`).
-Скриншот QR = полный доступ к bucket. Для новых провайдеров это тем опаснее, чем шире
-область доступа (весь Диск вместо папки приложения).
+`AccessKey`/`SecretKey` хранятся в JSON настроек. Исторически они попадали и в QR-код;
+теперь QR по умолчанию содержит только несекретные параметры. Передача ключей осталась
+отдельной явной галочкой для настройки телефона. Для новых провайдеров это тем важнее,
+чем шире область доступа (весь Диск вместо папки приложения).
 
 ### 2.7 LWW и часы устройств
 
@@ -570,16 +571,23 @@ G1 (или CAS), иначе конфликты. Трудозатраты: 3–5 
 - смешанные версии приложения: новый клиент видит старый manifest, но старый клиент
   не знает о блокировке и `OperationId`.
 
-### Этап 1. Провайдеры без смены протокола (4–6 дней)
+### Этап 1. Провайдеры без смены протокола (4–6 дней) — сделано
 
-- [ ] `SyncStorageConfiguration` с `Provider` и вложенными настройками; миграция старых
-      настроек `S3` без потери данных.
-- [ ] `FolderSyncObjectStore` (desktop) и, при необходимости, SAF-адаптер для Android.
-- [ ] `WebDavSyncObjectStore` + пресеты Mail.ru/Nextcloud/Яндекс.Диск.
-- [ ] UI: вкладка «Синхронизация» с выбором провайдера и динамическими полями; кнопка
-      «Проверить подключение» (листинг корня); тексты без слова S3.
-- [ ] QR v2: только провайдер и несекретные параметры; секреты — не в QR.
-- [ ] Тесты на локальном WebDAV-сервере (или HTTP-заглушке).
+- [x] `SyncStorageConfiguration` с `Provider` и вложенными настройками; миграция старых
+      настроек `S3` без потери данных. Старое поле `S3` продолжает зеркалироваться при
+      сохранении, чтобы не ломать прежние версии приложения.
+- [x] `FolderSyncObjectStore` для локального, сетевого и синхронизируемого каталога.
+      SAF-адаптер для Android не делался: на телефоне каталог должен быть доступен
+      приложению как обычный путь.
+- [x] `WebDavSyncObjectStore` + пресеты Mail.ru, Яндекс.Диска, Nextcloud; Basic-авторизация,
+      MKCOL для вложенных папок, условная запись.
+- [x] UI: вкладка «Синхронизация» с выбором провайдера и динамическими полями, пресеты
+      S3/WebDAV, выбор папки, кнопка «Проверить подключение» (пробная запись и удаление).
+- [x] QR v2: по умолчанию только провайдер и несекретные параметры; ключи S3 и пароль
+      WebDAV не попадают. Для настройки телефона, где нет формы ввода ключей, есть явная
+      галочка «Передавать ключи и пароли» с предупреждением. Старые QR v1 читаются.
+- [x] Тесты: Folder и WebDAV на HTTP-заглушке, миграция конфига, QR без секретов,
+      проверка подключения, выбор фабрики.
 
 **Результат:** S3 остаётся, но появляются бесплатные и «облачные без S3» варианты; уже
 закрывает большинство семейных сценариев.
@@ -667,8 +675,7 @@ public interface ISyncObjectStore
 
 ### 9.3 Фабрика и сервис
 
-- `ISyncObjectStoreFactory.Create(DatabaseConfiguration)` либо
-  `Create(SyncStorageConfiguration)` — выбор по `Provider`.
+- `ISyncObjectStoreFactory.Create(SyncStorageConfiguration)` — выбор по `Provider`.
 - `SyncService.IsEnabled` → `factory.Validate(config)` (у каждого провайдера свои
   обязательные поля; для папки — существующий каталог, для WebDAV — URL и логин).
 - Тексты `SyncResult` — без «S3»; сообщение об ошибке включает провайдера и шаг.
@@ -718,8 +725,9 @@ public long LegacyAppliedRevision { get; set; } // для миграции ст�
 }
 ```
 
-- Никаких `SecretKey`/паролей в QR; для S3 — только bucket/endpoint/регион, ключи вводятся
-  на каждом устройстве отдельно.
+- По умолчанию никаких `SecretKey`/паролей в QR: только провайдер, endpoint/bucket,
+  логин WebDAV и путь к папке. Для настройки телефона есть явная галочка «Передавать
+  ключи и пароли» с предупреждением; старый QR v1 продолжает читаться.
 - Для папки/локальной сети — одноразовый pairing-код с TTL.
 - При E2E — отдельный ключ базы, не равный паролю облака.
 

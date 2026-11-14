@@ -18,6 +18,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IDatabaseBackup _databaseBackup;
     private readonly IFilePickerService _filePickerService;
     private readonly ISyncService _syncService;
+    private readonly SyncConnectionTester _connectionTester;
     private readonly IQrScannerService? _qrScanner;
 
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
@@ -25,11 +26,12 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(
         nameof(EditDatabaseCommand),
-        nameof(ConfigureS3Command),
+        nameof(ConfigureSyncCommand),
         nameof(DeleteDatabaseCommand),
         nameof(SetActiveDatabaseCommand),
         nameof(BackupNowCommand),
-        nameof(RestoreBackupCommand))]
+        nameof(RestoreBackupCommand),
+        nameof(TestSyncConnectionCommand))]
     public partial DatabaseViewModel? SelectedDatabase { get; set; }
 
     [ObservableProperty]
@@ -38,6 +40,13 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string SyncStatus { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(TestSyncConnectionCommand))]
+    public partial bool IsTestingSync { get; set; }
+
+    [ObservableProperty]
+    public partial string SyncTestStatus { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(BackupNowCommand))]
@@ -61,12 +70,14 @@ public partial class SettingsViewModel : ViewModelBase
         IDatabaseBackup databaseBackup,
         IFilePickerService filePickerService,
         ISyncService syncService,
+        SyncConnectionTester connectionTester,
         IQrScannerService? qrScanner = null)
     {
         _configuration = configuration;
         _databaseBackup = databaseBackup;
         _filePickerService = filePickerService;
         _syncService = syncService;
+        _connectionTester = connectionTester;
         _qrScanner = qrScanner;
         Load();
     }
@@ -105,9 +116,22 @@ public partial class SettingsViewModel : ViewModelBase
     private void RefreshSyncState()
     {
         OnPropertyChanged(nameof(IsSyncAvailable));
-        SyncStatus = IsSyncAvailable ? "S3 синхронизация включена" : "S3 синхронизация отключена";
+
+        var sync = _configuration.GetSelectedDatabase().GetSyncConfiguration();
+        SyncStatus = IsSyncAvailable
+            ? $"Синхронизация включена: {ProviderTitle(sync.Provider)}"
+            : "Синхронизация отключена";
         SyncNowCommand.NotifyCanExecuteChanged();
+        TestSyncConnectionCommand.NotifyCanExecuteChanged();
     }
+
+    private static string ProviderTitle(SyncProvider provider) => provider switch
+    {
+        SyncProvider.S3 => "S3",
+        SyncProvider.WebDav => "WebDAV",
+        SyncProvider.Folder => "папка",
+        _ => "не настроена",
+    };
 
     [RelayCommand]
     public async Task AddDatabaseAsync()
@@ -152,7 +176,7 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
-    public async Task ConfigureS3Async()
+    public async Task ConfigureSyncAsync()
     {
         if (SelectedDatabase == null)
         {
@@ -262,8 +286,15 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         var config = payload.ToConfiguration();
+
+        var existing = Databases.FirstOrDefault(d => d.SyncId == config.SyncId);
+        if (existing != null)
+        {
+            MergeSyncSecrets(config, existing.ToConfiguration().GetSyncConfiguration());
+        }
+
         DatabasePaths.AdoptDatabase(config, GlobalConfiguration.HomeFolder);
-        var database = Databases.FirstOrDefault(d => d.SyncId == config.SyncId);
+        var database = existing;
         if (database == null)
         {
             database = new DatabaseViewModel();
@@ -290,6 +321,56 @@ public partial class SettingsViewModel : ViewModelBase
         SyncStatus = $"Настройки получены: {config.Name}";
     }
 
+    /// <summary>
+    /// QR без секретов обновляет провайдера и адрес, но не должен стирать
+    /// уже введённые на этом устройстве ключи или пароль.
+    /// </summary>
+    private static void MergeSyncSecrets(
+        DatabaseConfiguration incoming,
+        SyncStorageConfiguration existing)
+    {
+        var sync = incoming.GetSyncConfiguration();
+        if (sync.Provider != existing.Provider)
+        {
+            return;
+        }
+
+        switch (sync.Provider)
+        {
+            case SyncProvider.S3:
+                var sameBucket =
+                    string.Equals(sync.S3.ServiceUrl.Trim(), existing.S3.ServiceUrl.Trim(), StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(sync.S3.Bucket.Trim(), existing.S3.Bucket.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                if (sameBucket)
+                {
+                    if (string.IsNullOrWhiteSpace(sync.S3.AccessKey))
+                    {
+                        sync.S3.AccessKey = existing.S3.AccessKey;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(sync.S3.SecretKey))
+                    {
+                        sync.S3.SecretKey = existing.S3.SecretKey;
+                    }
+                }
+
+                incoming.S3 = sync.S3;
+                break;
+            case SyncProvider.WebDav:
+                var sameAccount =
+                    string.Equals(sync.WebDav.Url.Trim(), existing.WebDav.Url.Trim(), StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(sync.WebDav.UserName.Trim(), existing.WebDav.UserName.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                if (sameAccount && string.IsNullOrWhiteSpace(sync.WebDav.Password))
+                {
+                    sync.WebDav.Password = existing.WebDav.Password;
+                }
+
+                break;
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanSyncNow))]
     public async Task SyncNowAsync()
     {
@@ -307,6 +388,32 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     private bool CanSyncNow() => IsSyncAvailable && !IsSyncing;
+
+    [RelayCommand(CanExecute = nameof(CanTestSync))]
+    public async Task TestSyncConnectionAsync()
+    {
+        if (SelectedDatabase == null)
+        {
+            return;
+        }
+
+        var database = SelectedDatabase.ToConfiguration();
+        IsTestingSync = true;
+        SyncTestStatus = "Проверка подключения...";
+        try
+        {
+            var result = await _connectionTester.TestAsync(database);
+            SyncTestStatus = result.Success
+                ? result.Message
+                : $"Ошибка: {result.Message}";
+        }
+        finally
+        {
+            IsTestingSync = false;
+        }
+    }
+
+    private bool CanTestSync() => SelectedDatabase != null && !IsTestingSync;
 
     [RelayCommand(CanExecute = nameof(CanBackupNow))]
     public async Task BackupNowAsync()
@@ -402,6 +509,8 @@ public partial class SettingsViewModel : ViewModelBase
 
     partial void OnSelectedDatabaseChanged(DatabaseViewModel? value)
     {
+        SyncTestStatus = string.Empty;
+
         if (IsBackingUp)
         {
             return;

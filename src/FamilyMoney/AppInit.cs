@@ -81,12 +81,13 @@ public static class AppInit
         else
         {
             services.AddTransient<IRepository, LiteDbRepository>();
-            services.AddSingleton<ISyncObjectStoreFactory, S3SyncObjectStoreFactory>();
+            services.AddSingleton<ISyncObjectStoreFactory, SyncObjectStoreFactory>();
         }
 
         services.AddSingleton<IDatabaseBackup, NullDatabaseBackup>();
         services.AddSingleton<LocalSyncStateStore>();
         services.AddSingleton<SyncImageSynchronizer>();
+        services.AddSingleton<SyncConnectionTester>();
         services.AddSingleton<ISyncService, SyncService>();
 
         services.AddTransient<IStateManager, StateManager>();
