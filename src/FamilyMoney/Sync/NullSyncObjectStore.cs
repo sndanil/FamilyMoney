@@ -2,10 +2,16 @@ namespace FamilyMoney.Sync;
 
 public sealed class NullSyncObjectStore : ISyncObjectStore
 {
+    public bool SupportsConditionalWrite => false;
+
     public Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default) =>
         Task.FromResult<(string?, string?)>((null, null));
 
-    public Task UploadTextAsync(string key, string content, string? ifMatchEtag, CancellationToken cancellationToken = default) =>
+    public Task UploadTextAsync(
+        string key,
+        string content,
+        SyncWriteCondition condition,
+        CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
     public Task UploadFileAsync(string key, string localFilePath, CancellationToken cancellationToken = default) =>

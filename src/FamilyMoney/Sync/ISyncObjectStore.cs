@@ -2,9 +2,16 @@ namespace FamilyMoney.Sync;
 
 public interface ISyncObjectStore
 {
+    /// <summary>Поддерживает ли хранилище условную запись (If-Match / If-None-Match).</summary>
+    bool SupportsConditionalWrite { get; }
+
     Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default);
 
-    Task UploadTextAsync(string key, string content, string? ifMatchEtag, CancellationToken cancellationToken = default);
+    Task UploadTextAsync(
+        string key,
+        string content,
+        SyncWriteCondition condition,
+        CancellationToken cancellationToken = default);
 
     Task UploadFileAsync(string key, string localFilePath, CancellationToken cancellationToken = default);
 

@@ -48,11 +48,43 @@ public class LiteDbRepository : IRepository
         };
     }
 
-    public void ClearPendingSyncChanges()
+    public void ClearPendingSyncChanges(SyncPendingChanges pushed)
     {
         using var db = OpenDatabase();
-        db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName).DeleteAll();
-        db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName).DeleteAll();
+
+        var entities = db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName);
+        foreach (var entry in pushed.Entities)
+        {
+            var current = entities.FindById(entry.Id);
+            if (current == null)
+            {
+                continue;
+            }
+
+            if (current.LastChange == entry.LastChange
+                && current.DeletedAt == entry.DeletedAt
+                && string.Equals(current.DataJson, entry.DataJson, StringComparison.Ordinal))
+            {
+                entities.Delete(entry.Id);
+            }
+        }
+
+        var images = db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName);
+        foreach (var image in pushed.Images)
+        {
+            var current = images.FindById(image.Id);
+            if (current == null)
+            {
+                continue;
+            }
+
+            if (current.LastChange == image.LastChange
+                && current.DeletedAt == image.DeletedAt
+                && string.Equals(current.FileName, image.FileName, StringComparison.Ordinal))
+            {
+                images.Delete(image.Id);
+            }
+        }
     }
 
     public void ApplySyncDelta(SyncDelta delta)
@@ -88,7 +120,7 @@ public class LiteDbRepository : IRepository
             delta.DeviceId);
     }
 
-    public async Task ApplySyncedImagesAsync(
+    public async Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
         CancellationToken cancellationToken = default)
@@ -96,46 +128,69 @@ public class LiteDbRepository : IRepository
         using var _ = SyncContext.EnterApplyScope();
         using var db = OpenDatabase();
         var metaCollection = db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName);
+        var failed = new List<Guid>();
 
         foreach (var image in images)
         {
-            var localMeta = metaCollection.FindOne(x => x.EntityId == image.EntityId);
-            if (localMeta != null && !ShouldReplaceImage(localMeta, image))
+            try
             {
-                continue;
-            }
+                var localMeta = metaCollection.FindOne(x => x.EntityId == image.EntityId);
+                if (localMeta != null && !ShouldReplaceImage(localMeta, image))
+                {
+                    continue;
+                }
 
-            var storageId = image.EntityId.ToString();
-            if (image.DeletedAt != null)
-            {
-                db.FileStorage.Delete(storageId);
+                var storageId = image.EntityId.ToString();
+                if (image.DeletedAt != null)
+                {
+                    db.FileStorage.Delete(storageId);
+                    metaCollection.Upsert(new SyncImageMeta
+                    {
+                        EntityId = image.EntityId,
+                        LastChange = image.LastChange,
+                        DeletedAt = image.DeletedAt,
+                        FileName = image.FileName ?? "image",
+                    });
+                    continue;
+                }
+
+                await using var stream = await downloadImageAsync(image, cancellationToken);
+                if (stream == null)
+                {
+                    _logger.LogWarning("Remote image {EntityId} was not downloaded", image.EntityId);
+                    failed.Add(image.EntityId);
+                    continue;
+                }
+
+                var fileName = string.IsNullOrWhiteSpace(image.FileName) ? "image" : image.FileName;
+                db.FileStorage.Upload(storageId, fileName, stream);
                 metaCollection.Upsert(new SyncImageMeta
                 {
                     EntityId = image.EntityId,
                     LastChange = image.LastChange,
-                    DeletedAt = image.DeletedAt,
-                    FileName = image.FileName ?? "image",
+                    DeletedAt = null,
+                    FileName = fileName,
                 });
-                continue;
             }
-
-            await using var stream = await downloadImageAsync(image, cancellationToken);
-            if (stream == null)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning("Remote image {EntityId} was not downloaded", image.EntityId);
-                continue;
+                _logger.LogWarning(ex, "Remote image {EntityId} was not applied", image.EntityId);
+                failed.Add(image.EntityId);
             }
-
-            var fileName = string.IsNullOrWhiteSpace(image.FileName) ? "image" : image.FileName;
-            db.FileStorage.Upload(storageId, fileName, stream);
-            metaCollection.Upsert(new SyncImageMeta
-            {
-                EntityId = image.EntityId,
-                LastChange = image.LastChange,
-                DeletedAt = null,
-                FileName = fileName,
-            });
         }
+
+        return new SyncImagesApplyResult(failed);
+    }
+
+    public void Checkpoint()
+    {
+        if (!File.Exists(DatabasePath))
+        {
+            return;
+        }
+
+        using var db = OpenDatabase();
+        db.Checkpoint();
     }
 
     public void UpdateDbSchema()

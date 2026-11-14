@@ -6,9 +6,24 @@ namespace FamilyMoney.Sync;
 
 public sealed class LocalSyncStateStore
 {
+    public LocalSyncStateStore()
+        : this(GlobalConfiguration.HomeFolder)
+    {
+    }
+
+    public LocalSyncStateStore(string homeFolder)
+    {
+        HomeFolder = homeFolder;
+        DeviceId = GetOrCreateDeviceId(homeFolder);
+    }
+
+    public string HomeFolder { get; }
+
+    public string DeviceId { get; }
+
     public LocalSyncState Load(Guid databaseSyncId, string deviceId)
     {
-        var path = SyncPaths.LocalStatePath(databaseSyncId);
+        var path = SyncPaths.LocalStatePath(databaseSyncId, HomeFolder);
         if (!File.Exists(path))
         {
             return new LocalSyncState
@@ -27,7 +42,7 @@ public sealed class LocalSyncStateStore
 
     public void Save(LocalSyncState state)
     {
-        var path = SyncPaths.LocalStatePath(state.DatabaseSyncId);
+        var path = SyncPaths.LocalStatePath(state.DatabaseSyncId, HomeFolder);
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -38,9 +53,10 @@ public sealed class LocalSyncStateStore
         File.WriteAllText(path, json);
     }
 
-    public static string GetOrCreateDeviceId()
+    public static string GetOrCreateDeviceId(string? homeFolder = null)
     {
-        var path = SyncPaths.DeviceIdPath();
+        var folder = homeFolder ?? GlobalConfiguration.HomeFolder;
+        var path = SyncPaths.DeviceIdPath(folder);
         if (File.Exists(path))
         {
             var existing = File.ReadAllText(path).Trim();
@@ -50,7 +66,7 @@ public sealed class LocalSyncStateStore
             }
         }
 
-        Directory.CreateDirectory(GlobalConfiguration.HomeFolder);
+        Directory.CreateDirectory(folder);
         var deviceId = Guid.NewGuid().ToString("N");
         File.WriteAllText(path, deviceId);
         return deviceId;

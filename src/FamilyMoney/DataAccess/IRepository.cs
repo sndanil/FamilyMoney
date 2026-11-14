@@ -80,13 +80,23 @@ public interface IRepository
 
     SyncPendingChanges GetPendingSyncChanges();
 
-    void ClearPendingSyncChanges();
+    /// <summary>
+    /// Удаляет только те записи outbox, которые вошли в опубликованную дельту.
+    /// Изменения, сделанные во время синхронизации, остаются до следующего раза.
+    /// </summary>
+    void ClearPendingSyncChanges(SyncPendingChanges pushed);
 
     void ApplySyncDelta(SyncDelta delta);
 
-    Task ApplySyncedImagesAsync(
+    Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Сбрасывает журнал LiteDB в файл базы, чтобы снапшот для синхронизации
+    /// был целостным (как перед резервным копированием).
+    /// </summary>
+    void Checkpoint();
 
 }

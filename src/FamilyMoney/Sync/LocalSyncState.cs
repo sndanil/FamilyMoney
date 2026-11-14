@@ -9,4 +9,10 @@ public sealed class LocalSyncState
     public long PublishedRevision { get; set; }
 
     public long AppliedRevision { get; set; }
+
+    /// <summary>Операция, которая уже начала публиковаться. Нужна, чтобы повтор не создал лишнюю ревизию.</summary>
+    public string? PendingOperationId { get; set; }
+
+    /// <summary>Хэш отправленных изменений. Если outbox успел измениться, повтор отправит новую дельту.</summary>
+    public string? PendingOperationHash { get; set; }
 }

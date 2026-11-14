@@ -159,7 +159,7 @@ public class DesignerRepository : IRepository
 
     public SyncPendingChanges GetPendingSyncChanges() => new();
 
-    public void ClearPendingSyncChanges()
+    public void ClearPendingSyncChanges(SyncPendingChanges pushed)
     {
     }
 
@@ -167,9 +167,13 @@ public class DesignerRepository : IRepository
     {
     }
 
-    public Task ApplySyncedImagesAsync(
+    public Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
         CancellationToken cancellationToken = default) =>
-        Task.CompletedTask;
+        Task.FromResult(SyncImagesApplyResult.Empty);
+
+    public void Checkpoint()
+    {
+    }
 }

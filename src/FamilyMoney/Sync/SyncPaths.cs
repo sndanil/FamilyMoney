@@ -12,6 +12,9 @@ public static class SyncPaths
     public static string ManifestKey(DatabaseConfiguration database) =>
         $"{RootPrefix(database)}/manifest.json";
 
+    public static string LockKey(DatabaseConfiguration database) =>
+        $"{RootPrefix(database)}/sync.lock";
+
     public static string DeltaKey(DatabaseConfiguration database, long revision) =>
         $"{RootPrefix(database)}/deltas/{revision:D6}.json";
 
@@ -22,8 +25,14 @@ public static class SyncPaths
         $"{RootPrefix(database)}/images/{entityId:N}";
 
     public static string LocalStatePath(Guid syncId) =>
-        Path.Combine(GlobalConfiguration.HomeFolder, "sync", $"{syncId:N}.json");
+        LocalStatePath(syncId, GlobalConfiguration.HomeFolder);
+
+    public static string LocalStatePath(Guid syncId, string homeFolder) =>
+        Path.Combine(homeFolder, "sync", $"{syncId:N}.json");
 
     public static string DeviceIdPath() =>
-        Path.Combine(GlobalConfiguration.HomeFolder, "device.id");
+        DeviceIdPath(GlobalConfiguration.HomeFolder);
+
+    public static string DeviceIdPath(string homeFolder) =>
+        Path.Combine(homeFolder, "device.id");
 }

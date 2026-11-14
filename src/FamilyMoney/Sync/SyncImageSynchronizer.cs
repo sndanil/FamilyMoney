@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Configuration;
+using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Models.Sync;
 using Microsoft.Extensions.Logging;
@@ -35,8 +35,10 @@ public sealed class SyncImageSynchronizer
             await using var stream = _repository.TryGetImage(entry.EntityId);
             if (stream == null)
             {
-                _logger.LogWarning("Local image {EntityId} not found for upload", entry.EntityId);
-                continue;
+                // Нельзя публиковать дельту, которая ссылается на отсутствующее
+                // изображение: получатель не сможет его скачать.
+                throw new InvalidOperationException(
+                    $"Локальное изображение {entry.EntityId} не найдено; синхронизация прервана.");
             }
 
             await objectStore.UploadStreamAsync(key, stream, entry.FileName, cancellationToken);
