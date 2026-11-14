@@ -86,6 +86,9 @@ public interface IRepository
     /// </summary>
     void ClearPendingSyncChanges(SyncPendingChanges pushed);
 
+    /// <summary>Есть ли в локальной базе пользовательские данные (для безопасного восстановления снапшота).</summary>
+    bool HasLocalData();
+
     void ApplySyncDelta(SyncDelta delta);
 
     Task<SyncImagesApplyResult> ApplySyncedImagesAsync(

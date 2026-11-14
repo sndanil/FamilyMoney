@@ -36,110 +36,66 @@ public sealed class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Push_WritesDeltaManifestAndCheckpointedSnapshot()
+    public async Task Push_WritesDeviceJournalAndSnapshot()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "a");
-        var account = NewAccount("Наличные");
+        var account = NewAccount("РќР°Р»РёС‡РЅС‹Рµ");
         device.Repository.Entities.Add(ToOutbox(account));
 
         var result = await device.Service.SyncAsync();
 
         Assert.True(result.Success, result.Message);
 
-        var manifest = ReadManifest(store, device.Database);
-        Assert.Equal(1, manifest.Revision);
-        Assert.Equal(2, manifest.ProtocolVersion);
-        Assert.False(string.IsNullOrWhiteSpace(manifest.OperationId));
+        var manifest = ReadDeviceManifest(store, device.Database, device.StateStore.DeviceId);
+        Assert.Equal(3, manifest.ProtocolVersion);
+        Assert.Equal(device.StateStore.DeviceId, manifest.DeviceId);
+        Assert.Equal(1, manifest.LastSequence);
 
-        Assert.True(await store.ExistsAsync(SyncPaths.DeltaKey(device.Database, 1)));
-        Assert.True(await store.ExistsAsync(SyncPaths.SnapshotKey(device.Database, 1)));
+        Assert.True(await store.ExistsAsync(
+            SyncPaths.DeviceDeltaKey(device.Database, device.StateStore.DeviceId, 1)));
+        Assert.True(await HasSnapshotAsync(store, device.Database));
         Assert.True(device.Repository.CheckpointCount > 0);
         Assert.Empty(device.Repository.Entities);
 
         var state = LoadState(device);
-        Assert.Equal(1, state.AppliedRevision);
-        Assert.Equal(1, state.PublishedRevision);
-        Assert.Null(state.PendingOperationId);
+        Assert.Equal(1, state.AppliedByDevice[device.StateStore.DeviceId]);
+        Assert.True(state.LegacyMigrated);
     }
 
     [Fact]
-    public async Task Pull_AppliesRemoteDelta()
+    public async Task Pull_AppliesRemoteDeviceJournal()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "b");
-        var account = NewAccount("Карта");
-        await SeedAsync(store, device.Database, 1, Delta(1, account));
+        var account = NewAccount("РљР°СЂС‚Р°");
+        await SeedDeviceJournalAsync(store, device.Database, "remote", 1, Delta("remote", 1, account));
 
         var result = await device.Service.SyncAsync();
 
         Assert.True(result.Success, result.Message);
         Assert.True(device.Repository.Applied.ContainsKey(account.Id));
-        Assert.Equal(1, LoadState(device).AppliedRevision);
+        Assert.Equal(1, LoadState(device).AppliedByDevice["remote"]);
     }
 
     [Fact]
-    public async Task Push_AfterManifestConflict_RetriesAndKeepsBothChanges()
+    public async Task LegacyJournal_IsMigratedAndApplied()
     {
         var store = new FakeSyncStore();
-        var device = CreateDevice(store, "c");
-
-        var seededAccount = NewAccount("Старый");
-        await SeedAsync(store, device.Database, 1, Delta(1, seededAccount));
-
-        var localAccount = NewAccount("Новый");
-        device.Repository.Entities.Add(ToOutbox(localAccount));
-
-        var otherAccount = NewAccount("Чужой");
-        var otherDelta = Delta(2, otherAccount);
-        var otherManifest = new SyncManifest
-        {
-            ProtocolVersion = 2,
-            Revision = 2,
-            UpdatedAt = DateTime.UtcNow,
-            UpdatedByDevice = "other",
-            OperationId = "other",
-        };
-
-        var conflictTriggered = 0;
-        store.BeforeConditionalWrite = async key =>
-        {
-            if (!key.EndsWith("/manifest.json", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            if (Interlocked.Exchange(ref conflictTriggered, 1) != 0)
-            {
-                return;
-            }
-
-            await store.WriteTextUnconditionalAsync(
-                SyncPaths.DeltaKey(device.Database, 2),
-                JsonSerializer.Serialize(otherDelta, JsonDefaults.Indented));
-            await store.WriteTextUnconditionalAsync(
-                SyncPaths.ManifestKey(device.Database),
-                JsonSerializer.Serialize(otherManifest, JsonDefaults.Indented));
-
-            throw new SyncConflictException("simulated concurrent write");
-        };
+        var device = CreateDevice(store, "legacy");
+        var account = NewAccount("Из старого журнала");
+        await SeedLegacyAsync(store, device.Database, 1, Delta("legacy", 1, account));
 
         var result = await device.Service.SyncAsync();
 
         Assert.True(result.Success, result.Message);
-        Assert.True(device.Repository.Applied.ContainsKey(seededAccount.Id));
-        Assert.True(device.Repository.Applied.ContainsKey(otherAccount.Id));
-
-        var manifest = ReadManifest(store, device.Database);
-        Assert.Equal(3, manifest.Revision);
-
-        var delta3 = store.GetText(SyncPaths.DeltaKey(device.Database, 3));
-        Assert.NotNull(delta3);
-        Assert.Contains(localAccount.Id.ToString("D"), delta3);
+        Assert.True(device.Repository.Applied.ContainsKey(account.Id));
+        Assert.True(LoadState(device).LegacyMigrated);
+        Assert.True(await HasSnapshotAsync(store, device.Database));
     }
 
     [Fact]
-    public async Task Push_ReplayAfterOutboxClearFailure_DoesNotCreateRevision()
+    public async Task Push_ReplayAfterOutboxClearFailure_DoesNotCreateSequence()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "d");
@@ -148,26 +104,24 @@ public sealed class SyncServiceTests : IDisposable
         device.Repository.ThrowOnClearOnce = true;
 
         var first = await device.Service.SyncAsync();
-
         Assert.False(first.Success);
-        Assert.Equal(1, ReadManifest(store, device.Database).Revision);
-        Assert.NotEmpty(device.Repository.Entities);
 
         var second = await device.Service.SyncAsync();
-
         Assert.True(second.Success, second.Message);
-        Assert.Equal(1, ReadManifest(store, device.Database).Revision);
+
+        var manifest = ReadDeviceManifest(store, device.Database, device.StateStore.DeviceId);
+        Assert.Equal(1, manifest.LastSequence);
         Assert.Empty(device.Repository.Entities);
-        Assert.Equal(1, LoadState(device).AppliedRevision);
+        Assert.Equal(1, LoadState(device).AppliedByDevice[device.StateStore.DeviceId]);
     }
 
     [Fact]
-    public async Task Pull_WhenImageDownloadFails_DoesNotAdvanceRevision()
+    public async Task Pull_WhenImageDownloadFails_DoesNotAdvanceDeviceSequence()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "e");
         var account = NewAccount("С чеком");
-        var delta = Delta(1, account);
+        var delta = Delta("remote", 1, account);
         delta.Images.Add(new SyncImageRecord
         {
             EntityId = account.Id,
@@ -175,21 +129,19 @@ public sealed class SyncServiceTests : IDisposable
             FileName = "receipt.jpg",
         });
 
-        await SeedAsync(store, device.Database, 1, delta);
+        await SeedDeviceJournalAsync(store, device.Database, "remote", 1, delta);
         store.SetImage(SyncPaths.ImageKey(device.Database, account.Id), [1, 2, 3]);
         device.Repository.FailImageDownloads = true;
 
         var first = await device.Service.SyncAsync();
-
         Assert.False(first.Success);
-        Assert.Contains("изображ", first.Message);
-        Assert.Equal(0, LoadState(device).AppliedRevision);
+        Assert.Equal(0, LoadState(device).AppliedByDevice.GetValueOrDefault("remote"));
 
         device.Repository.FailImageDownloads = false;
         var second = await device.Service.SyncAsync();
 
         Assert.True(second.Success, second.Message);
-        Assert.Equal(1, LoadState(device).AppliedRevision);
+        Assert.Equal(1, LoadState(device).AppliedByDevice["remote"]);
         Assert.True(device.Repository.Images.ContainsKey(account.Id));
     }
 
@@ -203,8 +155,7 @@ public sealed class SyncServiceTests : IDisposable
 
         Assert.True(result.Success, result.Message);
         Assert.True(device.Repository.CheckpointCount > 0);
-        Assert.True(await store.ExistsAsync(SyncPaths.SnapshotKey(device.Database, 1)));
-        Assert.Equal(1, ReadManifest(store, device.Database).SnapshotRevision);
+        Assert.True(await HasSnapshotAsync(store, device.Database));
     }
 
     [Fact]
@@ -215,7 +166,7 @@ public sealed class SyncServiceTests : IDisposable
         var account = new Account
         {
             Id = Guid.NewGuid(),
-            Name = "Наличные",
+            Name = "РќР°Р»РёС‡РЅС‹Рµ",
         };
         source.Repository.UpdateAccount(account);
 
@@ -254,34 +205,99 @@ public sealed class SyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task EncryptedSync_RestoresRealDatabaseAndRejectsWrongKey()
+    {
+        var store = new FakeSyncStore();
+        var (salt, key, check) = SyncCrypto.CreateKey("family-passphrase");
+        var encryption = new SyncEncryptionConfiguration
+        {
+            Enabled = true,
+            Salt = salt,
+            Key = key,
+            KeyCheck = check,
+        };
+
+        var source = CreateRealDevice(store, "enc-a", encryption);
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            Name = "Зашифровано",
+        };
+        source.Repository.UpdateAccount(account);
+
+        var first = await source.Service.SyncAsync();
+        Assert.True(first.Success, first.Message);
+
+        var manifestJson = store.GetText(SyncPaths.DeviceManifestKey(
+            source.Database,
+            source.StateStore.DeviceId));
+        Assert.NotNull(manifestJson);
+        Assert.StartsWith(SyncCrypto.TextPrefix, manifestJson);
+
+        var target = CreateRealDevice(store, "enc-b", encryption);
+        var second = await target.Service.SyncAsync();
+        Assert.True(second.Success, second.Message);
+        Assert.Contains(target.Repository.GetAccounts(), item => item.Id == account.Id);
+
+        var (_, wrongKey, _) = SyncCrypto.CreateKey("wrong-passphrase");
+        var wrongEncryption = new SyncEncryptionConfiguration
+        {
+            Enabled = true,
+            Salt = salt,
+            Key = wrongKey,
+            KeyCheck = check,
+        };
+        var wrong = CreateRealDevice(store, "enc-c", wrongEncryption);
+        var third = await wrong.Service.SyncAsync();
+
+        Assert.False(third.Success);
+        Assert.Contains("подходит", third.Message);
+    }
+
+    [Fact]
     public async Task Pull_RestoresSnapshotForNewDevice()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "k");
-        var snapshotKey = SyncPaths.SnapshotKey(device.Database, 1);
-        store.SetFile(snapshotKey, "snapshot"u8.ToArray());
-
-        await SeedAsync(
+        await SeedSnapshotAsync(
             store,
             device.Database,
-            1,
-            Delta(1, NewAccount("Из снапшота")),
-            new SyncManifest
-            {
-                ProtocolVersion = 2,
-                Revision = 1,
-                SnapshotRevision = 1,
-                SnapshotKey = snapshotKey,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedByDevice = "seed",
-                OperationId = "seed",
-            });
+            "0001",
+            "snapshot"u8.ToArray(),
+            new Dictionary<string, long>());
 
         var result = await device.Service.SyncAsync();
 
         Assert.True(result.Success, result.Message);
         Assert.Equal("snapshot", File.ReadAllText(device.Database.GetResolvedPath()));
-        Assert.Equal(1, LoadState(device).AppliedRevision);
+    }
+
+    [Fact]
+    public async Task SnapshotVector_PullsOnlyJournalTail()
+    {
+        var store = new FakeSyncStore();
+        var device = CreateDevice(store, "tail");
+        await SeedSnapshotAsync(
+            store,
+            device.Database,
+            "0001",
+            "snapshot"u8.ToArray(),
+            new Dictionary<string, long> { ["remote"] = 1 });
+
+        var account = NewAccount("Хвост журнала");
+        await SeedDeviceJournalAsync(
+            store,
+            device.Database,
+            "remote",
+            2,
+            Delta("remote", 2, account));
+
+        var result = await device.Service.SyncAsync();
+
+        Assert.True(result.Success, result.Message);
+        Assert.Equal("snapshot", File.ReadAllText(device.Database.GetResolvedPath()));
+        Assert.True(device.Repository.Applied.ContainsKey(account.Id));
+        Assert.Equal(2, LoadState(device).AppliedByDevice["remote"]);
     }
 
     [Fact]
@@ -289,24 +305,12 @@ public sealed class SyncServiceTests : IDisposable
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "l");
-        var snapshotKey = SyncPaths.SnapshotKey(device.Database, 1);
-        store.SetFile(snapshotKey, "snapshot"u8.ToArray());
-
-        await SeedAsync(
+        await SeedSnapshotAsync(
             store,
             device.Database,
-            1,
-            Delta(1, NewAccount("Из облака")),
-            new SyncManifest
-            {
-                ProtocolVersion = 2,
-                Revision = 1,
-                SnapshotRevision = 1,
-                SnapshotKey = snapshotKey,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedByDevice = "seed",
-                OperationId = "seed",
-            });
+            "0001",
+            "snapshot"u8.ToArray(),
+            new Dictionary<string, long>());
 
         device.Repository.Entities.Add(ToOutbox(NewAccount("Локальное")));
 
@@ -314,7 +318,10 @@ public sealed class SyncServiceTests : IDisposable
 
         Assert.True(result.Success, result.Message);
         Assert.Equal("db", File.ReadAllText(device.Database.GetResolvedPath()));
-        Assert.Equal(2, ReadManifest(store, device.Database).Revision);
+        Assert.Equal(1, ReadDeviceManifest(
+            store,
+            device.Database,
+            device.StateStore.DeviceId).LastSequence);
     }
 
     [Fact]
@@ -324,7 +331,7 @@ public sealed class SyncServiceTests : IDisposable
         var first = CreateDevice(store, "p1");
         var second = CreateDevice(store, "p2");
 
-        var firstAccount = NewAccount("Первый");
+        var firstAccount = NewAccount("РџРµСЂРІС‹Р№");
         var secondAccount = NewAccount("Второй");
         first.Repository.Entities.Add(ToOutbox(firstAccount));
         second.Repository.Entities.Add(ToOutbox(secondAccount));
@@ -333,67 +340,73 @@ public sealed class SyncServiceTests : IDisposable
             first.Service.SyncAsync(),
             second.Service.SyncAsync());
 
-        // Одно из устройств могло быть пропущено из-за блокировки — даём
-        // ему завершить синхронизацию.
         await first.Service.SyncAsync();
         await second.Service.SyncAsync();
 
-        var manifest = ReadManifest(store, first.Database);
-        Assert.Equal(2, manifest.Revision);
+        Assert.Equal(1, ReadDeviceManifest(store, first.Database, first.StateStore.DeviceId).LastSequence);
+        Assert.Equal(1, ReadDeviceManifest(store, second.Database, second.StateStore.DeviceId).LastSequence);
 
         var allDeltas = string.Concat(
-            store.GetText(SyncPaths.DeltaKey(first.Database, 1)),
-            store.GetText(SyncPaths.DeltaKey(first.Database, 2)));
+            store.GetText(SyncPaths.DeviceDeltaKey(
+                first.Database,
+                first.StateStore.DeviceId,
+                1)),
+            store.GetText(SyncPaths.DeviceDeltaKey(
+                first.Database,
+                second.StateStore.DeviceId,
+                1)));
 
         Assert.Contains(firstAccount.Id.ToString("D"), allDeltas);
         Assert.Contains(secondAccount.Id.ToString("D"), allDeltas);
+        Assert.True(first.Repository.Applied.ContainsKey(secondAccount.Id));
+        Assert.True(second.Repository.Applied.ContainsKey(firstAccount.Id));
     }
 
     [Fact]
-    public async Task Sync_WhenAnotherDeviceHoldsLock_IsSkipped()
+    public async Task ThreeDevices_Converge()
     {
         var store = new FakeSyncStore();
-        var device = CreateDevice(store, "g");
+        var devices = new[]
+        {
+            CreateDevice(store, "t1"),
+            CreateDevice(store, "t2"),
+            CreateDevice(store, "t3"),
+        };
+        var accounts = devices
+            .Select((device, index) =>
+            {
+                var account = NewAccount($"Устройство {index + 1}");
+                device.Repository.Entities.Add(ToOutbox(account));
+                return account;
+            })
+            .ToList();
 
-        var heldLock = await SyncLock.TryAcquireAsync(
-            device.Database,
-            store,
-            "other-device",
-            "other-operation");
-        Assert.NotNull(heldLock);
+        foreach (var device in devices)
+        {
+            var result = await device.Service.SyncAsync();
+            Assert.True(result.Success, result.Message);
+        }
 
-        var skipped = await device.Service.SyncAsync();
+        foreach (var device in devices)
+        {
+            var result = await device.Service.SyncAsync();
+            Assert.True(result.Success, result.Message);
+        }
 
-        Assert.True(skipped.Success);
-        Assert.Contains("другом устройстве", skipped.Message);
+        for (var index = 0; index < devices.Length; index++)
+        {
+            for (var other = 0; other < accounts.Count; other++)
+            {
+                if (index == other)
+                {
+                    continue;
+                }
 
-        await heldLock!.DisposeAsync();
-
-        var completed = await device.Service.SyncAsync();
-
-        Assert.True(completed.Success, completed.Message);
-        Assert.Equal(1, ReadManifest(store, device.Database).Revision);
-    }
-
-    [Fact]
-    public async Task Sync_TakesOverLockLeftBySameDevice()
-    {
-        var store = new FakeSyncStore();
-        var device = CreateDevice(store, "m");
-
-        var staleLock = await SyncLock.TryAcquireAsync(
-            device.Database,
-            store,
-            device.StateStore.DeviceId,
-            "stale-operation");
-        Assert.NotNull(staleLock);
-
-        var result = await device.Service.SyncAsync();
-
-        Assert.True(result.Success, result.Message);
-        Assert.DoesNotContain("другом устройстве", result.Message);
-
-        await staleLock!.DisposeAsync();
+                Assert.True(
+                    devices[index].Repository.Applied.ContainsKey(accounts[other].Id),
+                    $"Device {index} did not apply account {other}");
+            }
+        }
     }
 
     [Fact]
@@ -406,33 +419,44 @@ public sealed class SyncServiceTests : IDisposable
         var result = await device.Service.SyncAsync();
 
         Assert.True(result.Success, result.Message);
-        Assert.Equal(1, ReadManifest(store, device.Database).Revision);
+        Assert.Equal(1, ReadDeviceManifest(
+            store,
+            device.Database,
+            device.StateStore.DeviceId).LastSequence);
     }
 
     [Fact]
-    public async Task Pull_RejectsFutureProtocolVersion()
+    public async Task Pull_RejectsFutureDeviceProtocolVersion()
     {
         var store = new FakeSyncStore();
         var device = CreateDevice(store, "i");
-        var account = NewAccount("Будущее");
-        await SeedAsync(
+        var account = NewAccount("Р‘СѓРґСѓС‰РµРµ");
+        await SeedDeviceJournalAsync(
             store,
             device.Database,
+            "future",
             1,
-            Delta(1, account),
-            new SyncManifest
-            {
-                ProtocolVersion = 3,
-                Revision = 1,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedByDevice = "future",
-                OperationId = "future",
-            });
+            Delta("future", 1, account),
+            protocolVersion: 4);
 
         var result = await device.Service.SyncAsync();
 
         Assert.False(result.Success);
         Assert.Contains("Обновите", result.Message);
+    }
+
+    [Fact]
+    public async Task LegacySnapshot_IsRestoredForNewDevice()
+    {
+        var store = new FakeSyncStore();
+        var device = CreateDevice(store, "legacy-snapshot");
+        await SeedLegacySnapshotAsync(store, device.Database, 1, "legacy"u8.ToArray());
+
+        var result = await device.Service.SyncAsync();
+
+        Assert.True(result.Success, result.Message);
+        Assert.Equal("legacy", File.ReadAllText(device.Database.GetResolvedPath()));
+        Assert.Equal(1, LoadState(device).LegacyAppliedRevision);
     }
 
     private Device CreateDevice(FakeSyncStore store, string name)
@@ -447,12 +471,17 @@ public sealed class SyncServiceTests : IDisposable
             Path = Path.Combine(_root, name + ".db"),
             BackupsFolder = "Backups",
             MaxBackups = 10,
-            S3 = new S3StorageConfiguration
+            Sync = new SyncStorageConfiguration
             {
+                Provider = SyncProvider.S3,
                 Enabled = true,
-                Bucket = "bucket",
-                AccessKey = "access",
-                SecretKey = "secret",
+                S3 = new S3StorageConfiguration
+                {
+                    Enabled = true,
+                    Bucket = "bucket",
+                    AccessKey = "access",
+                    SecretKey = "secret",
+                },
             },
         };
         File.WriteAllText(database.GetResolvedPath(), "db");
@@ -470,7 +499,10 @@ public sealed class SyncServiceTests : IDisposable
         return new Device(database, repository, stateStore, service);
     }
 
-    private RealDevice CreateRealDevice(FakeSyncStore store, string name)
+    private RealDevice CreateRealDevice(
+        FakeSyncStore store,
+        string name,
+        SyncEncryptionConfiguration? encryption = null)
     {
         var home = Path.Combine(_root, name);
         Directory.CreateDirectory(home);
@@ -482,12 +514,18 @@ public sealed class SyncServiceTests : IDisposable
             Path = Path.Combine(_root, name + ".db"),
             BackupsFolder = "Backups",
             MaxBackups = 10,
-            S3 = new S3StorageConfiguration
+            Sync = new SyncStorageConfiguration
             {
+                Provider = SyncProvider.S3,
                 Enabled = true,
-                Bucket = "bucket",
-                AccessKey = "access",
-                SecretKey = "secret",
+                S3 = new S3StorageConfiguration
+                {
+                    Enabled = true,
+                    Bucket = "bucket",
+                    AccessKey = "access",
+                    SecretKey = "secret",
+                },
+                Encryption = encryption ?? new SyncEncryptionConfiguration(),
             },
         };
 
@@ -507,7 +545,7 @@ public sealed class SyncServiceTests : IDisposable
             new SyncImageSynchronizer(repository, NullLogger<SyncImageSynchronizer>.Instance),
             NullLogger<SyncService>.Instance);
 
-        return new RealDevice(repository, stateStore, service);
+        return new RealDevice(database, repository, stateStore, service);
     }
 
     private RealDevice CreateRealFolderDevice(string name, string syncFolder)
@@ -546,51 +584,131 @@ public sealed class SyncServiceTests : IDisposable
             new SyncImageSynchronizer(repository, NullLogger<SyncImageSynchronizer>.Instance),
             NullLogger<SyncService>.Instance);
 
-        return new RealDevice(repository, stateStore, service);
+        return new RealDevice(database, repository, stateStore, service);
     }
 
     private static LocalSyncState LoadState(Device device) =>
         device.StateStore.Load(device.Database.SyncId, device.StateStore.DeviceId);
 
-    private static SyncManifest ReadManifest(FakeSyncStore store, DatabaseConfiguration database)
+    private static DeviceSyncManifest ReadDeviceManifest(
+        FakeSyncStore store,
+        DatabaseConfiguration database,
+        string deviceId)
     {
-        var json = store.GetText(SyncPaths.ManifestKey(database));
+        var json = store.GetText(SyncPaths.DeviceManifestKey(database, deviceId));
         Assert.NotNull(json);
-        return JsonSerializer.Deserialize<SyncManifest>(json!, JsonDefaults.Indented)
-            ?? throw new InvalidOperationException("Manifest is not readable.");
+        return JsonSerializer.Deserialize<DeviceSyncManifest>(json!, JsonDefaults.Indented)
+            ?? throw new InvalidOperationException("Device manifest is not readable.");
     }
 
-    private static async Task SeedAsync(
+    private static async Task<bool> HasSnapshotAsync(
+        FakeSyncStore store,
+        DatabaseConfiguration database)
+    {
+        var objects = await store.ListAsync(SyncPaths.SnapshotsPrefix(database));
+        return objects.Any(item => item.Key.EndsWith(".json", StringComparison.Ordinal));
+    }
+
+    private static async Task SeedDeviceJournalAsync(
+        FakeSyncStore store,
+        DatabaseConfiguration database,
+        string deviceId,
+        long sequence,
+        SyncDelta delta,
+        int protocolVersion = 3)
+    {
+        await store.WriteTextUnconditionalAsync(
+            SyncPaths.DeviceDeltaKey(database, deviceId, sequence),
+            JsonSerializer.Serialize(delta, JsonDefaults.Indented));
+
+        var manifest = new DeviceSyncManifest
+        {
+            ProtocolVersion = protocolVersion,
+            DeviceId = deviceId,
+            LastSequence = sequence,
+            UpdatedAt = DateTime.UtcNow,
+            LastOperationId = "seed",
+        };
+
+        await store.WriteTextUnconditionalAsync(
+            SyncPaths.DeviceManifestKey(database, deviceId),
+            JsonSerializer.Serialize(manifest, JsonDefaults.Indented));
+    }
+
+    private static async Task SeedSnapshotAsync(
+        FakeSyncStore store,
+        DatabaseConfiguration database,
+        string snapshotId,
+        byte[] databaseBytes,
+        Dictionary<string, long> appliedByDevice)
+    {
+        var metadata = new SyncSnapshotMetadata
+        {
+            ProtocolVersion = 3,
+            CreatedAt = DateTime.UtcNow,
+            DeviceId = "seed",
+            AppliedByDevice = appliedByDevice,
+        };
+
+        await store.WriteTextUnconditionalAsync(
+            SyncPaths.SnapshotMetadataKey(database, snapshotId),
+            JsonSerializer.Serialize(metadata, JsonDefaults.Indented));
+        store.SetFile(SyncPaths.SnapshotKey(database, snapshotId), databaseBytes);
+    }
+
+    private static async Task SeedLegacyAsync(
         FakeSyncStore store,
         DatabaseConfiguration database,
         long revision,
-        SyncDelta delta,
-        SyncManifest? manifest = null)
+        SyncDelta delta)
     {
         await store.WriteTextUnconditionalAsync(
             SyncPaths.DeltaKey(database, revision),
             JsonSerializer.Serialize(delta, JsonDefaults.Indented));
 
-        var actualManifest = manifest ?? new SyncManifest
+        var manifest = new SyncManifest
         {
             ProtocolVersion = 2,
             Revision = revision,
             UpdatedAt = DateTime.UtcNow,
-            UpdatedByDevice = "seed",
-            OperationId = "seed",
+            UpdatedByDevice = "legacy",
+            OperationId = "legacy",
         };
 
         await store.WriteTextUnconditionalAsync(
             SyncPaths.ManifestKey(database),
-            JsonSerializer.Serialize(actualManifest, JsonDefaults.Indented));
+            JsonSerializer.Serialize(manifest, JsonDefaults.Indented));
     }
 
-    private static SyncDelta Delta(long revision, params Account[] accounts)
+    private static async Task SeedLegacySnapshotAsync(
+        FakeSyncStore store,
+        DatabaseConfiguration database,
+        long revision,
+        byte[] databaseBytes)
+    {
+        var manifest = new SyncManifest
+        {
+            ProtocolVersion = 2,
+            Revision = revision,
+            UpdatedAt = DateTime.UtcNow,
+            UpdatedByDevice = "legacy",
+            SnapshotRevision = revision,
+            SnapshotKey = SyncPaths.SnapshotKey(database, revision),
+            OperationId = "legacy",
+        };
+
+        await store.WriteTextUnconditionalAsync(
+            SyncPaths.ManifestKey(database),
+            JsonSerializer.Serialize(manifest, JsonDefaults.Indented));
+        store.SetFile(SyncPaths.SnapshotKey(database, revision), databaseBytes);
+    }
+
+    private static SyncDelta Delta(string deviceId, long revision, params Account[] accounts)
     {
         var delta = new SyncDelta
         {
             Revision = revision,
-            DeviceId = "seed",
+            DeviceId = deviceId,
             CreatedAt = DateTime.UtcNow,
         };
 
@@ -630,389 +748,8 @@ public sealed class SyncServiceTests : IDisposable
         SyncService Service);
 
     private sealed record RealDevice(
+        DatabaseConfiguration Database,
         LiteDbRepository Repository,
         LocalSyncStateStore StateStore,
         SyncService Service);
-
-    private sealed class FakeConfiguration : IGlobalConfiguration
-    {
-        public FakeConfiguration(DatabaseConfiguration database)
-        {
-            Root = new RootConfiguration
-            {
-                Databases = [database],
-                SelectedDatabaseIndex = 0,
-            };
-        }
-
-        public RootConfiguration Root { get; private set; }
-
-        public RootConfiguration Get() => Root;
-
-        public DatabaseConfiguration GetSelectedDatabase() =>
-            Root.Databases[Root.SelectedDatabaseIndex];
-
-        public void Save(RootConfiguration configuration) => Root = configuration;
-    }
-
-    private sealed class FakeStoreFactory : ISyncObjectStoreFactory
-    {
-        private readonly ISyncObjectStore _store;
-
-        public FakeStoreFactory(ISyncObjectStore store)
-        {
-            _store = store;
-        }
-
-        public ISyncObjectStore Create(SyncStorageConfiguration configuration) => _store;
-    }
-
-    private sealed class FakeSyncStore : ISyncObjectStore
-    {
-        private readonly object _gate = new();
-        private readonly Dictionary<string, TextEntry> _text = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal);
-
-        public bool ConditionalWriteSupported { get; set; } = true;
-
-        public bool SupportsConditionalWrite => ConditionalWriteSupported;
-
-        public Func<string, Task>? BeforeConditionalWrite { get; set; }
-
-        public Task<(string? Content, string? ETag)> TryDownloadTextAsync(
-            string key,
-            CancellationToken cancellationToken = default)
-        {
-            lock (_gate)
-            {
-                return Task.FromResult(_text.TryGetValue(key, out var entry)
-                    ? (entry.Content, entry.ETag)
-                    : ((string?)null, (string?)null));
-            }
-        }
-
-        public async Task UploadTextAsync(
-            string key,
-            string content,
-            SyncWriteCondition condition,
-            CancellationToken cancellationToken = default)
-        {
-            if (condition.IsConditional && BeforeConditionalWrite != null)
-            {
-                await BeforeConditionalWrite(key);
-            }
-
-            lock (_gate)
-            {
-                if (ConditionalWriteSupported)
-                {
-                    if (condition.IfNoneMatch && _text.ContainsKey(key))
-                    {
-                        throw new SyncConflictException("Object already exists.");
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(condition.IfMatchEtag))
-                    {
-                        if (!_text.TryGetValue(key, out var existing)
-                            || !string.Equals(existing.ETag, condition.IfMatchEtag, StringComparison.Ordinal))
-                        {
-                            throw new SyncConflictException("Object was changed.");
-                        }
-                    }
-                }
-
-                _text[key] = new TextEntry(content, Guid.NewGuid().ToString("N"));
-            }
-        }
-
-        public Task WriteTextUnconditionalAsync(string key, string content)
-        {
-            lock (_gate)
-            {
-                _text[key] = new TextEntry(content, Guid.NewGuid().ToString("N"));
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task UploadFileAsync(
-            string key,
-            string localFilePath,
-            CancellationToken cancellationToken = default)
-        {
-            var bytes = File.ReadAllBytes(localFilePath);
-            lock (_gate)
-            {
-                _files[key] = bytes;
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task DownloadFileAsync(
-            string key,
-            string localFilePath,
-            CancellationToken cancellationToken = default)
-        {
-            byte[] bytes;
-            lock (_gate)
-            {
-                if (!_files.TryGetValue(key, out var stored))
-                {
-                    throw new FileNotFoundException("Sync object was not found.", key);
-                }
-
-                bytes = stored;
-            }
-
-            var directory = Path.GetDirectoryName(localFilePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            File.WriteAllBytes(localFilePath, bytes);
-            return Task.CompletedTask;
-        }
-
-        public Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
-        {
-            lock (_gate)
-            {
-                return Task.FromResult(_text.ContainsKey(key) || _files.ContainsKey(key));
-            }
-        }
-
-        public async Task UploadStreamAsync(
-            string key,
-            Stream stream,
-            string fileName,
-            CancellationToken cancellationToken = default)
-        {
-            using var memory = new MemoryStream();
-            await stream.CopyToAsync(memory, cancellationToken);
-            lock (_gate)
-            {
-                _files[key] = memory.ToArray();
-            }
-        }
-
-        public Task<Stream?> DownloadStreamAsync(
-            string key,
-            CancellationToken cancellationToken = default)
-        {
-            lock (_gate)
-            {
-                return Task.FromResult<Stream?>(_files.TryGetValue(key, out var bytes)
-                    ? new MemoryStream(bytes)
-                    : null);
-            }
-        }
-
-        public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
-        {
-            lock (_gate)
-            {
-                _text.Remove(key);
-                _files.Remove(key);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public string? GetText(string key)
-        {
-            lock (_gate)
-            {
-                return _text.TryGetValue(key, out var entry) ? entry.Content : null;
-            }
-        }
-
-        public void SetImage(string key, byte[] content)
-        {
-            lock (_gate)
-            {
-                _files[key] = content;
-            }
-        }
-
-        public void SetFile(string key, byte[] content)
-        {
-            lock (_gate)
-            {
-                _files[key] = content;
-            }
-        }
-
-        private sealed record TextEntry(string Content, string ETag);
-    }
-
-    private sealed class FakeSyncRepository : IRepository
-    {
-        public List<SyncOutboxEntry> Entities { get; } = [];
-
-        public List<SyncImageOutboxEntry> ImagesOutbox { get; } = [];
-
-        public Dictionary<Guid, SyncEntityRecord> Applied { get; } = [];
-
-        public Dictionary<Guid, byte[]> Images { get; } = [];
-
-        public bool FailImageDownloads { get; set; }
-
-        public bool ThrowOnClearOnce { get; set; }
-
-        public int CheckpointCount { get; private set; }
-
-        public SyncPendingChanges GetPendingSyncChanges() => new()
-        {
-            Entities = Entities.ToList(),
-            Images = ImagesOutbox.ToList(),
-        };
-
-        public void ClearPendingSyncChanges(SyncPendingChanges pushed)
-        {
-            if (ThrowOnClearOnce)
-            {
-                ThrowOnClearOnce = false;
-                throw new InvalidOperationException("Simulated failure after publishing the delta.");
-            }
-
-            var entityIds = pushed.Entities.Select(entry => entry.Id).ToHashSet();
-            Entities.RemoveAll(entry => entityIds.Contains(entry.Id));
-
-            var imageIds = pushed.Images.Select(image => image.Id).ToHashSet();
-            ImagesOutbox.RemoveAll(image => imageIds.Contains(image.Id));
-        }
-
-        public void ApplySyncDelta(SyncDelta delta)
-        {
-            foreach (var record in delta.Accounts
-                         .Concat(delta.Categories)
-                         .Concat(delta.SubCategories)
-                         .Concat(delta.Transactions))
-            {
-                Applied[record.Id] = record;
-            }
-        }
-
-        public async Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
-            IEnumerable<SyncImageRecord> images,
-            Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
-            CancellationToken cancellationToken = default)
-        {
-            var failed = new List<Guid>();
-
-            foreach (var image in images)
-            {
-                if (image.DeletedAt != null)
-                {
-                    Images.Remove(image.EntityId);
-                    continue;
-                }
-
-                if (FailImageDownloads)
-                {
-                    failed.Add(image.EntityId);
-                    continue;
-                }
-
-                await using var stream = await downloadImageAsync(image, cancellationToken);
-                if (stream == null)
-                {
-                    failed.Add(image.EntityId);
-                    continue;
-                }
-
-                using var memory = new MemoryStream();
-                await stream.CopyToAsync(memory, cancellationToken);
-                Images[image.EntityId] = memory.ToArray();
-            }
-
-            return new SyncImagesApplyResult(failed);
-        }
-
-        public void Checkpoint() => CheckpointCount++;
-
-        public void UpdateDbSchema()
-        {
-        }
-
-        public void DoBackup()
-        {
-        }
-
-        public void DoBackup(DatabaseConfiguration configuration)
-        {
-        }
-
-        public DatabaseBackupResult BackupNow(DatabaseConfiguration configuration) =>
-            new(false, "not supported");
-
-        public DatabaseBackupResult BackupToFile(DatabaseConfiguration configuration, string destinationPath) =>
-            new(false, "not supported");
-
-        public DatabaseBackupResult RestoreFromFile(DatabaseConfiguration configuration, string backupPath) =>
-            new(false, "not supported");
-
-        public void UpdateImage(Guid id, string fileName, Stream stream)
-        {
-        }
-
-        public Stream? TryGetImage(Guid id) => null;
-
-        public Account GetAccount(Guid id) => throw new NotImplementedException();
-
-        public IEnumerable<Account> GetAccounts() => [];
-
-        public void UpdateAccount(Account account) => throw new NotImplementedException();
-
-        public void DeleteAccount(Guid id) => throw new NotImplementedException();
-
-        public void RecalculateAccountBalances()
-        {
-        }
-
-        public Category GetCategory(Guid id) => throw new NotImplementedException();
-
-        public IEnumerable<Category> GetCategories() => [];
-
-        public void UpdateCategroty(Category category) => throw new NotImplementedException();
-
-        public SubCategory GetSubCategory(Guid id) => throw new NotImplementedException();
-
-        public SubCategory GetOrCreateSubCategory(
-            Guid? categoryId,
-            string name,
-            Func<SubCategory> factory) => throw new NotImplementedException();
-
-        public IEnumerable<SubCategory> GetSubCategories() => [];
-
-        public void UpdateSubCategory(SubCategory subCategory) => throw new NotImplementedException();
-
-        public IReadOnlyDictionary<Guid, int> CountActiveTransactionsBySubCategories(
-            IEnumerable<Guid> subCategoryIds) => new Dictionary<Guid, int>();
-
-        public void MergeSubCategories(Guid targetId, IReadOnlyCollection<Guid> sourceIds) =>
-            throw new NotImplementedException();
-
-        public IEnumerable<SubCategoryLastSum> GetLastSumsBySubCategories(
-            DateTime from,
-            IEnumerable<Guid> subCategoryIds) => [];
-
-        public IEnumerable<SubCategoryCommentSuggestions> GetCommentSuggestionsBySubCategories(
-            DateTime from) => [];
-
-        public IEnumerable<SubCategoryTags> GetTagsBySubCategories(DateTime from) => [];
-
-        public IEnumerable<Transaction> GetTransactions(TransactionsFilter filter) => [];
-
-        public Transaction? GetTransaction(Guid id) => null;
-
-        public void DeleteTransaction(Guid id) => throw new NotImplementedException();
-
-        public void UpdateTransaction(Transaction transaction) => throw new NotImplementedException();
-
-        public void InsertTransactions(IEnumerable<Transaction> transactions) =>
-            throw new NotImplementedException();
-    }
 }

@@ -5,6 +5,11 @@ public interface ISyncObjectStore
     /// <summary>Поддерживает ли хранилище условную запись (If-Match / If-None-Match).</summary>
     bool SupportsConditionalWrite { get; }
 
+    /// <summary>Список объектов под префиксом. Нужен для журналов по устройствам и снапшотов.</summary>
+    Task<IReadOnlyList<SyncObjectInfo>> ListAsync(
+        string prefix,
+        CancellationToken cancellationToken = default);
+
     Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default);
 
     Task UploadTextAsync(

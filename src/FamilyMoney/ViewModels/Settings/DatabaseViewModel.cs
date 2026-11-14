@@ -16,7 +16,11 @@ public partial class DatabaseViewModel : ViewModelBase
     public DatabaseViewModel(IFilePickerService? filePickerService = null)
     {
         _filePickerService = filePickerService;
-        Sync.PropertyChanged += (_, _) => OkCommand.NotifyCanExecuteChanged();
+        Sync.PropertyChanged += (_, _) =>
+        {
+            OkCommand.NotifyCanExecuteChanged();
+            ValidationMessage = string.Empty;
+        };
     }
 
     public SyncStorageViewModel Sync { get; } = new();
@@ -45,6 +49,9 @@ public partial class DatabaseViewModel : ViewModelBase
     /// <summary>Передавать ключи и пароли в QR. По умолчанию выключено.</summary>
     [ObservableProperty]
     public partial bool IncludeSecretsInQr { get; set; }
+
+    [ObservableProperty]
+    public partial string ValidationMessage { get; set; } = string.Empty;
 
     /// <summary>Каталог, в который реально пишутся копии этой базы.</summary>
     public string BackupDirectory => ToConfiguration().GetResolvedBackupDirectory();
@@ -87,6 +94,14 @@ public partial class DatabaseViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
     public async Task OkAsync()
     {
+        ValidationMessage = string.Empty;
+
+        if (!Sync.EnsureEncryptionReady())
+        {
+            ValidationMessage = Sync.Encryption.Status;
+            return;
+        }
+
         WeakReferenceMessenger.Default.Send(new ModelCloseMessage<DatabaseViewModel>(this));
         await Task.CompletedTask;
     }

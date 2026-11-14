@@ -4,6 +4,11 @@ public sealed class NullSyncObjectStore : ISyncObjectStore
 {
     public bool SupportsConditionalWrite => false;
 
+    public Task<IReadOnlyList<SyncObjectInfo>> ListAsync(
+        string prefix,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<SyncObjectInfo>>([]);
+
     public Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default) =>
         Task.FromResult<(string?, string?)>((null, null));
 

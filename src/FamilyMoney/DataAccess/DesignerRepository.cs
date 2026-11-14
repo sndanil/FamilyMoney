@@ -163,6 +163,8 @@ public class DesignerRepository : IRepository
     {
     }
 
+    public bool HasLocalData() => false;
+
     public void ApplySyncDelta(SyncDelta delta)
     {
     }

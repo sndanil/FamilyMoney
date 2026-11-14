@@ -12,16 +12,32 @@ public sealed class SyncStorageConfiguration
 
     public FolderStorageConfiguration Folder { get; set; } = new();
 
-    /// <summary>Заполнены ли обязательные поля выбранного провайдера.</summary>
-    public bool HasSettings => Provider switch
+    public SyncEncryptionConfiguration Encryption { get; set; } = new();
+
+    /// <summary>Заполнены ли обязательные поля выбранного провайдера и ключ шифрования.</summary>
+    public bool HasSettings
     {
-        SyncProvider.S3 => !string.IsNullOrWhiteSpace(S3.Bucket)
-            && !string.IsNullOrWhiteSpace(S3.AccessKey)
-            && !string.IsNullOrWhiteSpace(S3.SecretKey),
-        SyncProvider.WebDav => WebDav.IsConfigured,
-        SyncProvider.Folder => Folder.IsConfigured,
-        _ => false,
-    };
+        get
+        {
+            var providerConfigured = Provider switch
+            {
+                SyncProvider.S3 => !string.IsNullOrWhiteSpace(S3.Bucket)
+                    && !string.IsNullOrWhiteSpace(S3.AccessKey)
+                    && !string.IsNullOrWhiteSpace(S3.SecretKey),
+                SyncProvider.WebDav => WebDav.IsConfigured,
+                SyncProvider.Folder => Folder.IsConfigured,
+                _ => false,
+            };
+
+            // Если ключ уже есть, шифрование нельзя выключить: старые объекты
+            // в хранилище останутся зашифрованными.
+            var encryptionReady = Encryption.Enabled
+                ? Encryption.HasKey
+                : !Encryption.HasKey;
+
+            return providerConfigured && encryptionReady;
+        }
+    }
 
     public bool IsConfigured => Enabled && HasSettings;
 }

@@ -137,6 +137,13 @@ public sealed class DatabaseQrPayload
             {
                 Path = source.Folder.Path,
             },
+            Encryption = new SyncEncryptionConfiguration
+            {
+                Enabled = source.Encryption.Enabled,
+                Salt = source.Encryption.Salt,
+                KeyCheck = source.Encryption.KeyCheck,
+                Key = includeSecrets ? source.Encryption.Key : string.Empty,
+            },
         };
     }
 }

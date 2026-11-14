@@ -190,6 +190,44 @@
 									   Margin="0 0 0 12" />
 						</StackPanel>
 
+						<StackPanel Spacing="0">
+							<CheckBox IsChecked="{Binding Sync.Encryption.Enabled}"
+									  IsEnabled="{Binding !Sync.Encryption.Enabled}"
+									  Content="Шифровать данные в хранилище" />
+							<StackPanel IsVisible="{Binding Sync.Encryption.Enabled}" Spacing="0">
+								<TextBlock Text="Парольная фраза" Classes="FieldLabel" />
+								<TextBox Text="{Binding Sync.Encryption.Password}"
+										 PasswordChar="•"
+										 PlaceholderText="Не хранится; нужна для ключа" />
+								<Button Content="Применить пароль"
+										Command="{Binding Sync.Encryption.ApplyPasswordCommand}"
+										HorizontalAlignment="Left"
+										Margin="0 0 0 8" />
+
+								<TextBlock Text="Код восстановления" Classes="FieldLabel" />
+								<TextBox Text="{Binding Sync.Encryption.RecoveryCode}"
+										 PlaceholderText="Вставьте сохранённый ключ" />
+								<StackPanel Orientation="Horizontal" Spacing="6" Margin="0 0 0 8">
+									<Button Content="Показать код"
+											Command="{Binding Sync.Encryption.ShowRecoveryCodeCommand}"
+											IsVisible="{Binding Sync.Encryption.HasKey}" />
+									<Button Content="Применить код"
+											Command="{Binding Sync.Encryption.ApplyRecoveryCodeCommand}" />
+								</StackPanel>
+
+								<TextBlock Text="{Binding Sync.Encryption.Status}"
+										   FontSize="11"
+										   Foreground="{DynamicResource TextSecondaryBrush}"
+										   TextWrapping="Wrap"
+										   Margin="0 0 0 8" />
+								<TextBlock Text="Восстановить данные без парольной фразы нельзя. Ключ хранится на этом устройстве; в QR по умолчанию не передаётся. После включения шифрование нельзя отключить без пересоздания хранилища."
+										   FontSize="11"
+										   Foreground="{DynamicResource TextSecondaryBrush}"
+										   TextWrapping="Wrap"
+										   Margin="0 0 0 10" />
+							</StackPanel>
+						</StackPanel>
+
 						<TextBlock Text="По умолчанию секреты синхронизации не попадают в QR-код. Для переноса на телефон, где нет формы ввода ключей, включите галочку в окне QR."
 								   FontSize="11"
 								   Foreground="{DynamicResource TextSecondaryBrush}"
@@ -224,6 +262,14 @@
 					</Flyout>
 				</Button.Flyout>
 			</Button>
+
+			<TextBlock Grid.Column="1"
+					   Text="{Binding ValidationMessage}"
+					   Foreground="{DynamicResource NegativeBrush}"
+					   FontSize="11"
+					   TextWrapping="Wrap"
+					   VerticalAlignment="Center"
+					   Margin="12 0" />
 
 			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
 				<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />

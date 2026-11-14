@@ -235,6 +235,63 @@ public sealed class SyncConfigurationTests : IDisposable
     }
 
     [Fact]
+    public void EncryptionViewModel_DerivesKeyAndRejectsWrongPassword()
+    {
+        var viewModel = new SyncEncryptionViewModel
+        {
+            Enabled = true,
+            Password = "family-passphrase",
+        };
+
+        Assert.True(viewModel.EnsureReady());
+        Assert.False(string.IsNullOrWhiteSpace(viewModel.Key));
+        Assert.False(string.IsNullOrWhiteSpace(viewModel.Salt));
+        Assert.True(SyncCrypto.VerifyKeyCheck(
+            Convert.FromBase64String(viewModel.Key),
+            viewModel.KeyCheck));
+
+        viewModel.Password = "wrong-passphrase";
+        Assert.False(viewModel.EnsureReady());
+        Assert.Contains("не подходит", viewModel.Status);
+    }
+
+    [Fact]
+    public void DatabaseViewModel_EncryptionNeedsPasswordOrKey()
+    {
+        var database = new DatabaseConfiguration
+        {
+            SyncId = Guid.NewGuid(),
+            Name = "Encrypted",
+            Path = "database.db",
+            BackupsFolder = "Backups",
+            Sync = new SyncStorageConfiguration
+            {
+                Provider = SyncProvider.Folder,
+                Enabled = true,
+                Folder = new FolderStorageConfiguration { Path = _root },
+                Encryption = new SyncEncryptionConfiguration
+                {
+                    Enabled = true,
+                },
+            },
+        };
+
+        var viewModel = new DatabaseViewModel();
+        viewModel.FillFrom(database);
+
+        Assert.False(viewModel.Sync.IsValid);
+
+        viewModel.Sync.Encryption.Password = "family-passphrase";
+        Assert.True(viewModel.Sync.IsValid);
+        Assert.True(viewModel.Sync.EnsureEncryptionReady());
+
+        var restored = viewModel.ToConfiguration();
+        Assert.True(restored.Sync.Encryption.Enabled);
+        Assert.False(string.IsNullOrWhiteSpace(restored.Sync.Encryption.Key));
+        Assert.True(restored.Sync.HasSettings);
+    }
+
+    [Fact]
     public void DatabaseViewModel_RoundTripsProviderSettings()
     {
         var database = new DatabaseConfiguration

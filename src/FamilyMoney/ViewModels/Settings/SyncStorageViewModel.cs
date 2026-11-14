@@ -28,6 +28,8 @@ public partial class SyncStorageViewModel : ViewModelBase
 
     public FolderStorageViewModel Folder { get; } = new();
 
+    public SyncEncryptionViewModel Encryption { get; } = new();
+
     public SyncProvider Provider => SelectedProvider?.Value ?? SyncProvider.None;
 
     public bool IsS3 => Provider == SyncProvider.S3;
@@ -54,13 +56,47 @@ public partial class SyncStorageViewModel : ViewModelBase
         _ => string.Empty,
     };
 
-    public bool IsValid => !Enabled || ToConfiguration().IsConfigured;
+    public bool IsValid
+    {
+        get
+        {
+            if (!Enabled)
+            {
+                return true;
+            }
+
+            var providerValid = Provider switch
+            {
+                SyncProvider.S3 => !string.IsNullOrWhiteSpace(S3.Bucket)
+                    && !string.IsNullOrWhiteSpace(S3.AccessKey)
+                    && !string.IsNullOrWhiteSpace(S3.SecretKey),
+                SyncProvider.WebDav => Uri.TryCreate(WebDav.Url.Trim(), UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp),
+                SyncProvider.Folder => !string.IsNullOrWhiteSpace(Folder.Path),
+                _ => false,
+            };
+
+            var encryptionReady = Encryption.Enabled
+                ? Encryption.HasKey || Encryption.HasPassword || Encryption.HasRecoveryCode
+                : !Encryption.HasKey;
+
+            return providerValid && encryptionReady;
+        }
+    }
 
     public SyncStorageViewModel()
     {
         S3.PropertyChanged += (_, _) => NotifyConfigurationChanged();
         WebDav.PropertyChanged += (_, _) => NotifyConfigurationChanged();
         Folder.PropertyChanged += (_, _) => NotifyConfigurationChanged();
+        Encryption.PropertyChanged += (_, _) => NotifyConfigurationChanged();
+    }
+
+    public bool EnsureEncryptionReady()
+    {
+        var ready = Encryption.EnsureReady();
+        NotifyConfigurationChanged();
+        return ready;
     }
 
     partial void OnEnabledChanged(bool value)
@@ -92,6 +128,7 @@ public partial class SyncStorageViewModel : ViewModelBase
         S3.FillFrom(config.S3);
         WebDav.FillFrom(config.WebDav);
         Folder.FillFrom(config.Folder);
+        Encryption.FillFrom(config.Encryption);
     }
 
     public SyncStorageConfiguration ToConfiguration()
@@ -106,6 +143,7 @@ public partial class SyncStorageViewModel : ViewModelBase
             S3 = s3,
             WebDav = WebDav.ToConfiguration(),
             Folder = Folder.ToConfiguration(),
+            Encryption = Encryption.ToConfiguration(),
         };
     }
 
@@ -117,6 +155,7 @@ public partial class SyncStorageViewModel : ViewModelBase
         S3.ApplyFrom(source.S3);
         WebDav.ApplyFrom(source.WebDav);
         Folder.ApplyFrom(source.Folder);
+        Encryption.ApplyFrom(source.Encryption);
     }
 
     private void NotifyConfigurationChanged()

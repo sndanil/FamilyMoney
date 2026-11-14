@@ -23,6 +23,29 @@ public sealed class S3SyncObjectStore : ISyncObjectStore
 
     public bool SupportsConditionalWrite => true;
 
+    public async Task<IReadOnlyList<SyncObjectInfo>> ListAsync(
+        string prefix,
+        CancellationToken cancellationToken = default)
+    {
+        using var storage = CreateBlobStorage(_configuration);
+        var blobs = await storage.ListAsync(
+            new ListOptions
+            {
+                FolderPath = prefix,
+                Recurse = true,
+            },
+            cancellationToken);
+
+        return blobs
+            .Where(blob => blob.IsFile)
+            .Select(blob => new SyncObjectInfo(
+                blob.FullPath,
+                blob.Size ?? 0,
+                GetETag(blob),
+                blob.LastModificationTime))
+            .ToList();
+    }
+
     public async Task<(string? Content, string? ETag)> TryDownloadTextAsync(string key, CancellationToken cancellationToken = default)
     {
         using var storage = CreateBlobStorage(_configuration);

@@ -38,6 +38,32 @@ public sealed class FolderSyncObjectStore : ISyncObjectStore
 
     public bool SupportsConditionalWrite => true;
 
+    public Task<IReadOnlyList<SyncObjectInfo>> ListAsync(
+        string prefix,
+        CancellationToken cancellationToken = default)
+    {
+        var directory = ResolvePath(prefix);
+        if (!Directory.Exists(directory))
+        {
+            return Task.FromResult<IReadOnlyList<SyncObjectInfo>>([]);
+        }
+
+        var result = new List<SyncObjectInfo>();
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var relative = Path.GetRelativePath(_root, file).Replace('\\', '/');
+            var info = new FileInfo(file);
+            result.Add(new SyncObjectInfo(
+                relative,
+                info.Length,
+                null,
+                new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero)));
+        }
+
+        return Task.FromResult<IReadOnlyList<SyncObjectInfo>>(result);
+    }
+
     public async Task<(string? Content, string? ETag)> TryDownloadTextAsync(
         string key,
         CancellationToken cancellationToken = default)

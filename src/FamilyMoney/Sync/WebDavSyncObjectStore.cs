@@ -1,8 +1,10 @@
 using FamilyMoney.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Xml.Linq;
 
 namespace FamilyMoney.Sync;
 
@@ -53,6 +55,15 @@ public sealed class WebDavSyncObjectStore : ISyncObjectStore
     }
 
     public bool SupportsConditionalWrite => true;
+
+    public async Task<IReadOnlyList<SyncObjectInfo>> ListAsync(
+        string prefix,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new List<SyncObjectInfo>();
+        await ListCollectionAsync(prefix.Trim('/'), result, depth: 0, cancellationToken);
+        return result;
+    }
 
     public async Task<(string? Content, string? ETag)> TryDownloadTextAsync(
         string key,
@@ -236,6 +247,147 @@ public sealed class WebDavSyncObjectStore : ISyncObjectStore
         }
 
         EnsureSuccess(response, "DELETE", key);
+    }
+
+    private async Task ListCollectionAsync(
+        string prefix,
+        List<SyncObjectInfo> result,
+        int depth,
+        CancellationToken cancellationToken)
+    {
+        if (depth > 4)
+        {
+            return;
+        }
+
+        using var request = CreateRequest(new HttpMethod("PROPFIND"), BuildUri(prefix, directory: true));
+        request.Headers.TryAddWithoutValidation("Depth", "1");
+        request.Content = new StringContent(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <d:propfind xmlns:d="DAV:">
+              <d:prop>
+                <d:resourcetype/>
+                <d:getcontentlength/>
+                <d:getetag/>
+                <d:getlastmodified/>
+              </d:prop>
+            </d:propfind>
+            """,
+            Encoding.UTF8,
+            "application/xml");
+
+        using var response = await _client.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return;
+        }
+
+        if ((int)response.StatusCode != 207)
+        {
+            EnsureSuccess(response, "PROPFIND", prefix);
+            return;
+        }
+
+        var xml = await response.Content.ReadAsStringAsync(cancellationToken);
+        XDocument document;
+        try
+        {
+            document = XDocument.Parse(xml);
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException(
+                $"WebDAV вернул некорректный PROPFIND для {prefix}: {ex.Message}");
+        }
+
+        XNamespace dav = "DAV:";
+        foreach (var entry in document.Descendants(dav + "response"))
+        {
+            var href = entry.Element(dav + "href")?.Value;
+            if (string.IsNullOrWhiteSpace(href))
+            {
+                continue;
+            }
+
+            var key = KeyFromHref(href);
+            if (key.Length == 0)
+            {
+                continue;
+            }
+
+            var prop = entry.Descendants(dav + "prop").FirstOrDefault();
+            var isCollection = prop?.Element(dav + "resourcetype")?.Element(dav + "collection") != null;
+            if (isCollection)
+            {
+                var isDescendant = prefix.Length == 0
+                    || key.StartsWith(prefix + "/", StringComparison.Ordinal);
+                if (isDescendant && key.Length > prefix.Length)
+                {
+                    await ListCollectionAsync(key, result, depth + 1, cancellationToken);
+                }
+
+                continue;
+            }
+
+            if (!IsUnderPrefix(key, prefix))
+            {
+                continue;
+            }
+
+            var size = 0L;
+            var lengthText = prop?.Element(dav + "getcontentlength")?.Value;
+            if (!string.IsNullOrWhiteSpace(lengthText))
+            {
+                long.TryParse(lengthText, NumberStyles.Integer, CultureInfo.InvariantCulture, out size);
+            }
+
+            var etag = prop?.Element(dav + "getetag")?.Value?.Trim();
+            DateTimeOffset? modified = null;
+            var modifiedText = prop?.Element(dav + "getlastmodified")?.Value;
+            if (!string.IsNullOrWhiteSpace(modifiedText)
+                && DateTimeOffset.TryParse(
+                    modifiedText,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
+                    out var parsed))
+            {
+                modified = parsed;
+            }
+
+            result.Add(new SyncObjectInfo(key, size, etag, modified));
+        }
+    }
+
+    private string KeyFromHref(string href)
+    {
+        var uri = Uri.TryCreate(href, UriKind.Absolute, out var absolute)
+            ? absolute
+            : new Uri(_baseUri, href);
+
+        var basePath = _baseUri.AbsolutePath.TrimEnd('/');
+        var path = Uri.UnescapeDataString(uri.AbsolutePath);
+        if (path.StartsWith(basePath, StringComparison.Ordinal))
+        {
+            path = path[basePath.Length..];
+        }
+
+        return path.Trim('/');
+    }
+
+    private static bool IsUnderPrefix(string key, string prefix)
+    {
+        if (prefix.Length == 0)
+        {
+            return true;
+        }
+
+        return key.Equals(prefix, StringComparison.Ordinal)
+            || key.StartsWith(prefix + "/", StringComparison.Ordinal);
     }
 
     private async Task EnsureParentCollectionsAsync(string key, CancellationToken cancellationToken)

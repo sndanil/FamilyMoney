@@ -335,6 +335,15 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        if (sync.Encryption.Enabled
+            && existing.Encryption.Enabled
+            && string.IsNullOrWhiteSpace(sync.Encryption.Key)
+            && string.Equals(sync.Encryption.Salt, existing.Encryption.Salt, StringComparison.Ordinal)
+            && string.Equals(sync.Encryption.KeyCheck, existing.Encryption.KeyCheck, StringComparison.Ordinal))
+        {
+            sync.Encryption.Key = existing.Encryption.Key;
+        }
+
         switch (sync.Provider)
         {
             case SyncProvider.S3:

@@ -87,6 +87,20 @@ public class LiteDbRepository : IRepository
         }
     }
 
+    public bool HasLocalData()
+    {
+        if (!File.Exists(DatabasePath))
+        {
+            return false;
+        }
+
+        using var db = OpenDatabase();
+        return db.GetCollection<Account>(nameof(Account)).Count() > 0
+            || db.GetCollection<Category>(nameof(Category)).Count() > 0
+            || db.GetCollection<SubCategory>(nameof(SubCategory)).Count() > 0
+            || db.GetCollection<Transaction>(nameof(Transaction)).Count() > 0;
+    }
+
     public void ApplySyncDelta(SyncDelta delta)
     {
         using var _ = SyncContext.EnterApplyScope();

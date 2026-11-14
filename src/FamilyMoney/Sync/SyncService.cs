@@ -11,12 +11,18 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FamilyMoney.Sync;
 
+/// <summary>
+/// Синхронизация по журналам устройств. Каждое устройство пишет только свой
+/// manifest и свои дельты, поэтому writers не конфликтуют за общий файл.
+/// Слияние остаётся last-write-wins по LastChange.
+/// </summary>
 public sealed class SyncService : ISyncService
 {
-    /// <summary>Максимальная версия протокола, которую понимает это приложение.</summary>
-    private const int SupportedProtocolVersion = 2;
+    private const int SupportedProtocolVersion = 3;
 
     private const int MaxPushAttempts = 3;
+
+    private const int SnapshotKeep = 2;
 
     private readonly IGlobalConfiguration _configuration;
     private readonly IRepository _repository;
@@ -70,22 +76,18 @@ public sealed class SyncService : ISyncService
         {
             var database = EnsureDatabaseSyncId();
             var state = _stateStore.Load(database.SyncId, _deviceId);
+            state.AppliedByDevice ??= new Dictionary<string, long>(StringComparer.Ordinal);
+
+            if (!state.LegacyMigrated
+                && state.LegacyAppliedRevision == 0
+                && state.AppliedRevision > 0)
+            {
+                state.LegacyAppliedRevision = state.AppliedRevision;
+            }
+
             var databasePath = database.GetResolvedPath();
             var objectStore = _objectStoreFactory.Create(database.GetSyncConfiguration());
             var operationId = state.PendingOperationId ?? Guid.NewGuid().ToString("N");
-
-            await using var syncLock = await SyncLock.TryAcquireAsync(
-                database,
-                objectStore,
-                _deviceId,
-                operationId,
-                cancellationToken);
-
-            if (syncLock == null)
-            {
-                return SyncResult.Skipped("Синхронизация уже выполняется на другом устройстве.");
-            }
-
             var changed = false;
 
             for (var attempt = 1; attempt <= MaxPushAttempts; attempt++)
@@ -142,7 +144,7 @@ public sealed class SyncService : ISyncService
                     {
                         _logger.LogWarning(ex, "Sync conflict after {Attempts} attempts", attempt);
                         return SyncResult.Failed(
-                            "Манифест синхронизации изменён другим устройством. Повторите синхронизацию.");
+                            "Manifest этого устройства изменён параллельным процессом. Повторите синхронизацию.");
                     }
 
                     _logger.LogWarning(ex, "Sync conflict, retrying ({Attempt}/{Max})", attempt, MaxPushAttempts);
@@ -172,93 +174,249 @@ public sealed class SyncService : ISyncService
         ISyncObjectStore objectStore,
         CancellationToken cancellationToken)
     {
-        var manifestKey = SyncPaths.ManifestKey(database);
-        var (manifestJson, _) = await objectStore.TryDownloadTextAsync(manifestKey, cancellationToken);
-        var manifest = DeserializeManifest(manifestJson);
+        var changed = false;
+
+        // Новое устройство без истории: сначала пробуем общий снапшот.
+        var isNewDevice = state.AppliedByDevice.Count == 0
+            && state.LegacyAppliedRevision == 0
+            && state.AppliedRevision == 0
+            && !_repository.GetPendingSyncChanges().HasChanges
+            && !_repository.HasLocalData();
+
+        if (isNewDevice
+            && await TryRestoreNewSnapshotAsync(database, state, objectStore, cancellationToken))
+        {
+            changed = true;
+        }
+
+        if (!state.LegacyMigrated)
+        {
+            var legacy = await PullLegacyAsync(database, state, objectStore, cancellationToken);
+            changed |= legacy.Changed;
+
+            if (legacy.Incomplete)
+            {
+                return new PullResult(changed, true, legacy.Error);
+            }
+
+            state.LegacyMigrated = true;
+        }
+
+        var journal = await PullJournalsAsync(database, state, objectStore, cancellationToken);
+        changed |= journal.Changed;
+
+        if (journal.Incomplete)
+        {
+            return new PullResult(changed, true, journal.Error);
+        }
+
+        UpdateAggregate(state);
+        return new PullResult(changed, false, null);
+    }
+
+    private async Task<PullResult> PullLegacyAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var (manifestJson, _) = await objectStore.TryDownloadTextAsync(
+            SyncPaths.ManifestKey(database),
+            cancellationToken);
+
+        var manifest = DeserializeLegacyManifest(manifestJson);
         if (manifest == null)
         {
             return PullResult.Empty;
         }
 
-        EnsureSupportedProtocol(manifest);
-
-        if (manifest.Revision <= state.AppliedRevision)
-        {
-            return PullResult.Empty;
-        }
-
-        if (state.AppliedRevision == 0
-            && manifest.SnapshotRevision.HasValue
-            && manifest.SnapshotRevision > 0
-            && manifest.SnapshotRevision <= manifest.Revision
-            && !string.IsNullOrWhiteSpace(manifest.SnapshotKey))
-        {
-            // Снапшот заменяет файл базы целиком. Если на устройстве уже есть
-            // неотправленные изменения, сначала применяем журнал дельт, иначе
-            // они будут потеряны.
-            var hasPendingChanges = _repository.GetPendingSyncChanges().HasChanges;
-            if (!hasPendingChanges)
-            {
-                await RestoreSnapshotAsync(
-                    database.GetResolvedPath(),
-                    manifest.SnapshotKey,
-                    objectStore,
-                    cancellationToken);
-                state.AppliedRevision = manifest.SnapshotRevision.Value;
-            }
-        }
+        EnsureSupportedProtocol(manifest.ProtocolVersion);
 
         var changed = false;
 
-        for (var revision = state.AppliedRevision + 1; revision <= manifest.Revision; revision++)
+        if (state.LegacyAppliedRevision == 0
+            && manifest.SnapshotRevision.HasValue
+            && manifest.SnapshotRevision.Value > 0
+            && manifest.SnapshotRevision.Value <= manifest.Revision
+            && !string.IsNullOrWhiteSpace(manifest.SnapshotKey)
+            && !_repository.GetPendingSyncChanges().HasChanges
+            && !_repository.HasLocalData())
         {
-            var deltaKey = SyncPaths.DeltaKey(database, revision);
-            var (deltaJson, _) = await objectStore.TryDownloadTextAsync(deltaKey, cancellationToken);
+            await RestoreSnapshotAsync(
+                database.GetResolvedPath(),
+                manifest.SnapshotKey,
+                objectStore,
+                cancellationToken);
+            state.LegacyAppliedRevision = manifest.SnapshotRevision.Value;
+            changed = true;
+        }
+
+        for (var revision = state.LegacyAppliedRevision + 1; revision <= manifest.Revision; revision++)
+        {
+            var (deltaJson, _) = await objectStore.TryDownloadTextAsync(
+                SyncPaths.DeltaKey(database, revision),
+                cancellationToken);
+
             if (deltaJson == null)
             {
                 _logger.LogWarning(
-                    "Missing sync delta {Revision} for database {SyncId}",
+                    "Missing legacy sync delta {Revision} for database {SyncId}",
                     revision,
                     database.SyncId);
                 return new PullResult(
                     changed,
                     true,
-                    $"Не найдена дельта ревизии {revision}. Повторите синхронизацию.");
+                    $"Не найдена старая дельта ревизии {revision}. Повторите синхронизацию.");
             }
 
-            var delta = JsonSerializer.Deserialize<SyncDelta>(deltaJson, JsonDefaults.Indented)
-                ?? throw new InvalidOperationException($"Invalid sync delta {revision}.");
+            var delta = DeserializeDelta(deltaJson, revision);
+            var applied = await ApplyDeltaAsync(database, state, objectStore, delta, cancellationToken);
+            changed |= applied.Changed;
 
-            _repository.ApplySyncDelta(delta);
-
-            if (delta.Images.Count > 0)
+            if (applied.Incomplete)
             {
-                var imagesResult = await _repository.ApplySyncedImagesAsync(
-                    delta.Images,
-                    async (image, ct) => await objectStore.DownloadStreamAsync(
-                        SyncPaths.ImageKey(database, image.EntityId),
-                        ct),
-                    cancellationToken);
-
-                if (imagesResult.HasFailures)
-                {
-                    _logger.LogWarning(
-                        "Revision {Revision} applied without {Count} images",
-                        revision,
-                        imagesResult.Failed.Count);
-                    return new PullResult(
-                        true,
-                        true,
-                        $"Не удалось загрузить изображения ({imagesResult.Failed.Count}). " +
-                        "Синхронизация повторится при следующем запуске.");
-                }
+                return applied;
             }
 
-            state.AppliedRevision = revision;
-            changed = true;
+            state.LegacyAppliedRevision = revision;
         }
 
+        UpdateAggregate(state);
+        _logger.LogInformation(
+            "Legacy journal migrated at revision {Revision} for database {SyncId}",
+            state.LegacyAppliedRevision,
+            database.SyncId);
+
         return new PullResult(changed, false, null);
+    }
+
+    private async Task<PullResult> PullJournalsAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var manifests = await ListDeviceManifestsAsync(database, objectStore, cancellationToken);
+        var groups = new Dictionary<string, List<PendingDelta>>(StringComparer.Ordinal);
+
+        foreach (var manifest in manifests)
+        {
+            var applied = state.AppliedByDevice.GetValueOrDefault(manifest.DeviceId);
+            if (applied > manifest.LastSequence)
+            {
+                _logger.LogWarning(
+                    "Device {DeviceId} journal moved backwards; resetting local position",
+                    manifest.DeviceId);
+                applied = manifest.LastSequence;
+                state.AppliedByDevice[manifest.DeviceId] = applied;
+            }
+
+            for (var sequence = applied + 1; sequence <= manifest.LastSequence; sequence++)
+            {
+                var key = SyncPaths.DeviceDeltaKey(database, manifest.DeviceId, sequence);
+                var (json, _) = await objectStore.TryDownloadTextAsync(key, cancellationToken);
+                if (json == null)
+                {
+                    _logger.LogWarning(
+                        "Missing device delta {DeviceId}/{Sequence} for database {SyncId}",
+                        manifest.DeviceId,
+                        sequence,
+                        database.SyncId);
+                    return new PullResult(
+                        false,
+                        true,
+                        $"Не найдена дельта устройства {manifest.DeviceId} №{sequence}. " +
+                        "Повторите синхронизацию.");
+                }
+
+                var delta = DeserializeDelta(json, sequence);
+                if (!string.Equals(delta.DeviceId, manifest.DeviceId, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        $"Дельта {sequence} принадлежит устройству {delta.DeviceId}, " +
+                        $"а не {manifest.DeviceId}.");
+                }
+
+                if (!groups.TryGetValue(manifest.DeviceId, out var list))
+                {
+                    list = [];
+                    groups[manifest.DeviceId] = list;
+                }
+
+                list.Add(new PendingDelta(manifest.DeviceId, sequence, delta));
+            }
+        }
+
+        var changed = false;
+        var orderedGroups = groups
+            .Select(pair => new
+            {
+                DeviceId = pair.Key,
+                Deltas = pair.Value.OrderBy(item => item.Sequence).ToList(),
+                FirstCreatedAt = pair.Value.Min(item => item.Delta.CreatedAt),
+            })
+            .OrderBy(item => item.FirstCreatedAt)
+            .ThenBy(item => item.DeviceId, StringComparer.Ordinal);
+
+        foreach (var group in orderedGroups)
+        {
+            foreach (var pending in group.Deltas)
+            {
+                var applied = await ApplyDeltaAsync(
+                    database,
+                    state,
+                    objectStore,
+                    pending.Delta,
+                    cancellationToken);
+                changed |= applied.Changed;
+
+                if (applied.Incomplete)
+                {
+                    return applied;
+                }
+
+                state.AppliedByDevice[pending.DeviceId] = pending.Sequence;
+            }
+        }
+
+        UpdateAggregate(state);
+        return new PullResult(changed, false, null);
+    }
+
+    private async Task<PullResult> ApplyDeltaAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
+        ISyncObjectStore objectStore,
+        SyncDelta delta,
+        CancellationToken cancellationToken)
+    {
+        _repository.ApplySyncDelta(delta);
+
+        if (delta.Images.Count > 0)
+        {
+            var imagesResult = await _repository.ApplySyncedImagesAsync(
+                delta.Images,
+                async (image, ct) => await objectStore.DownloadStreamAsync(
+                    SyncPaths.ImageKey(database, image.EntityId),
+                    ct),
+                cancellationToken);
+
+            if (imagesResult.HasFailures)
+            {
+                _logger.LogWarning(
+                    "Delta {DeviceId}/{Revision} applied without {Count} images",
+                    delta.DeviceId,
+                    delta.Revision,
+                    imagesResult.Failed.Count);
+                return new PullResult(
+                    true,
+                    true,
+                    $"Не удалось загрузить изображения ({imagesResult.Failed.Count}). " +
+                    "Синхронизация повторится при следующем запуске.");
+            }
+        }
+
+        return new PullResult(true, false, null);
     }
 
     private async Task<bool> PushAsync(
@@ -270,24 +428,30 @@ public sealed class SyncService : ISyncService
         CancellationToken cancellationToken)
     {
         var pending = _repository.GetPendingSyncChanges();
-        var manifestKey = SyncPaths.ManifestKey(database);
-        var (manifestJson, manifestEtag) = await objectStore.TryDownloadTextAsync(manifestKey, cancellationToken);
-        var remoteManifest = DeserializeManifest(manifestJson);
-        if (remoteManifest != null)
+        var manifestKey = SyncPaths.DeviceManifestKey(database, _deviceId);
+        var (manifestJson, manifestEtag) = await objectStore.TryDownloadTextAsync(
+            manifestKey,
+            cancellationToken);
+        var ownManifest = DeserializeDeviceManifest(manifestJson);
+
+        if (ownManifest != null)
         {
-            EnsureSupportedProtocol(remoteManifest);
+            EnsureSupportedProtocol(ownManifest.ProtocolVersion);
+            if (!string.Equals(ownManifest.DeviceId, _deviceId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Manifest устройства принадлежит другому устройству.");
+            }
         }
 
-        if (remoteManifest?.OperationId == operationId
+        if (ownManifest?.LastOperationId == operationId
             && IsPendingOperationComplete(state, pending))
         {
-            // Предыдущая попытка уже опубликовала эти изменения, но не успела
-            // очистить outbox. Повторяем только локальное завершение.
             _repository.ClearPendingSyncChanges(pending);
-            state.PublishedRevision = Math.Max(state.PublishedRevision, remoteManifest.Revision);
-            state.AppliedRevision = Math.Max(state.AppliedRevision, remoteManifest.Revision);
+            state.AppliedByDevice[_deviceId] = ownManifest.LastSequence;
+            state.PublishedRevision = Math.Max(state.PublishedRevision, ownManifest.LastSequence);
             state.PendingOperationId = null;
             state.PendingOperationHash = null;
+            UpdateAggregate(state);
             _stateStore.Save(state);
             _logger.LogInformation("Push {OperationId} was already published", operationId);
             return false;
@@ -305,9 +469,9 @@ public sealed class SyncService : ISyncService
             return false;
         }
 
-        var newRevision = (remoteManifest?.Revision ?? 0) + 1;
-        var delta = BuildDelta(pending, newRevision);
-        var deltaKey = SyncPaths.DeltaKey(database, newRevision);
+        var sequence = (ownManifest?.LastSequence ?? 0) + 1;
+        var delta = BuildDelta(pending, sequence);
+        var deltaKey = SyncPaths.DeviceDeltaKey(database, _deviceId, sequence);
         var deltaJson = JsonSerializer.Serialize(delta, JsonDefaults.Indented);
 
         state.PendingOperationId = operationId;
@@ -322,69 +486,36 @@ public sealed class SyncService : ISyncService
 
         await objectStore.UploadTextAsync(deltaKey, deltaJson, SyncWriteCondition.None, cancellationToken);
 
-        string? newSnapshotKey = null;
-        var newSnapshotCreated = false;
-        long? snapshotRevision = remoteManifest?.SnapshotRevision;
-
-        if (newRevision % SyncPaths.SnapshotInterval == 0)
-        {
-            newSnapshotKey = SyncPaths.SnapshotKey(database, newRevision);
-            await UploadSnapshotAsync(databasePath, newSnapshotKey, objectStore, cancellationToken);
-            newSnapshotCreated = true;
-            snapshotRevision = newRevision;
-        }
-
-        var manifest = new SyncManifest
+        var manifest = new DeviceSyncManifest
         {
             ProtocolVersion = SupportedProtocolVersion,
-            Revision = newRevision,
+            DeviceId = _deviceId,
+            LastSequence = sequence,
             UpdatedAt = DateTime.UtcNow,
-            UpdatedByDevice = _deviceId,
-            SnapshotRevision = newSnapshotKey != null
-                ? snapshotRevision
-                : remoteManifest?.SnapshotRevision,
-            SnapshotKey = newSnapshotKey ?? remoteManifest?.SnapshotKey,
-            OperationId = operationId,
+            LastOperationId = operationId,
         };
 
-        try
-        {
-            await UploadManifestAsync(
-                objectStore,
-                manifestKey,
-                manifest,
-                manifestJson != null,
-                manifestEtag,
-                cancellationToken);
-        }
-        catch (SyncConflictException)
-        {
-            // Условная запись не прошла — manifest точно не наш, снапшот
-            // никем не упомянут и его можно убрать. Ошибку проверки ниже
-            // так не обрабатываем: там manifest мог уже записаться.
-            if (newSnapshotCreated && newSnapshotKey != null)
-            {
-                await TryDeleteAsync(objectStore, newSnapshotKey, cancellationToken);
-            }
+        await UploadDeviceManifestAsync(
+            objectStore,
+            manifestKey,
+            manifest,
+            manifestJson != null,
+            manifestEtag,
+            cancellationToken);
 
-            throw;
-        }
-
-        await VerifyManifestAsync(objectStore, manifestKey, newRevision, operationId, cancellationToken);
-
-        if (newSnapshotCreated
-            && newSnapshotKey != null
-            && !string.IsNullOrWhiteSpace(remoteManifest?.SnapshotKey)
-            && remoteManifest.SnapshotKey != newSnapshotKey)
-        {
-            await TryDeleteAsync(objectStore, remoteManifest.SnapshotKey, cancellationToken);
-        }
+        await VerifyDeviceManifestAsync(
+            objectStore,
+            manifestKey,
+            sequence,
+            operationId,
+            cancellationToken);
 
         _repository.ClearPendingSyncChanges(pending);
-        state.PublishedRevision = newRevision;
-        state.AppliedRevision = Math.Max(state.AppliedRevision, newRevision);
+        state.AppliedByDevice[_deviceId] = sequence;
+        state.PublishedRevision = sequence;
         state.PendingOperationId = null;
         state.PendingOperationHash = null;
+        UpdateAggregate(state);
         _stateStore.Save(state);
 
         return true;
@@ -402,85 +533,231 @@ public sealed class SyncService : ISyncService
             return;
         }
 
-        var manifestKey = SyncPaths.ManifestKey(database);
-        var (manifestJson, manifestEtag) = await objectStore.TryDownloadTextAsync(manifestKey, cancellationToken);
-        var remoteManifest = DeserializeManifest(manifestJson);
+        var ownSequence = state.AppliedByDevice.GetValueOrDefault(_deviceId);
+        var snapshots = await ListSnapshotEntriesAsync(database, objectStore, cancellationToken);
+        var due = snapshots.Count == 0
+            || (ownSequence > 0
+                && ownSequence % SyncPaths.SnapshotInterval == 0
+                && state.LastSnapshotOwnSequence < ownSequence);
 
-        if (!string.IsNullOrWhiteSpace(remoteManifest?.SnapshotKey))
+        if (!due)
         {
             return;
         }
 
-        var remoteRevision = remoteManifest?.Revision ?? 0;
-        if (remoteRevision > state.AppliedRevision)
-        {
-            // Локальная база отстаёт от хранилища — снимок с неё был бы неполным.
-            return;
-        }
+        await CreateSnapshotAsync(database, state, databasePath, objectStore, cancellationToken);
 
-        var snapshotRevision = Math.Max(remoteRevision, 1);
-        var snapshotKey = SyncPaths.SnapshotKey(database, snapshotRevision);
+        try
+        {
+            await CleanupSnapshotsAsync(database, objectStore, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // Снапшот уже создан; уборка старых не должна отменять синхронизацию.
+            _logger.LogWarning(ex, "Snapshot cleanup failed");
+        }
+    }
+
+    private async Task CreateSnapshotAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
+        string databasePath,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var snapshotId = $"{DateTime.UtcNow.Ticks:D19}-{_deviceId}";
+        var snapshotKey = SyncPaths.SnapshotKey(database, snapshotId);
+        var metadataKey = SyncPaths.SnapshotMetadataKey(database, snapshotId);
+
         await UploadSnapshotAsync(databasePath, snapshotKey, objectStore, cancellationToken);
 
-        var operationId = remoteManifest?.OperationId ?? Guid.NewGuid().ToString("N");
-        var manifest = new SyncManifest
+        var metadata = new SyncSnapshotMetadata
         {
             ProtocolVersion = SupportedProtocolVersion,
-            Revision = snapshotRevision,
-            UpdatedAt = DateTime.UtcNow,
-            UpdatedByDevice = _deviceId,
-            SnapshotRevision = snapshotRevision,
-            SnapshotKey = snapshotKey,
-            OperationId = operationId,
+            CreatedAt = DateTime.UtcNow,
+            DeviceId = _deviceId,
+            AppliedByDevice = new Dictionary<string, long>(
+                state.AppliedByDevice,
+                StringComparer.Ordinal),
         };
 
         try
         {
-            await UploadManifestAsync(
-                objectStore,
-                manifestKey,
-                manifest,
-                manifestJson != null,
-                manifestEtag,
+            await objectStore.UploadTextAsync(
+                metadataKey,
+                JsonSerializer.Serialize(metadata, JsonDefaults.Indented),
+                SyncWriteCondition.None,
                 cancellationToken);
         }
-        catch (SyncConflictException)
+        catch
         {
             await TryDeleteAsync(objectStore, snapshotKey, cancellationToken);
             throw;
         }
 
-        await VerifyManifestAsync(
-            objectStore,
-            manifestKey,
-            snapshotRevision,
-            operationId,
-            cancellationToken);
-
-        state.AppliedRevision = Math.Max(state.AppliedRevision, snapshotRevision);
-        state.PublishedRevision = Math.Max(state.PublishedRevision, snapshotRevision);
-
+        state.LastSnapshotOwnSequence = state.AppliedByDevice.GetValueOrDefault(_deviceId);
         _logger.LogInformation(
-            "Created initial sync snapshot {SnapshotKey} at revision {Revision} for database {SyncId}",
+            "Created sync snapshot {SnapshotKey} for database {SyncId}",
             snapshotKey,
-            snapshotRevision,
             database.SyncId);
     }
 
-    private async Task UploadSnapshotAsync(
-        string databasePath,
-        string snapshotKey,
+    private async Task<bool> TryRestoreNewSnapshotAsync(
+        DatabaseConfiguration database,
+        LocalSyncState state,
         ISyncObjectStore objectStore,
         CancellationToken cancellationToken)
     {
-        _repository.Checkpoint();
-        await objectStore.UploadFileAsync(snapshotKey, databasePath, cancellationToken);
+        var snapshots = await ListSnapshotEntriesAsync(database, objectStore, cancellationToken);
+        foreach (var snapshot in snapshots.OrderByDescending(item => item.Metadata.CreatedAt))
+        {
+            var databaseKey = SyncPaths.SnapshotKey(database, snapshot.Id);
+            if (!await objectStore.ExistsAsync(databaseKey, cancellationToken))
+            {
+                continue;
+            }
+
+            try
+            {
+                await RestoreSnapshotAsync(
+                    database.GetResolvedPath(),
+                    databaseKey,
+                    objectStore,
+                    cancellationToken);
+            }
+            catch (SyncEncryptionException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Snapshot {SnapshotId} could not be restored", snapshot.Id);
+                continue;
+            }
+
+            state.AppliedByDevice = new Dictionary<string, long>(
+                snapshot.Metadata.AppliedByDevice,
+                StringComparer.Ordinal);
+            state.LegacyMigrated = true;
+            state.LegacyAppliedRevision = Math.Max(
+                state.LegacyAppliedRevision,
+                snapshot.Metadata.AppliedByDevice.GetValueOrDefault("legacy"));
+            UpdateAggregate(state);
+
+            _logger.LogInformation(
+                "Restored sync snapshot {SnapshotId} for database {SyncId}",
+                snapshot.Id,
+                database.SyncId);
+            return true;
+        }
+
+        return false;
     }
 
-    private async Task UploadManifestAsync(
+    private async Task<List<(string Id, SyncSnapshotMetadata Metadata)>> ListSnapshotEntriesAsync(
+        DatabaseConfiguration database,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var result = new List<(string Id, SyncSnapshotMetadata Metadata)>();
+        var objects = await objectStore.ListAsync(
+            SyncPaths.SnapshotsPrefix(database) + "/",
+            cancellationToken);
+
+        foreach (var item in objects.Where(entry => entry.Key.EndsWith(".json", StringComparison.Ordinal)))
+        {
+            var (json, _) = await objectStore.TryDownloadTextAsync(item.Key, cancellationToken);
+            var metadata = DeserializeSnapshotMetadata(json);
+            if (metadata == null)
+            {
+                continue;
+            }
+
+            EnsureSupportedProtocol(metadata.ProtocolVersion);
+            var fileName = Path.GetFileNameWithoutExtension(item.Key);
+            if (!fileName.StartsWith("base-", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            result.Add((fileName["base-".Length..], metadata));
+        }
+
+        return result;
+    }
+
+    private async Task CleanupSnapshotsAsync(
+        DatabaseConfiguration database,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var snapshots = await ListSnapshotEntriesAsync(database, objectStore, cancellationToken);
+        foreach (var snapshot in snapshots
+                     .OrderByDescending(item => item.Metadata.CreatedAt)
+                     .Skip(SnapshotKeep))
+        {
+            await TryDeleteAsync(
+                objectStore,
+                SyncPaths.SnapshotKey(database, snapshot.Id),
+                cancellationToken);
+            await TryDeleteAsync(
+                objectStore,
+                SyncPaths.SnapshotMetadataKey(database, snapshot.Id),
+                cancellationToken);
+        }
+    }
+
+    private async Task<List<DeviceSyncManifest>> ListDeviceManifestsAsync(
+        DatabaseConfiguration database,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        var result = new List<DeviceSyncManifest>();
+        var prefix = SyncPaths.DevicesPrefix(database).TrimEnd('/') + "/";
+        var objects = await objectStore.ListAsync(
+            SyncPaths.DevicesPrefix(database) + "/",
+            cancellationToken);
+
+        foreach (var item in objects.Where(entry =>
+                     entry.Key.EndsWith("/manifest.json", StringComparison.Ordinal)))
+        {
+            if (!item.Key.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var rest = item.Key[prefix.Length..];
+            var slash = rest.IndexOf('/');
+            if (slash <= 0)
+            {
+                continue;
+            }
+
+            var deviceId = rest[..slash];
+            var (json, _) = await objectStore.TryDownloadTextAsync(item.Key, cancellationToken);
+            var manifest = DeserializeDeviceManifest(json);
+            if (manifest == null)
+            {
+                continue;
+            }
+
+            EnsureSupportedProtocol(manifest.ProtocolVersion);
+            if (!string.Equals(manifest.DeviceId, deviceId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Manifest устройства {deviceId} содержит чужой идентификатор {manifest.DeviceId}.");
+            }
+
+            result.Add(manifest);
+        }
+
+        return result;
+    }
+
+    private async Task UploadDeviceManifestAsync(
         ISyncObjectStore objectStore,
         string manifestKey,
-        SyncManifest manifest,
+        DeviceSyncManifest manifest,
         bool manifestExists,
         string? manifestEtag,
         CancellationToken cancellationToken)
@@ -500,27 +777,37 @@ public sealed class SyncService : ISyncService
         {
             _logger.LogWarning(
                 "Conditional write is not supported by the sync store; " +
-                "the manifest will be verified after writing");
+                "the device manifest will be verified after writing");
             await objectStore.UploadTextAsync(manifestKey, json, SyncWriteCondition.None, cancellationToken);
         }
     }
 
-    private static async Task VerifyManifestAsync(
+    private static async Task VerifyDeviceManifestAsync(
         ISyncObjectStore objectStore,
         string manifestKey,
-        long expectedRevision,
-        string? expectedOperationId,
+        long expectedSequence,
+        string expectedOperationId,
         CancellationToken cancellationToken)
     {
         var (json, _) = await objectStore.TryDownloadTextAsync(manifestKey, cancellationToken);
-        var actual = DeserializeManifest(json);
+        var actual = DeserializeDeviceManifest(json);
         if (actual == null
-            || actual.Revision != expectedRevision
-            || actual.OperationId != expectedOperationId)
+            || actual.LastSequence != expectedSequence
+            || !string.Equals(actual.LastOperationId, expectedOperationId, StringComparison.Ordinal))
         {
             throw new SyncConflictException(
-                "Манифест синхронизации изменён другим устройством.");
+                "Manifest устройства изменён параллельным процессом.");
         }
+    }
+
+    private async Task UploadSnapshotAsync(
+        string databasePath,
+        string snapshotKey,
+        ISyncObjectStore objectStore,
+        CancellationToken cancellationToken)
+    {
+        _repository.Checkpoint();
+        await objectStore.UploadFileAsync(snapshotKey, databasePath, cancellationToken);
     }
 
     private static async Task RestoreSnapshotAsync(
@@ -604,7 +891,40 @@ public sealed class SyncService : ISyncService
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
     }
 
-    private static SyncManifest? DeserializeManifest(string? json)
+    private static void UpdateAggregate(LocalSyncState state)
+    {
+        var own = state.AppliedByDevice.GetValueOrDefault(state.DeviceId);
+        state.AppliedRevision = Math.Max(
+            state.LegacyAppliedRevision,
+            state.AppliedByDevice.Count == 0 ? 0 : state.AppliedByDevice.Values.Max());
+        state.PublishedRevision = Math.Max(state.PublishedRevision, own);
+    }
+
+    private static SyncDelta DeserializeDelta(string? json, long expectedRevision)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new InvalidOperationException($"Пустая дельта ревизии {expectedRevision}.");
+        }
+
+        var delta = JsonSerializer.Deserialize<SyncDelta>(json, JsonDefaults.Indented)
+            ?? throw new InvalidOperationException($"Некорректная дельта ревизии {expectedRevision}.");
+
+        return delta;
+    }
+
+    private static DeviceSyncManifest? DeserializeDeviceManifest(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<DeviceSyncManifest>(json, JsonDefaults.Indented)
+            ?? throw new InvalidOperationException("Invalid device sync manifest.");
+    }
+
+    private static SyncManifest? DeserializeLegacyManifest(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -615,9 +935,22 @@ public sealed class SyncService : ISyncService
             ?? throw new InvalidOperationException("Invalid sync manifest.");
     }
 
-    private static void EnsureSupportedProtocol(SyncManifest manifest)
+    private static SyncSnapshotMetadata? DeserializeSnapshotMetadata(string? json)
     {
-        if (manifest.ProtocolVersion > SupportedProtocolVersion)
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        var metadata = JsonSerializer.Deserialize<SyncSnapshotMetadata>(json, JsonDefaults.Indented)
+            ?? throw new InvalidOperationException("Invalid sync snapshot metadata.");
+        metadata.AppliedByDevice ??= new Dictionary<string, long>(StringComparer.Ordinal);
+        return metadata;
+    }
+
+    private static void EnsureSupportedProtocol(int protocolVersion)
+    {
+        if (protocolVersion > SupportedProtocolVersion)
         {
             throw new InvalidOperationException(
                 "База синхронизирована более новой версией приложения. Обновите приложение.");
@@ -645,6 +978,8 @@ public sealed class SyncService : ISyncService
 
         return database;
     }
+
+    private sealed record PendingDelta(string DeviceId, long Sequence, SyncDelta Delta);
 
     private readonly record struct PullResult(bool Changed, bool Incomplete, string? Error)
     {

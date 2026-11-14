@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
 namespace FamilyMoney.Tests;
@@ -50,6 +51,26 @@ public sealed class WebDavSyncObjectStoreTests : IDisposable
         await store.UploadTextAsync(key, "two", SyncWriteCondition.IfMatch(etag!));
         await Assert.ThrowsAsync<SyncConflictException>(
             () => store.UploadTextAsync(key, "three", SyncWriteCondition.IfMatch(etag!)));
+    }
+
+    [Fact]
+    public async Task Listing_ReturnsNestedDeviceFiles()
+    {
+        var handler = new FakeWebDavHandler();
+        var store = CreateStore(handler);
+
+        await store.UploadTextAsync(
+            "familymoney/9d1f6a4e/devices/dev1/deltas/000001.json",
+            "delta",
+            SyncWriteCondition.None);
+
+        var items = await store.ListAsync("familymoney/9d1f6a4e/devices");
+
+        Assert.Contains(
+            items,
+            item => item.Key.EndsWith(
+                "familymoney/9d1f6a4e/devices/dev1/deltas/000001.json",
+                StringComparison.Ordinal));
     }
 
     [Fact]
@@ -109,6 +130,15 @@ public sealed class WebDavSyncObjectStoreTests : IDisposable
         {
             var path = Normalize(request.RequestUri!);
             var method = request.Method.Method;
+
+            if (method == "PROPFIND")
+            {
+                var xml = BuildPropfind(path);
+                return new HttpResponseMessage((HttpStatusCode)207)
+                {
+                    Content = new StringContent(xml, Encoding.UTF8, "application/xml"),
+                };
+            }
 
             if (method == "MKCOL")
             {
@@ -195,6 +225,55 @@ public sealed class WebDavSyncObjectStoreTests : IDisposable
 
         private string CurrentETag(string path) =>
             Convert.ToHexString(SHA256.HashData(_files[path]));
+
+        private string BuildPropfind(string prefix)
+        {
+            prefix = prefix.Trim('/');
+            var builder = new StringBuilder();
+            builder.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            builder.Append("<d:multistatus xmlns:d=\"DAV:\">");
+
+            AppendCollection(builder, prefix);
+
+            foreach (var collection in _collections
+                         .Where(item => !string.Equals(item, prefix, StringComparison.Ordinal)
+                             && string.Equals(Parent(item), prefix, StringComparison.Ordinal))
+                         .OrderBy(item => item, StringComparer.Ordinal))
+            {
+                AppendCollection(builder, collection);
+            }
+
+            foreach (var file in _files.Keys
+                         .Where(item => string.Equals(Parent(item), prefix, StringComparison.Ordinal))
+                         .OrderBy(item => item, StringComparer.Ordinal))
+            {
+                builder.Append("<d:response><d:href>/");
+                builder.Append(file);
+                builder.Append("</d:href><d:propstat><d:prop><d:resourcetype/>");
+                builder.Append("<d:getcontentlength>");
+                builder.Append(_files[file].Length);
+                builder.Append("</d:getcontentlength><d:getetag>\"");
+                builder.Append(CurrentETag(file));
+                builder.Append("\"</d:getetag></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>");
+            }
+
+            builder.Append("</d:multistatus>");
+            return builder.ToString();
+        }
+
+        private static void AppendCollection(StringBuilder builder, string path)
+        {
+            builder.Append("<d:response><d:href>/");
+            builder.Append(path);
+            builder.Append("/</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop>");
+            builder.Append("<d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>");
+        }
+
+        private static string Parent(string path)
+        {
+            var index = path.LastIndexOf('/');
+            return index < 0 ? string.Empty : path[..index];
+        }
 
         private bool ParentCollectionExists(string path)
         {
