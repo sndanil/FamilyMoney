@@ -67,3 +67,41 @@ public sealed class PeerPushAck
     /// <summary>Курсор следующей страницы отправки.</summary>
     public DateTime Next { get; set; }
 }
+
+public sealed class PeerImageRequest
+{
+    public Guid EntityId { get; set; }
+
+    public string? FileName { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+}
+
+public sealed class PeerImageHeader
+{
+    public bool Found { get; set; }
+
+    public string? FileName { get; set; }
+
+    public int Length { get; set; }
+}
+
+public sealed class PeerEnvelope
+{
+    public string Type { get; set; } = string.Empty;
+
+    public System.Text.Json.JsonElement Payload { get; set; }
+}
+
+public static class PeerWireTypes
+{
+    public const string Hello = "hello";
+    public const string HelloAck = "helloAck";
+    public const string Pull = "pull";
+    public const string Changes = "changes";
+    public const string Push = "push";
+    public const string PushAck = "pushAck";
+    public const string ImageRequest = "imageRequest";
+    public const string ImageResponse = "imageResponse";
+    public const string Error = "error";
+}

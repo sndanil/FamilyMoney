@@ -1,8 +1,9 @@
 # Прямая синхронизация по Wi-Fi: проект
 
-Статус: **core этапов 1 и 1.5 реализован** (state-based обмен и публикация
-P2P-изменений в облако); сетевой слой и UI ещё не начаты. Документ дополняет
-[sync-alternatives.md](sync-alternatives.md) и опирается на уже сделанные этапы 0–2.
+Статус: **core этапов 1, 1.5 и 2 реализован** (state-based обмен, публикация
+P2P-изменений в облако, framed TCP/TLS с pinning); UI и Android-клиент ещё не
+начаты. Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
+на уже сделанные этапы 0–2.
 
 ## 1. Цель
 
@@ -588,10 +589,12 @@ mDNS можно добавить позже для «повторно подкл
 | `Sync/Peer/PeerSyncServerEngine.cs` | серверная логика сессии (готово) |
 | `Sync/Peer/PeerSyncClientEngine.cs` | клиентская логика сессии (готово) |
 | `Sync/Peer/PeerDeltaMetrics.cs` | подсчёт сущностей/картинок, watermark |
-| `Sync/Peer/PeerSyncServer.cs` | TCP/TLS listener (следующий этап) |
-| `Sync/Peer/PeerSyncClient.cs` | подключение, pinning (следующий этап) |
-| `Sync/Peer/PeerPairingPayload.cs` | QR-пейлоад |
-| `Sync/Peer/PeerCertificate.cs` | генерация сертификата, отпечаток |
+| `Sync/Peer/PeerSyncServer.cs` | TCP/TLS listener (готово) |
+| `Sync/Peer/PeerSyncClient.cs` | подключение, pinning (готово) |
+| `Sync/Peer/PeerWire.cs` | framed JSON и байты картинок |
+| `Sync/Peer/PeerServerEndpoint.cs` | host/port/fingerprint |
+| `Sync/Peer/PeerPairingPayload.cs` | QR-пейлоад (следующий этап) |
+| `Sync/Peer/PeerCertificate.cs` | генерация сертификата, отпечаток (готово) |
 | `Sync/Peer/PeerSyncResult.cs` | результат/ошибки |
 | `Sync/Peer/PeerCloudPublisher.cs` | changed-only outbox и автозапуск S3 после сессии |
 | `Sync/SyncOperationGate.cs` | общий gate для P2P и S3 |
@@ -634,7 +637,7 @@ mDNS можно добавить позже для «повторно подкл
 | 0 | этот документ, согласование решений | 0,5 дня |
 | 1 | `GetSyncChangesSince`, `PeerSyncEngine`, watermarks, in-memory тесты | 2–3 дня |
 | 1.5 | changed-only apply + транзакционный outbox, картинки, `PeerCloudPublisher`, S3-gate, тесты — **сделано** | 2–4 дня |
-| 2 | framed TCP/TLS, сертификат/pinning, loopback-тесты | 3–4 дня |
+| 2 | framed TCP/TLS, сертификат/pinning, loopback-тесты — **сделано** | 3–4 дня |
 | 3 | десктопный хост, QR, диалог, прогресс | 2–3 дня |
 | 4 | Android-клиент, QR-скан, разрешение, прогресс | 3–4 дня |
 | 5 | пагинация, большие базы, обрывы, ошибки, firewall/AP-isolation, документация | 3–5 дней |
@@ -751,8 +754,17 @@ mDNS можно добавить позже для «повторно подкл
 - тесты: changed-only, отсутствие дублей, удаление без локальной записи,
   картинки, публикация outbox, S3-relay, ошибка S3, gate.
 
-Следующий этап — **2**: framed TCP/TLS, сертификат/pinning, loopback-тесты.
-Затем десктопный хост с QR и автозапуском `PeerCloudPublisher`, Android-клиент.
+Этап 2 реализован:
+
+- `PeerWire` — framed JSON + сырые байты картинок;
+- `PeerCertificate` — самоподписанный RSA-сертификат и SHA-256 pinning;
+- `PeerSyncServer` — TCP/TLS-хост одной сессии;
+- `PeerSyncClient` — TCP/TLS-клиент с проверкой отпечатка;
+- тесты loopback: обмен данными и картинками, push картинки, неверный отпечаток,
+  неверный токен.
+
+Следующий этап — **3**: десктопный хост, QR-пейринг, автозапуск
+`PeerCloudPublisher`, UI прогресса/ошибок. Затем Android-клиент.
 
 Известное ограничение core: запись на самой отметке watermark может прийти/уйти
 повторно; применение идемпотентно. Записи с одинаковым `LastChange` не разрезаются
