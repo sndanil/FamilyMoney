@@ -30,6 +30,9 @@ public partial class SyncStorageViewModel : ViewModelBase
 
     public SyncEncryptionViewModel Encryption { get; } = new();
 
+    [ObservableProperty]
+    public partial bool PublishPeerChangesToCloud { get; set; }
+
     public SyncProvider Provider => SelectedProvider?.Value ?? SyncProvider.None;
 
     public bool IsS3 => Provider == SyncProvider.S3;
@@ -129,6 +132,7 @@ public partial class SyncStorageViewModel : ViewModelBase
         WebDav.FillFrom(config.WebDav);
         Folder.FillFrom(config.Folder);
         Encryption.FillFrom(config.Encryption);
+        PublishPeerChangesToCloud = config.PublishPeerChangesToCloud;
     }
 
     public SyncStorageConfiguration ToConfiguration()
@@ -144,6 +148,7 @@ public partial class SyncStorageViewModel : ViewModelBase
             WebDav = WebDav.ToConfiguration(),
             Folder = Folder.ToConfiguration(),
             Encryption = Encryption.ToConfiguration(),
+            PublishPeerChangesToCloud = PublishPeerChangesToCloud,
         };
     }
 
@@ -156,6 +161,7 @@ public partial class SyncStorageViewModel : ViewModelBase
         WebDav.ApplyFrom(source.WebDav);
         Folder.ApplyFrom(source.Folder);
         Encryption.ApplyFrom(source.Encryption);
+        PublishPeerChangesToCloud = source.PublishPeerChangesToCloud;
     }
 
     private void NotifyConfigurationChanged()

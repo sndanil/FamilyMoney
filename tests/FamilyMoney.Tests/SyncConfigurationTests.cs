@@ -310,6 +310,7 @@ public sealed class SyncConfigurationTests : IDisposable
                     UserName = "family@example.com",
                     Password = "password",
                 },
+                PublishPeerChangesToCloud = true,
             },
         };
 
@@ -320,6 +321,7 @@ public sealed class SyncConfigurationTests : IDisposable
 
         Assert.Equal(SyncProvider.WebDav, restored.Sync.Provider);
         Assert.True(restored.Sync.Enabled);
+        Assert.True(restored.Sync.PublishPeerChangesToCloud);
         Assert.Equal("https://webdav.cloud.mail.ru", restored.Sync.WebDav.Url);
         Assert.Equal("family@example.com", restored.Sync.WebDav.UserName);
         Assert.Equal("password", restored.Sync.WebDav.Password);

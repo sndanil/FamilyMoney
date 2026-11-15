@@ -19,6 +19,7 @@ public sealed class PeerSyncServerEngine
     private readonly string _deviceName;
     private readonly string _pairingToken;
     private readonly DateTimeOffset _expiresAt;
+    private readonly bool _publishReceivedChanges;
     private readonly ILogger<PeerSyncServerEngine>? _logger;
 
     public PeerSyncServerEngine(
@@ -29,7 +30,8 @@ public sealed class PeerSyncServerEngine
         DateTimeOffset expiresAt,
         IRepository repository,
         PeerSyncStateStore stateStore,
-        ILogger<PeerSyncServerEngine>? logger = null)
+        ILogger<PeerSyncServerEngine>? logger = null,
+        bool publishReceivedChanges = false)
     {
         _syncId = syncId;
         _deviceId = deviceId;
@@ -39,6 +41,7 @@ public sealed class PeerSyncServerEngine
         _repository = repository;
         _stateStore = stateStore;
         _logger = logger;
+        _publishReceivedChanges = publishReceivedChanges;
     }
 
     public PeerHelloAck Hello(PeerHello hello)
@@ -137,12 +140,18 @@ public sealed class PeerSyncServerEngine
                 "Не указан идентификатор устройства.");
         }
 
-        _repository.ApplySyncDelta(request.Delta);
+        _repository.ApplyPeerDelta(request.Delta, _publishReceivedChanges);
 
-        var images = await _repository.ApplySyncedImagesAsync(
-            request.Delta.Images,
-            openImage,
-            cancellationToken);
+        var images = _publishReceivedChanges
+            ? await _repository.ApplyPeerImagesAsync(
+                request.Delta.Images,
+                openImage,
+                enqueueForPublish: true,
+                cancellationToken: cancellationToken)
+            : await _repository.ApplySyncedImagesAsync(
+                request.Delta.Images,
+                openImage,
+                cancellationToken);
 
         if (images.HasFailures)
         {

@@ -2,6 +2,7 @@ using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Services;
 using FamilyMoney.Sync;
+using FamilyMoney.Sync.Peer;
 using FamilyMoney.State;
 using FamilyMoney.ViewModels;
 using FamilyMoney.ViewModels.Settings;
@@ -87,8 +88,10 @@ public static class AppInit
         services.AddSingleton<IDatabaseBackup, NullDatabaseBackup>();
         services.AddSingleton<LocalSyncStateStore>();
         services.AddSingleton<SyncImageSynchronizer>();
+        services.AddSingleton<SyncOperationGate>();
         services.AddSingleton<SyncConnectionTester>();
         services.AddSingleton<ISyncService, SyncService>();
+        services.AddSingleton<PeerCloudPublisher>();
 
         services.AddTransient<IStateManager, StateManager>();
         services.AddTransient<PeriodViewModel>();

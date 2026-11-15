@@ -172,9 +172,19 @@ public class DesignerRepository : IRepository
     {
     }
 
+    public PeerApplyResult ApplyPeerDelta(SyncDelta delta, bool enqueueForPublish) =>
+        new([]);
+
     public Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(SyncImagesApplyResult.Empty);
+
+    public Task<SyncImagesApplyResult> ApplyPeerImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        bool enqueueForPublish,
         CancellationToken cancellationToken = default) =>
         Task.FromResult(SyncImagesApplyResult.Empty);
 

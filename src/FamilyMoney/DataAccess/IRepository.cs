@@ -97,9 +97,21 @@ public interface IRepository
 
     void ApplySyncDelta(SyncDelta delta);
 
+    /// <summary>
+    /// Применяет peer-дельту и, если нужно, ставит реально изменившиеся записи
+    /// в облачный outbox — для режима «десктоп публикует P2P-изменения».
+    /// </summary>
+    PeerApplyResult ApplyPeerDelta(SyncDelta delta, bool enqueueForPublish);
+
     Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default);
+
+    Task<SyncImagesApplyResult> ApplyPeerImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        bool enqueueForPublish,
         CancellationToken cancellationToken = default);
 
     /// <summary>

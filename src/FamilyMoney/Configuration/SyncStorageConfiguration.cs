@@ -14,6 +14,12 @@ public sealed class SyncStorageConfiguration
 
     public SyncEncryptionConfiguration Encryption { get; set; } = new();
 
+    /// <summary>
+    /// Десктоп публикует в облако изменения, принятые по Wi-Fi.
+    /// По умолчанию выключено: P2P не должен неожиданно писать в S3.
+    /// </summary>
+    public bool PublishPeerChangesToCloud { get; set; }
+
     /// <summary>Заполнены ли обязательные поля выбранного провайдера и ключ шифрования.</summary>
     public bool HasSettings
     {

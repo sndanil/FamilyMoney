@@ -335,6 +335,12 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        // Публикатор — локальная настройка десктопа; QR её не переносит.
+        if (!sync.PublishPeerChangesToCloud)
+        {
+            sync.PublishPeerChangesToCloud = existing.PublishPeerChangesToCloud;
+        }
+
         if (sync.Encryption.Enabled
             && existing.Encryption.Enabled
             && string.IsNullOrWhiteSpace(sync.Encryption.Key)

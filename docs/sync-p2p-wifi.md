@@ -1,8 +1,8 @@
 # Прямая синхронизация по Wi-Fi: проект
 
-Статус: **core-прототип этапа 1 реализован**; сетевой слой и UI ещё не начаты.
-Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
-на уже сделанные этапы 0–2.
+Статус: **core этапов 1 и 1.5 реализован** (state-based обмен и публикация
+P2P-изменений в облако); сетевой слой и UI ещё не начаты. Документ дополняет
+[sync-alternatives.md](sync-alternatives.md) и опирается на уже сделанные этапы 0–2.
 
 ## 1. Цель
 
@@ -577,6 +577,8 @@ mDNS можно добавить позже для «повторно подкл
 |---|---|
 | `DataAccess/IRepository.cs` | `GetSyncChangesSince(...)`; API changed-only apply + publish |
 | `DataAccess/SyncChangesBatch.cs` | страница, курсор `Next` и `Watermark` |
+| `DataAccess/PeerApplyResult.cs` | changed-only результат peer-применения |
+| `DataAccess/SyncImagesApplyResult.cs` | список применённых картинок |
 | `DataAccess/LiteDbRepository.cs` | запросы по `LastChange`, включая tombstones, `_SyncImageMeta`/`_SyncImageOutbox`; backfill старых картинок; транзакционный apply+outbox |
 | `DataAccess/DesignerRepository.cs` | пустая реализация |
 | `Sync/Peer/PeerSyncState.cs` | состояние пары |
@@ -631,7 +633,7 @@ mDNS можно добавить позже для «повторно подкл
 |---|---|---|
 | 0 | этот документ, согласование решений | 0,5 дня |
 | 1 | `GetSyncChangesSince`, `PeerSyncEngine`, watermarks, in-memory тесты | 2–3 дня |
-| 1.5 | changed-only apply + транзакционный outbox, картинки, `PeerCloudPublisher`, S3-gate, тесты | 2–4 дня |
+| 1.5 | changed-only apply + транзакционный outbox, картинки, `PeerCloudPublisher`, S3-gate, тесты — **сделано** | 2–4 дня |
 | 2 | framed TCP/TLS, сертификат/pinning, loopback-тесты | 3–4 дня |
 | 3 | десктопный хост, QR, диалог, прогресс | 2–3 дня |
 | 4 | Android-клиент, QR-скан, разрешение, прогресс | 3–4 дня |
@@ -739,12 +741,18 @@ mDNS можно добавить позже для «повторно подкл
   два телефона через десктоп, повторный запуск, чужой `syncId`, токен/срок,
   пагинация, неизменность облачного outbox.
 
-Режим облачного публикатора (5.9) спроектирован, но **не реализован**: это
-следующий этап 1.5.
+Этап 1.5 также реализован:
 
-Следующий этап — **1.5**: changed-only apply и транзакционный outbox на десктопе,
-`PeerCloudPublisher`, общий gate и тесты публикации. Затем framed TCP/TLS,
-сертификат/pinning, loopback-тесты, десктопный хост и Android-клиент.
+- `ApplyPeerDelta` и `ApplyPeerImagesAsync` с changed-only применением;
+- транзакционная постановка изменившихся записей и картинок в outbox;
+- сохранение исходного `LastChange`/`DeletedAt`/`DataJson`;
+- `PeerCloudPublisher` и флаг `PublishPeerChangesToCloud`;
+- `SyncOperationGate`, общий для облачной синхронизации;
+- тесты: changed-only, отсутствие дублей, удаление без локальной записи,
+  картинки, публикация outbox, S3-relay, ошибка S3, gate.
+
+Следующий этап — **2**: framed TCP/TLS, сертификат/pinning, loopback-тесты.
+Затем десктопный хост с QR и автозапуском `PeerCloudPublisher`, Android-клиент.
 
 Известное ограничение core: запись на самой отметке watermark может прийти/уйти
 повторно; применение идемпотентно. Записи с одинаковым `LastChange` не разрезаются

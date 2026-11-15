@@ -228,6 +228,14 @@
 							</StackPanel>
 						</StackPanel>
 
+						<CheckBox IsChecked="{Binding Sync.PublishPeerChangesToCloud}"
+								  Content="Публиковать принятые по Wi-Fi изменения в облако" />
+						<TextBlock Text="Десктоп будет отправлять в S3 изменения, полученные от телефона по Wi-Fi. Телефон при этом может не делать облачную синхронизацию."
+								   FontSize="11"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   TextWrapping="Wrap"
+								   Margin="0 0 0 10" />
+
 						<TextBlock Text="По умолчанию секреты синхронизации не попадают в QR-код. Для переноса на телефон, где нет формы ввода ключей, включите галочку в окне QR."
 								   FontSize="11"
 								   Foreground="{DynamicResource TextSecondaryBrush}"

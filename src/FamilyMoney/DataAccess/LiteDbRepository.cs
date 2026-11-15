@@ -258,15 +258,86 @@ public class LiteDbRepository : IRepository
             delta.DeviceId);
     }
 
-    public async Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
+    public PeerApplyResult ApplyPeerDelta(SyncDelta delta, bool enqueueForPublish)
+    {
+        using var _ = SyncContext.EnterApplyScope();
+        using var db = OpenDatabase();
+        if (!db.BeginTrans())
+        {
+            throw new InvalidOperationException("Не удалось начать применение peer-дельты.");
+        }
+
+        var changed = new List<SyncEntityRecord>();
+
+        try
+        {
+            ApplyCollection(db.GetCollection<Account>(nameof(Account)), delta.Accounts);
+            ApplyCollection(db.GetCollection<Category>(nameof(Category)), delta.Categories);
+            ApplyCollection(db.GetCollection<SubCategory>(nameof(SubCategory)), delta.SubCategories);
+            ApplyCollection(db.GetCollection<Transaction>(nameof(Transaction)), delta.Transactions);
+
+            RecalculateAccountBalances(db);
+
+            if (enqueueForPublish)
+            {
+                foreach (var record in changed)
+                {
+                    EnqueuePeerRecord(db, record);
+                }
+            }
+
+            db.Commit();
+        }
+        catch
+        {
+            db.Rollback();
+            throw;
+        }
+
+        _logger.LogInformation(
+            "Applied peer delta from device {DeviceId}: {Count} changed records",
+            delta.DeviceId,
+            changed.Count);
+
+        return new PeerApplyResult(changed);
+
+        void ApplyCollection<T>(ILiteCollection<T> collection, IEnumerable<SyncEntityRecord> records)
+            where T : class, ISyncable
+        {
+            foreach (var record in records)
+            {
+                if (ApplySyncRecord(collection, record))
+                {
+                    changed.Add(record);
+                }
+            }
+        }
+    }
+
+    public Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
         IEnumerable<SyncImageRecord> images,
         Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        CancellationToken cancellationToken = default) =>
+        ApplyImagesAsync(images, downloadImageAsync, enqueueForPublish: false, cancellationToken);
+
+    public Task<SyncImagesApplyResult> ApplyPeerImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        bool enqueueForPublish,
+        CancellationToken cancellationToken = default) =>
+        ApplyImagesAsync(images, downloadImageAsync, enqueueForPublish, cancellationToken);
+
+    private async Task<SyncImagesApplyResult> ApplyImagesAsync(
+        IEnumerable<SyncImageRecord> images,
+        Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+        bool enqueueForPublish,
         CancellationToken cancellationToken = default)
     {
         using var _ = SyncContext.EnterApplyScope();
         using var db = OpenDatabase();
         var metaCollection = db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName);
         var failed = new List<Guid>();
+        var applied = new List<SyncImageRecord>();
 
         foreach (var image in images)
         {
@@ -281,14 +352,36 @@ public class LiteDbRepository : IRepository
                 var storageId = image.EntityId.ToString();
                 if (image.DeletedAt != null)
                 {
-                    db.FileStorage.Delete(storageId);
-                    metaCollection.Upsert(new SyncImageMeta
+                    if (!db.BeginTrans())
                     {
-                        EntityId = image.EntityId,
-                        LastChange = image.LastChange,
-                        DeletedAt = image.DeletedAt,
-                        FileName = image.FileName ?? "image",
-                    });
+                        throw new InvalidOperationException("Не удалось начать применение картинки.");
+                    }
+
+                    try
+                    {
+                        db.FileStorage.Delete(storageId);
+                        metaCollection.Upsert(new SyncImageMeta
+                        {
+                            EntityId = image.EntityId,
+                            LastChange = image.LastChange,
+                            DeletedAt = image.DeletedAt,
+                            FileName = image.FileName ?? "image",
+                        });
+
+                        if (enqueueForPublish)
+                        {
+                            EnqueuePeerImage(db, image);
+                        }
+
+                        db.Commit();
+                        applied.Add(image);
+                    }
+                    catch
+                    {
+                        db.Rollback();
+                        throw;
+                    }
+
                     continue;
                 }
 
@@ -300,15 +393,42 @@ public class LiteDbRepository : IRepository
                     continue;
                 }
 
+                // Скачивание заканчиваем до транзакции, чтобы не держать блокировку
+                // LiteDB на время сети. Байты временно лежат в памяти.
+                using var buffer = new MemoryStream();
+                await stream.CopyToAsync(buffer, cancellationToken);
+                buffer.Position = 0;
+
                 var fileName = string.IsNullOrWhiteSpace(image.FileName) ? "image" : image.FileName;
-                db.FileStorage.Upload(storageId, fileName, stream);
-                metaCollection.Upsert(new SyncImageMeta
+                if (!db.BeginTrans())
                 {
-                    EntityId = image.EntityId,
-                    LastChange = image.LastChange,
-                    DeletedAt = null,
-                    FileName = fileName,
-                });
+                    throw new InvalidOperationException("Не удалось начать применение картинки.");
+                }
+
+                try
+                {
+                    db.FileStorage.Upload(storageId, fileName, buffer);
+                    metaCollection.Upsert(new SyncImageMeta
+                    {
+                        EntityId = image.EntityId,
+                        LastChange = image.LastChange,
+                        DeletedAt = null,
+                        FileName = fileName,
+                    });
+
+                    if (enqueueForPublish)
+                    {
+                        EnqueuePeerImage(db, image);
+                    }
+
+                    db.Commit();
+                    applied.Add(image);
+                }
+                catch
+                {
+                    db.Rollback();
+                    throw;
+                }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -317,7 +437,7 @@ public class LiteDbRepository : IRepository
             }
         }
 
-        return new SyncImagesApplyResult(failed);
+        return new SyncImagesApplyResult(failed, applied);
     }
 
     public void Checkpoint()
@@ -1291,35 +1411,113 @@ public class LiteDbRepository : IRepository
         return remote.DeletedAt.HasValue && !local.DeletedAt.HasValue;
     }
 
-    private static void ApplySyncRecord<T>(ILiteCollection<T> collection, SyncEntityRecord record)
+    private static bool ApplySyncRecord<T>(ILiteCollection<T> collection, SyncEntityRecord record)
         where T : class, ISyncable
     {
         var existing = collection.FindOne(x => x.Id == record.Id);
         if (record.DeletedAt != null)
         {
-            if (existing == null || !ShouldReplaceSyncRecord(existing, record))
+            if (existing == null)
+            {
+                // Локальной записи нет, но tombstone всё равно считаем изменением:
+                // публикатор должен отправить удаление в облако.
+                return true;
+            }
+
+            if (!ShouldReplaceSyncRecord(existing, record))
+            {
+                return false;
+            }
+
+            existing.LastChange = record.LastChange;
+            existing.DeletedAt = record.DeletedAt;
+            collection.Update(existing);
+            return true;
+        }
+
+        var entity = SyncEntitySerializer.Deserialize(record) as T;
+        if (entity == null)
+        {
+            return false;
+        }
+
+        if (existing != null && !ShouldReplaceSyncRecord(existing, record))
+        {
+            return false;
+        }
+
+        collection.Upsert(entity);
+        return true;
+    }
+
+    private static void EnqueuePeerRecord(LiteDatabase db, SyncEntityRecord record)
+    {
+        var collection = db.GetCollection<SyncOutboxEntry>(SyncOutboxCollectionName);
+        var existing = collection.FindOne(x => x.EntityType == record.EntityType && x.EntityId == record.Id);
+
+        if (existing != null)
+        {
+            if (existing.LastChange > record.LastChange)
+            {
+                return;
+            }
+
+            if (existing.LastChange == record.LastChange
+                && !(record.DeletedAt.HasValue && !existing.DeletedAt.HasValue))
             {
                 return;
             }
 
             existing.LastChange = record.LastChange;
             existing.DeletedAt = record.DeletedAt;
+            existing.DataJson = record.DataJson;
             collection.Update(existing);
             return;
         }
 
-        var entity = SyncEntitySerializer.Deserialize(record) as T;
-        if (entity == null)
+        collection.Insert(new SyncOutboxEntry
         {
+            EntityType = record.EntityType,
+            EntityId = record.Id,
+            LastChange = record.LastChange,
+            DeletedAt = record.DeletedAt,
+            DataJson = record.DataJson,
+        });
+    }
+
+    private static void EnqueuePeerImage(LiteDatabase db, SyncImageRecord image)
+    {
+        var collection = db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName);
+        var existing = collection.FindOne(x => x.EntityId == image.EntityId);
+        var fileName = string.IsNullOrWhiteSpace(image.FileName) ? "image" : image.FileName;
+
+        if (existing != null)
+        {
+            if (existing.LastChange > image.LastChange)
+            {
+                return;
+            }
+
+            if (existing.LastChange == image.LastChange
+                && !(image.DeletedAt.HasValue && !existing.DeletedAt.HasValue))
+            {
+                return;
+            }
+
+            existing.LastChange = image.LastChange;
+            existing.DeletedAt = image.DeletedAt;
+            existing.FileName = fileName;
+            collection.Update(existing);
             return;
         }
 
-        if (existing != null && !ShouldReplaceSyncRecord(existing, record))
+        collection.Insert(new SyncImageOutboxEntry
         {
-            return;
-        }
-
-        collection.Upsert(entity);
+            EntityId = image.EntityId,
+            LastChange = image.LastChange,
+            DeletedAt = image.DeletedAt,
+            FileName = fileName,
+        });
     }
 
     private static bool ShouldReplaceSyncRecord(ISyncable existing, SyncEntityRecord incoming)

@@ -31,7 +31,7 @@ public sealed class SyncService : ISyncService
     private readonly SyncImageSynchronizer _imageSynchronizer;
     private readonly ILogger<SyncService> _logger;
     private readonly string _deviceId;
-    private readonly SemaphoreSlim _syncGate = new(1, 1);
+    private readonly SyncOperationGate _operationGate;
 
     public SyncService(
         IGlobalConfiguration configuration,
@@ -39,7 +39,8 @@ public sealed class SyncService : ISyncService
         ISyncObjectStoreFactory objectStoreFactory,
         LocalSyncStateStore stateStore,
         SyncImageSynchronizer imageSynchronizer,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger,
+        SyncOperationGate? operationGate = null)
     {
         _configuration = configuration;
         _repository = repository;
@@ -48,6 +49,7 @@ public sealed class SyncService : ISyncService
         _imageSynchronizer = imageSynchronizer;
         _logger = logger;
         _deviceId = stateStore.DeviceId;
+        _operationGate = operationGate ?? new SyncOperationGate();
     }
 
     public bool IsEnabled
@@ -67,7 +69,8 @@ public sealed class SyncService : ISyncService
             return SyncResult.Skipped("Синхронизация отключена или не настроена.");
         }
 
-        if (!await _syncGate.WaitAsync(0, cancellationToken))
+        var operationLease = await _operationGate.TryEnterAsync(cancellationToken);
+        if (operationLease == null)
         {
             return SyncResult.Skipped("Синхронизация уже выполняется.");
         }
@@ -164,7 +167,7 @@ public sealed class SyncService : ISyncService
         }
         finally
         {
-            _syncGate.Release();
+            operationLease.Dispose();
         }
     }
 

@@ -55,6 +55,142 @@ public sealed class PeerSyncTests : IDisposable
     }
 
     [Fact]
+    public async Task PublisherServer_EnqueuesOnlyChangedRecords()
+    {
+        var desktop = CreateNode("desktop", publishReceivedChanges: true);
+        var phone = CreateNode("phone");
+        var transport = new InMemoryTransport(desktop.Server);
+
+        var account = TestData.Account(Guid.NewGuid(), "С телефона через P2P");
+        phone.Repository.UpdateAccount(account);
+        var phoneLastChange = phone.Repository.GetAccount(account.Id).LastChange;
+
+        await phone.Client.SyncAsync(transport, Token);
+
+        var pending = desktop.Repository.GetPendingSyncChanges();
+        var entry = Assert.Single(pending.Entities);
+        Assert.Equal(account.Id, entry.EntityId);
+        Assert.Equal(phoneLastChange, entry.LastChange);
+        Assert.Contains(desktop.Repository.GetAccounts(), item => item.Id == account.Id);
+
+        // Повторная сессия не должна создать второй outbox-элемент.
+        await phone.Client.SyncAsync(transport, Token);
+        Assert.Single(desktop.Repository.GetPendingSyncChanges().Entities);
+    }
+
+    [Fact]
+    public async Task PublisherServer_DoesNotEnqueueUnchangedRecords()
+    {
+        var desktop = CreateNode("desktop", publishReceivedChanges: true);
+        var phone = CreateNode("phone");
+        var transport = new InMemoryTransport(desktop.Server);
+
+        desktop.Repository.UpdateAccount(TestData.Account(Guid.NewGuid(), "С десктопа"));
+        desktop.Repository.ClearPendingSyncChanges(desktop.Repository.GetPendingSyncChanges());
+
+        await phone.Client.SyncAsync(transport, Token);
+
+        Assert.False(desktop.Repository.GetPendingSyncChanges().HasChanges);
+    }
+
+    [Fact]
+    public async Task PublisherServer_RelaysPhoneChangesToS3()
+    {
+        var desktop = CreateNode("desktop", publishReceivedChanges: true);
+        var phone = CreateNode("phone");
+        var store = new FakeSyncStore();
+
+        desktop.Database.Sync = new SyncStorageConfiguration
+        {
+            Provider = SyncProvider.S3,
+            Enabled = true,
+            S3 = new S3StorageConfiguration
+            {
+                Enabled = true,
+                Bucket = "bucket",
+                AccessKey = "access",
+                SecretKey = "secret",
+            },
+        };
+
+        var configuration = new FakeConfiguration(desktop.Database);
+        var cloudState = new LocalSyncStateStore(Path.Combine(_root, "desktop"));
+        var syncService = new SyncService(
+            configuration,
+            desktop.Repository,
+            new FakeStoreFactory(store),
+            cloudState,
+            new SyncImageSynchronizer(
+                desktop.Repository,
+                NullLogger<SyncImageSynchronizer>.Instance),
+            NullLogger<SyncService>.Instance);
+
+        var account = TestData.Account(Guid.NewGuid(), "Через D в облако");
+        phone.Repository.UpdateAccount(account);
+
+        await phone.Client.SyncAsync(new InMemoryTransport(desktop.Server), Token);
+        Assert.True(desktop.Repository.GetPendingSyncChanges().HasChanges);
+
+        var cloud = await syncService.SyncAsync();
+
+        Assert.True(cloud.Success, cloud.Message);
+        Assert.False(desktop.Repository.GetPendingSyncChanges().HasChanges);
+
+        var manifest = store.GetText(SyncPaths.DeviceManifestKey(
+            desktop.Database,
+            cloudState.DeviceId));
+        Assert.NotNull(manifest);
+        var delta = store.GetText(SyncPaths.DeviceDeltaKey(
+            desktop.Database,
+            cloudState.DeviceId,
+            1));
+        Assert.NotNull(delta);
+        Assert.Contains(account.Id.ToString(), delta, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PublisherServer_RelaysDeletionEvenIfDesktopNeverHadRecord()
+    {
+        var desktop = CreateNode("desktop", publishReceivedChanges: true);
+        var phone = CreateNode("phone");
+        var transport = new InMemoryTransport(desktop.Server);
+
+        var account = TestData.Account(Guid.NewGuid(), "Удалён на телефоне");
+        phone.Repository.UpdateAccount(account);
+        phone.Repository.DeleteAccount(account.Id);
+
+        await phone.Client.SyncAsync(transport, Token);
+
+        var pending = desktop.Repository.GetPendingSyncChanges();
+        var entry = Assert.Single(pending.Entities);
+        Assert.Equal(account.Id, entry.EntityId);
+        Assert.NotNull(entry.DeletedAt);
+        Assert.DoesNotContain(desktop.Repository.GetAccounts(), item => item.Id == account.Id);
+    }
+
+    [Fact]
+    public async Task PublisherServer_EnqueuesImages()
+    {
+        var desktop = CreateNode("desktop", publishReceivedChanges: true);
+        var phone = CreateNode("phone");
+        var transport = new InMemoryTransport(desktop.Server);
+
+        var account = TestData.Account(Guid.NewGuid(), "С фото");
+        phone.Repository.UpdateAccount(account);
+        using (var image = new MemoryStream([11, 12, 13]))
+        {
+            phone.Repository.UpdateImage(account.Id, "photo.jpg", image);
+        }
+
+        await phone.Client.SyncAsync(transport, Token);
+
+        var pending = desktop.Repository.GetPendingSyncChanges();
+        var imageEntry = Assert.Single(pending.Images);
+        Assert.Equal(account.Id, imageEntry.EntityId);
+        Assert.NotNull(desktop.Repository.TryGetImage(account.Id));
+    }
+
+    [Fact]
     public async Task IncrementalSync_GoesBothDirections()
     {
         var desktop = CreateNode("desktop");
@@ -465,7 +601,8 @@ public sealed class PeerSyncTests : IDisposable
     private PeerNode CreateNode(
         string name,
         Guid? syncId = null,
-        DateTimeOffset? expiresAt = null)
+        DateTimeOffset? expiresAt = null,
+        bool publishReceivedChanges = false)
     {
         var home = Path.Combine(_root, name);
         Directory.CreateDirectory(home);
@@ -494,7 +631,8 @@ public sealed class PeerSyncTests : IDisposable
             Token,
             expiresAt ?? DateTimeOffset.UtcNow.AddMinutes(10),
             repository,
-            stateStore);
+            stateStore,
+            publishReceivedChanges: publishReceivedChanges);
         var client = new PeerSyncClientEngine(
             database.SyncId,
             deviceId,

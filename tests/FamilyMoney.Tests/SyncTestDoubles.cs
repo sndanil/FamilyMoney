@@ -305,6 +305,24 @@ internal sealed class FakeSyncRepository : IRepository
             }
         }
 
+        public PeerApplyResult ApplyPeerDelta(SyncDelta delta, bool enqueueForPublish)
+        {
+            ApplySyncDelta(delta);
+            return new PeerApplyResult(
+                delta.Accounts
+                    .Concat(delta.Categories)
+                    .Concat(delta.SubCategories)
+                    .Concat(delta.Transactions)
+                    .ToList());
+        }
+
+        public Task<SyncImagesApplyResult> ApplyPeerImagesAsync(
+            IEnumerable<SyncImageRecord> images,
+            Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
+            bool enqueueForPublish,
+            CancellationToken cancellationToken = default) =>
+            ApplySyncedImagesAsync(images, downloadImageAsync, cancellationToken);
+
         public async Task<SyncImagesApplyResult> ApplySyncedImagesAsync(
             IEnumerable<SyncImageRecord> images,
             Func<SyncImageRecord, CancellationToken, Task<Stream?>> downloadImageAsync,
