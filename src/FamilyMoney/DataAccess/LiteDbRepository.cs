@@ -48,6 +48,130 @@ public class LiteDbRepository : IRepository
         };
     }
 
+    public SyncChangesBatch GetSyncChangesSince(DateTime since, int maxRecords = 2000)
+    {
+        if (maxRecords <= 0)
+        {
+            maxRecords = 2000;
+        }
+
+        if (since == DateTime.MaxValue)
+        {
+            return new SyncChangesBatch(new SyncPendingChanges(), since, since, false);
+        }
+
+        // since — сохранённый watermark (максимальный уже применённый LastChange).
+        // Запрос намеренно включает записи на самой отметке: так не теряются
+        // изменения, попавшие в ту же миллисекунду. Повтор безопасен.
+        // Для страниц используется отдельный курсор Next (watermark + 1 мс).
+        var effectiveSince = since;
+
+        using var db = OpenDatabase();
+        var items = new List<SyncChangeItem>();
+
+        AddEntities(db.GetCollection<Account>(nameof(Account)));
+        AddEntities(db.GetCollection<Category>(nameof(Category)));
+        AddEntities(db.GetCollection<SubCategory>(nameof(SubCategory)));
+        AddEntities(db.GetCollection<Transaction>(nameof(Transaction)));
+
+        var images = new Dictionary<Guid, SyncImageOutboxEntry>();
+        foreach (var meta in db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName)
+                     .Find(x => x.LastChange >= effectiveSince))
+        {
+            AddImage(new SyncImageOutboxEntry
+            {
+                EntityId = meta.EntityId,
+                LastChange = meta.LastChange,
+                DeletedAt = meta.DeletedAt,
+                FileName = string.IsNullOrWhiteSpace(meta.FileName) ? "image" : meta.FileName,
+            });
+        }
+
+        // Старые версии писали картинки только в outbox; meta могла не существовать.
+        foreach (var outbox in db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName)
+                     .Find(x => x.LastChange >= effectiveSince))
+        {
+            AddImage(outbox);
+        }
+
+        foreach (var image in images.Values)
+        {
+            items.Add(new SyncChangeItem(
+                image.LastChange,
+                image.EntityId,
+                null,
+                image));
+        }
+
+        var ordered = items
+            .OrderBy(item => item.LastChange)
+            .ThenBy(item => item.EntityId)
+            .ThenBy(item => item.Entity == null ? 1 : 0)
+            .ToList();
+        var selected = ordered.Take(maxRecords).ToList();
+
+        // Не разрезаем записи с одинаковым LastChange: иначе следующая
+        // страница начнётся с +1 мс и потеряет «хвост» той же миллисекунды.
+        if (selected.Count > 0 && ordered.Count > selected.Count)
+        {
+            var lastChange = selected[^1].LastChange;
+            selected.AddRange(
+                ordered.Skip(selected.Count).TakeWhile(item => item.LastChange == lastChange));
+        }
+
+        var watermark = selected.Count == 0 ? since : selected[^1].LastChange;
+        var next = selected.Count == 0 ? since : NextWatermark(watermark);
+
+        return new SyncChangesBatch(
+            new SyncPendingChanges
+            {
+                Entities = selected
+                    .Where(item => item.Entity != null)
+                    .Select(item => item.Entity!)
+                    .ToList(),
+                Images = selected
+                    .Where(item => item.Image != null)
+                    .Select(item => item.Image!)
+                    .ToList(),
+            },
+            next,
+            watermark,
+            ordered.Count > selected.Count);
+
+        void AddImage(SyncImageOutboxEntry candidate)
+        {
+            if (!images.TryGetValue(candidate.EntityId, out var existing)
+                || candidate.LastChange > existing.LastChange
+                || (candidate.LastChange == existing.LastChange
+                    && candidate.DeletedAt != null
+                    && existing.DeletedAt == null))
+            {
+                images[candidate.EntityId] = candidate;
+            }
+        }
+
+        void AddEntities<T>(ILiteCollection<T> collection)
+            where T : class, ISyncable
+        {
+            foreach (var entity in collection.Find(x => x.LastChange >= effectiveSince))
+            {
+                var record = SyncEntitySerializer.CreateRecord(entity);
+                items.Add(new SyncChangeItem(
+                    record.LastChange,
+                    record.Id,
+                    new SyncOutboxEntry
+                    {
+                        EntityType = record.EntityType,
+                        EntityId = record.Id,
+                        LastChange = record.LastChange,
+                        DeletedAt = record.DeletedAt,
+                        DataJson = record.DataJson,
+                    },
+                    null));
+            }
+        }
+    }
+
     public void ClearPendingSyncChanges(SyncPendingChanges pushed)
     {
         using var db = OpenDatabase();
@@ -228,8 +352,35 @@ public class LiteDbRepository : IRepository
         transactions.EnsureIndex(t => t.SubCategoryId);
 
         MigrateAccountLocalFlags(db);
+        BackfillSyncImageMeta(db);
 
         _logger.LogInformation("End update schema");
+    }
+
+    /// <summary>
+    /// Заполняет метаданные картинок для баз, созданных до появления state-based P2P.
+    /// Без этого старые локальные фото не попали бы в первый Wi-Fi-обмен.
+    /// </summary>
+    private static void BackfillSyncImageMeta(LiteDatabase db)
+    {
+        var collection = db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName);
+        var known = collection.FindAll().Select(item => item.EntityId).ToHashSet();
+
+        foreach (var file in db.FileStorage.FindAll())
+        {
+            if (!Guid.TryParse(file.Id, out var entityId) || !known.Add(entityId))
+            {
+                continue;
+            }
+
+            collection.Insert(new SyncImageMeta
+            {
+                EntityId = entityId,
+                LastChange = file.UploadDate == default ? DateTime.UtcNow : file.UploadDate,
+                DeletedAt = null,
+                FileName = string.IsNullOrWhiteSpace(file.Filename) ? "image" : file.Filename,
+            });
+        }
     }
 
     /// <summary>
@@ -1067,13 +1218,23 @@ public class LiteDbRepository : IRepository
             existing.DeletedAt = null;
             existing.FileName = fileName;
             collection.Update(existing);
-            return;
+        }
+        else
+        {
+            collection.Insert(new SyncImageOutboxEntry
+            {
+                EntityId = entityId,
+                LastChange = now,
+                FileName = fileName,
+            });
         }
 
-        collection.Insert(new SyncImageOutboxEntry
+        // _SyncImageMeta — канонические метаданные для state-based P2P.
+        db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName).Upsert(new SyncImageMeta
         {
             EntityId = entityId,
             LastChange = now,
+            DeletedAt = null,
             FileName = fileName,
         });
     }
@@ -1093,14 +1254,25 @@ public class LiteDbRepository : IRepository
             existing.LastChange = now;
             existing.DeletedAt = now;
             collection.Update(existing);
-            return;
+        }
+        else
+        {
+            collection.Insert(new SyncImageOutboxEntry
+            {
+                EntityId = entityId,
+                LastChange = now,
+                DeletedAt = now,
+            });
         }
 
-        collection.Insert(new SyncImageOutboxEntry
+        var metaCollection = db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName);
+        var meta = metaCollection.FindOne(x => x.EntityId == entityId);
+        metaCollection.Upsert(new SyncImageMeta
         {
             EntityId = entityId,
             LastChange = now,
             DeletedAt = now,
+            FileName = meta?.FileName ?? "image",
         });
     }
 
@@ -1164,6 +1336,17 @@ public class LiteDbRepository : IRepository
 
         return incoming.DeletedAt.HasValue && !existing.DeletedAt.HasValue;
     }
+
+    private static DateTime NextWatermark(DateTime lastChange) =>
+        lastChange == DateTime.MaxValue
+            ? DateTime.MaxValue
+            : lastChange.AddMilliseconds(1);
+
+    private sealed record SyncChangeItem(
+        DateTime LastChange,
+        Guid EntityId,
+        SyncOutboxEntry? Entity,
+        SyncImageOutboxEntry? Image);
 
     private static void Touch(ISyncable entity)
     {

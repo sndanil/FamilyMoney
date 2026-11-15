@@ -274,6 +274,9 @@ internal sealed class FakeSyncRepository : IRepository
             Images = ImagesOutbox.ToList(),
         };
 
+        public SyncChangesBatch GetSyncChangesSince(DateTime since, int maxRecords = 2000) =>
+            new(new SyncPendingChanges(), since, since, false);
+
         public void ClearPendingSyncChanges(SyncPendingChanges pushed)
         {
             if (ThrowOnClearOnce)

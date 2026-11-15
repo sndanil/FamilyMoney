@@ -81,6 +81,12 @@ public interface IRepository
     SyncPendingChanges GetPendingSyncChanges();
 
     /// <summary>
+    /// Записи (включая tombstone'ы и метаданные картинок) с LastChange >= since.
+    /// Используется прямым Wi-Fi-обменом, не облачным outbox.
+    /// </summary>
+    SyncChangesBatch GetSyncChangesSince(DateTime since, int maxRecords = 2000);
+
+    /// <summary>
     /// Удаляет только те записи outbox, которые вошли в опубликованную дельту.
     /// Изменения, сделанные во время синхронизации, остаются до следующего раза.
     /// </summary>

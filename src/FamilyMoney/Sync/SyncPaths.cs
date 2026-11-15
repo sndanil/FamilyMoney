@@ -48,6 +48,9 @@ public static class SyncPaths
     public static string LocalStatePath(Guid syncId, string homeFolder) =>
         Path.Combine(homeFolder, "sync", $"{syncId:N}.json");
 
+    public static string PeerStatePath(Guid syncId, string peerDeviceId, string homeFolder) =>
+        Path.Combine(homeFolder, "sync", "peers", $"{syncId:N}", $"{peerDeviceId}.json");
+
     public static string DeviceIdPath() =>
         DeviceIdPath(GlobalConfiguration.HomeFolder);
 
