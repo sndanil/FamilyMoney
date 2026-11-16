@@ -64,6 +64,100 @@ jobs:
         path: FamilyMoney.Desktop-linux-x64.tar.gz
         if-no-files-found: error
 
+  build-android:
+    runs-on: ubuntu-latest
+    env:
+      # Подпись: ключ и пароли лежат в секретах репозитория. Без ключа сборка
+      # получится неподписанной и установить её на телефон будет нельзя.
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_STORE_PASS: ${{ secrets.ANDROID_STORE_PASS }}
+      ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        # .NET for Android 36 требует JDK 21; локально сборка идёт на 21.0.8.
+        java-version: 21
+
+    - name: Install Android workload
+      run: dotnet workload install android
+
+    - name: Install Android SDK components
+      run: |
+        sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+        # На образе раннера SDK лежит под root: без этого InstallAndroidDependencies
+        # не сможет доустановить недостающие платформы.
+        sudo chown -R "$(id -u):$(id -g)" "$sdk" 2>/dev/null || true
+        dotnet build src/FamilyMoney.Android/FamilyMoney.Android.csproj \
+          -t:InstallAndroidDependencies -f net10.0-android \
+          -p:AndroidSdkDirectory="$sdk" \
+          -p:JavaSdkDirectory="$JAVA_HOME" \
+          -p:AcceptAndroidSDKLicenses=true
+
+    - name: Restore signing key
+      run: |
+        if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+          echo "::warning::ANDROID_KEYSTORE_BASE64 не задан — APK будет без подписи"
+          exit 0
+        fi
+        if [ -z "$ANDROID_STORE_PASS" ] || [ -z "$ANDROID_KEY_PASS" ]; then
+          echo "::error::Ключ подписи есть, а ANDROID_STORE_PASS или ANDROID_KEY_PASS пусты"
+          exit 1
+        fi
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > src/FamilyMoney.Android/fm.keystore
+
+    - name: Publish APK
+      run: |
+        args=()
+        if [ -f src/FamilyMoney.Android/fm.keystore ]; then
+          args+=("-p:AndroidSigningStorePass=$ANDROID_STORE_PASS" "-p:AndroidSigningKeyPass=$ANDROID_KEY_PASS")
+        fi
+        dotnet publish src/FamilyMoney.Android/FamilyMoney.Android.csproj \
+          -c Release -f net10.0-android \
+          -p:JavaSdkDirectory="$JAVA_HOME" "${args[@]}"
+
+    - name: Collect APK
+      run: |
+        publish_dir=src/FamilyMoney.Android/bin/Release/net10.0-android/publish
+        mkdir -p dist
+        if [ -f "$publish_dir/com.familymoney.app-Signed.apk" ]; then
+          cp "$publish_dir/com.familymoney.app-Signed.apk" dist/FamilyMoney.Android.apk
+        else
+          echo "::warning::APK без подписи — для установки на телефон он не годится"
+          cp "$publish_dir/com.familymoney.app.apk" dist/FamilyMoney.Android-unsigned.apk
+        fi
+
+    - name: Verify APK signature
+      run: |
+        apk=dist/FamilyMoney.Android.apk
+        if [ ! -f "$apk" ]; then
+          echo "Подписанного APK нет — проверка пропущена"
+          exit 0
+        fi
+        sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+        apksigner=$(ls "$sdk"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+        if [ -z "$apksigner" ]; then
+          echo "::warning::apksigner не найден, подпись не проверена"
+          exit 0
+        fi
+        "$apksigner" verify --print-certs "$apk"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: FamilyMoney.Android
+        path: dist/*
+        if-no-files-found: error
+
   build-windows:
     runs-on: windows-latest
 
@@ -92,7 +186,7 @@ jobs:
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [ test, build-linux, build-windows ]
+    needs: [ test, build-linux, build-windows, build-android ]
     runs-on: ubuntu-latest
 
     steps:

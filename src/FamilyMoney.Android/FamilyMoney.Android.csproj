@@ -8,8 +8,13 @@
     <RootNamespace>FamilyMoney.Android</RootNamespace>
     <LangVersion>preview</LangVersion>
     <ApplicationId>com.familymoney.app</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!-- versionCode должен расти от сборки к сборке, иначе Android не поставит APK
+         поверх предыдущего. Берём дату: одинаково для локальных сборок и CI.
+         Любое значение можно переопределить через -p:ApplicationVersion=... -->
+    <ApplicationVersion Condition="'$(ApplicationVersion)' == ''">$([System.DateTime]::UtcNow.ToString("yyMMdd"))</ApplicationVersion>
+    <!-- Отображаемая версия уходит ещё и в AssemblyVersion, где каждый компонент
+         не больше 65534, поэтому формат yy.MM.dd, а не 0.yyMMdd. -->
+    <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' == ''">$([System.DateTime]::UtcNow.ToString("yy.MM.dd"))</ApplicationDisplayVersion>
 	<AndroidPackageFormat>apk</AndroidPackageFormat>
 	<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
 	<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>

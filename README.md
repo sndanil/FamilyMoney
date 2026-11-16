@@ -143,8 +143,8 @@ dotnet run --project src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj
 # Навигационный desktop
 dotnet run --project src/FamilyMoney.Navigation.Desktop/FamilyMoney.Navigation.Desktop.csproj
 
-# Android (нужен Android SDK)
-dotnet build src/FamilyMoney.Android/FamilyMoney.Android.csproj
+# Android APK (нужен Android SDK и JDK 17)
+dotnet publish src/FamilyMoney.Android/FamilyMoney.Android.csproj -c Release -f net10.0-android
 ```
 
 Самодостаточная сборка для Linux и архив для раздачи:
@@ -181,6 +181,19 @@ chmod +x FamilyMoney.Desktop
 ```
 
 База, резервные копии и логи лежат в `~/.local/share/FamilyMoney/` (`logs/` внутри). Нужны системные `libicu`, `fontconfig` и `freetype` — на обычных десктопных дистрибутивах они уже установлены. Приложение работает через X11 или XWayland; на Wayland-сессиях возможен мыльный текст при дробном масштабировании.
+
+### Android
+
+В релизах публикуется `FamilyMoney.Android.apk` — подписанный APK для установки вручную:
+
+1. Скачайте файл из релиза и откройте его на телефоне.
+2. Разрешите установку из этого источника (Android спросит один раз).
+
+Требования: Android 6.0+ (minSdk 23), архитектуры `arm64-v8a` и `x86_64` — на 32-битных устройствах приложение не запустится.
+
+Обновления ставятся поверх предыдущей версии: `versionCode` считается от даты сборки, данные сохраняются. Автообновления у APK нет — новую версию нужно скачать из релиза. Подпись делается тем же ключом, что и локальные сборки; при смене ключа приложение придётся переустанавливать с потерей локальных данных.
+
+Для локальной сборки подписанного APK скопируйте `FamilyMoney.Android.Signing.props.example` в `FamilyMoney.Android.Signing.props`, впишите пароли и положите `fm.keystore` рядом с проектом (оба файла в `.gitignore`).
 
 ## Лицензия
 
