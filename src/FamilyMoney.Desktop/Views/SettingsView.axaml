@@ -429,6 +429,9 @@
 												<Button Classes="Outline"
 														Content="Настроить"
 														Command="{Binding ConfigureSyncCommand}" />
+												<Button Classes="Outline"
+														Content="По Wi-Fi"
+														Click="OnPeerSyncClick" />
 											</StackPanel>
 										</Grid>
 									</Border>

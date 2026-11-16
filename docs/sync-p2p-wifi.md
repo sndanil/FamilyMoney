@@ -1,8 +1,8 @@
 # Прямая синхронизация по Wi-Fi: проект
 
-Статус: **core этапов 1, 1.5 и 2 реализован** (state-based обмен, публикация
-P2P-изменений в облако, framed TCP/TLS с pinning); UI и Android-клиент ещё не
-начаты. Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
+Статус: **этапы 1–3 реализованы** (state-based обмен, публикация P2P-изменений
+в облако, framed TCP/TLS с pinning, десктопный хост и QR); Android-клиент ещё
+не начат. Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
 на уже сделанные этапы 0–2.
 
 ## 1. Цель
@@ -593,8 +593,9 @@ mDNS можно добавить позже для «повторно подкл
 | `Sync/Peer/PeerSyncClient.cs` | подключение, pinning (готово) |
 | `Sync/Peer/PeerWire.cs` | framed JSON и байты картинок |
 | `Sync/Peer/PeerServerEndpoint.cs` | host/port/fingerprint |
-| `Sync/Peer/PeerPairingPayload.cs` | QR-пейлоад (следующий этап) |
+| `Sync/Peer/PeerPairingPayload.cs` | QR-пейлоад (готово) |
 | `Sync/Peer/PeerCertificate.cs` | генерация сертификата, отпечаток (готово) |
+| `Sync/Peer/PeerNetworkAddress.cs` | выбор IPv4-адреса (готово) |
 | `Sync/Peer/PeerSyncResult.cs` | результат/ошибки |
 | `Sync/Peer/PeerCloudPublisher.cs` | changed-only outbox и автозапуск S3 после сессии |
 | `Sync/SyncOperationGate.cs` | общий gate для P2P и S3 |
@@ -604,9 +605,9 @@ mDNS можно добавить позже для «повторно подкл
 
 | Файл | Изменение |
 |---|---|
-| `ViewModels/Settings/PeerHostViewModel.cs` | старт/стоп, QR, статус, прогресс |
-| `Views/PeerSyncWindow.axaml(.cs)` | диалог |
-| `Views/SettingsView.axaml` | кнопка «По Wi-Fi», статус публикации в S3 |
+| `ViewModels/Settings/PeerHostViewModel.cs` | старт/стоп, QR, статус, прогресс (готово) |
+| `Views/PeerSyncWindow.axaml(.cs)` | диалог (готово) |
+| `Views/SettingsView.axaml` | кнопка «По Wi-Fi» (готово) |
 | `ViewModels/Settings/PeerHostViewModel.cs` | чекбокс «Публиковать принятые изменения в облако» |
 | `App.axaml.cs` / DI | хост-сервис, publisher |
 
@@ -638,7 +639,7 @@ mDNS можно добавить позже для «повторно подкл
 | 1 | `GetSyncChangesSince`, `PeerSyncEngine`, watermarks, in-memory тесты | 2–3 дня |
 | 1.5 | changed-only apply + транзакционный outbox, картинки, `PeerCloudPublisher`, S3-gate, тесты — **сделано** | 2–4 дня |
 | 2 | framed TCP/TLS, сертификат/pinning, loopback-тесты — **сделано** | 3–4 дня |
-| 3 | десктопный хост, QR, диалог, прогресс | 2–3 дня |
+| 3 | десктопный хост, QR, диалог, прогресс — **сделано** | 2–3 дня |
 | 4 | Android-клиент, QR-скан, разрешение, прогресс | 3–4 дня |
 | 5 | пагинация, большие базы, обрывы, ошибки, firewall/AP-isolation, документация | 3–5 дней |
 | 6 | опционально: mDNS, доверенные устройства, фоновый режим, снапшот-бутстрап | 5–10 дней |
@@ -763,8 +764,18 @@ mDNS можно добавить позже для «повторно подкл
 - тесты loopback: обмен данными и картинками, push картинки, неверный отпечаток,
   неверный токен.
 
-Следующий этап — **3**: десктопный хост, QR-пейринг, автозапуск
-`PeerCloudPublisher`, UI прогресса/ошибок. Затем Android-клиент.
+Этап 3 реализован:
+
+- `PeerPairingPayload` — QR с host/port/fingerprint/токеном/SyncId;
+- `PeerNetworkAddresses` — выбор IPv4-интерфейса;
+- `PeerHostViewModel` — запуск сервера, QR, ожидание, отмена, автозапуск
+  `PeerCloudPublisher`, общий `SyncOperationGate`;
+- `PeerSyncWindow` — диалог с QR, адресом, статусом, прогрессом и кнопками;
+- кнопка «По Wi-Fi» в настройках синхронизации;
+- тесты QR-пейлоада и токена.
+
+Следующий этап — **4**: Android-клиент, QR-сканер, разрешение
+`ACCESS_LOCAL_NETWORK`, прогресс/ошибки.
 
 Известное ограничение core: запись на самой отметке watermark может прийти/уйти
 повторно; применение идемпотентно. Записи с одинаковым `LastChange` не разрезаются

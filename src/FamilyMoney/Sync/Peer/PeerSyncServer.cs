@@ -73,7 +73,8 @@ public sealed class PeerSyncServer : IAsyncDisposable
                 {
                     ServerCertificate = _certificate,
                     ClientCertificateRequired = false,
-                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+                    // Системный выбор: TLS 1.2/1.3 в зависимости от платформы.
+                    EnabledSslProtocols = SslProtocols.None,
                     CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                 },
                 cancellationToken);

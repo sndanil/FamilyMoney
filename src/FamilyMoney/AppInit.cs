@@ -92,6 +92,7 @@ public static class AppInit
         services.AddSingleton<SyncConnectionTester>();
         services.AddSingleton<ISyncService, SyncService>();
         services.AddSingleton<PeerCloudPublisher>();
+        services.AddTransient<PeerHostViewModel>();
 
         services.AddTransient<IStateManager, StateManager>();
         services.AddTransient<PeriodViewModel>();
