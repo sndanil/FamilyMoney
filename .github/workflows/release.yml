@@ -22,7 +22,17 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Test
-      run: dotnet test ./tests/FamilyMoney.Tests/FamilyMoney.Tests.csproj -c Release --nologo
+      run: >
+        dotnet test ./tests/FamilyMoney.Tests/FamilyMoney.Tests.csproj -c Release --nologo
+        --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: test-results
+        path: TestResults
+        if-no-files-found: ignore
 
   build-linux:
     runs-on: ubuntu-latest

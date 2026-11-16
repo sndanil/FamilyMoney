@@ -6,6 +6,9 @@ using FamilyMoney.Sync;
 using FamilyMoney.Sync.Peer;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Xunit;
 
@@ -111,6 +114,40 @@ public sealed class PeerTlsTests : IDisposable
 
         var session = await acceptTask;
         Assert.False(session.Success);
+    }
+
+    [Fact]
+    public async Task ConnectionClosedBeforeHello_IsNotReportedAsSuccess()
+    {
+        var desktop = CreateNode("desktop");
+        await using var server = new PeerSyncServer(desktop.Server, IPAddress.Loopback);
+        var endpoint = server.Start();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var acceptTask = server.AcceptOnceAsync(timeout.Token);
+
+        // Клиент проходит TLS и молча закрывает соединение, не отправив hello.
+        // Именно так выглядит отказ от отпечатка сертификата на стороне сервера:
+        // на Linux это чистый EOF, и он не должен считаться успешной сессией.
+        using (var tcp = new TcpClient())
+        {
+            await tcp.ConnectAsync(endpoint.Host, endpoint.Port, timeout.Token);
+            await using var ssl = new SslStream(
+                tcp.GetStream(),
+                leaveInnerStreamOpen: false,
+                (_, _, _, _) => true);
+            await ssl.AuthenticateAsClientAsync(
+                new SslClientAuthenticationOptions
+                {
+                    TargetHost = "familymoney-peer",
+                    CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
+                },
+                timeout.Token);
+        }
+
+        var session = await acceptTask;
+
+        Assert.False(session.Success);
+        Assert.False(string.IsNullOrWhiteSpace(session.Error));
     }
 
     [Fact]

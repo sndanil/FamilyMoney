@@ -107,7 +107,12 @@ public sealed class PeerSyncServer : IAsyncDisposable
             }
             catch (EndOfStreamException)
             {
-                return PeerSessionResult.Completed();
+                // Клиент закрыл соединение. Если hello так и не было, сессии не случилось:
+                // например, клиент отверг отпечаток сертификата и оборвал связь. На Linux
+                // такой обрыв приходит именно чистым EOF, а на Windows — исключением.
+                return helloSeen
+                    ? PeerSessionResult.Completed()
+                    : new PeerSessionResult(false, "Соединение закрыто до hello.");
             }
 
             try

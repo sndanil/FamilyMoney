@@ -86,7 +86,7 @@ public static class DatabasePaths
             return local;
         }
 
-        return Path.IsPathRooted(storedPath)
+        return IsAbsolute(storedPath, windows)
             ? storedPath
             : Path.Combine(home, storedPath);
     }
@@ -234,6 +234,10 @@ public static class DatabasePaths
         return path.StartsWith('/');
     }
 
+    /// <summary>
+    /// Путь может быть записан в стиле другой ОС (с '\'), поэтому сравнение
+    /// не должно зависеть от разделителя текущей платформы.
+    /// </summary>
     private static bool IsUnder(string path, string home)
     {
         if (string.IsNullOrWhiteSpace(home))
@@ -241,9 +245,9 @@ public static class DatabasePaths
             return false;
         }
 
-        var full = path.Replace('/', Path.DirectorySeparatorChar).TrimEnd(Path.DirectorySeparatorChar);
-        var root = home.Replace('/', Path.DirectorySeparatorChar).TrimEnd(Path.DirectorySeparatorChar);
-        return full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+        var full = path.Replace('\\', '/').TrimEnd('/');
+        var root = home.Replace('\\', '/').TrimEnd('/');
+        return full.StartsWith(root + "/", StringComparison.OrdinalIgnoreCase)
             || full.Equals(root, StringComparison.OrdinalIgnoreCase);
     }
 
