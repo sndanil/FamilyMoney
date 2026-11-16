@@ -1,8 +1,8 @@
 # Прямая синхронизация по Wi-Fi: проект
 
-Статус: **этапы 1–3 реализованы** (state-based обмен, публикация P2P-изменений
-в облако, framed TCP/TLS с pinning, десктопный хост и QR); Android-клиент ещё
-не начат. Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
+Статус: **этапы 1–4 реализованы** (state-based обмен, публикация P2P-изменений
+в облако, framed TCP/TLS с pinning, десктопный хост и QR, Android-клиент).
+Документ дополняет [sync-alternatives.md](sync-alternatives.md) и опирается
 на уже сделанные этапы 0–2.
 
 ## 1. Цель
@@ -615,11 +615,12 @@ mDNS можно добавить позже для «повторно подкл
 
 | Файл | Изменение |
 |---|---|
-| `Properties/AndroidManifest.xml` | `ACCESS_LOCAL_NETWORK` |
-| `MainActivity.cs` | runtime-запрос локальной сети |
-| `ViewModels/Settings/PeerSyncViewModel.cs` | скан QR, подключение, прогресс |
-| `Views`/`Pages` | карточка «Синхронизация по Wi-Fi» |
-| `App.axaml.cs` / DI | клиент |
+| `Properties/AndroidManifest.xml` | `ACCESS_LOCAL_NETWORK` (готово) |
+| `MainActivity.cs` | runtime-запрос локальной сети (готово) |
+| `Services/AndroidLocalNetworkPermissionService.cs` | permission-адаптер (готово) |
+| `ViewModels/Settings/PeerSyncClientViewModel.cs` | скан QR, подключение, прогресс (готово) |
+| `Pages/SettingsPage.axaml` | карточка «Прямая синхронизация по Wi-Fi» (готово) |
+| `App.axaml.cs` / DI | клиент (готово) |
 
 ### Тесты
 
@@ -640,7 +641,7 @@ mDNS можно добавить позже для «повторно подкл
 | 1.5 | changed-only apply + транзакционный outbox, картинки, `PeerCloudPublisher`, S3-gate, тесты — **сделано** | 2–4 дня |
 | 2 | framed TCP/TLS, сертификат/pinning, loopback-тесты — **сделано** | 3–4 дня |
 | 3 | десктопный хост, QR, диалог, прогресс — **сделано** | 2–3 дня |
-| 4 | Android-клиент, QR-скан, разрешение, прогресс | 3–4 дня |
+| 4 | Android-клиент, QR-скан, разрешение, прогресс — **сделано** | 3–4 дня |
 | 5 | пагинация, большие базы, обрывы, ошибки, firewall/AP-isolation, документация | 3–5 дней |
 | 6 | опционально: mDNS, доверенные устройства, фоновый режим, снапшот-бутстрап | 5–10 дней |
 
@@ -774,8 +775,16 @@ mDNS можно добавить позже для «повторно подкл
 - кнопка «По Wi-Fi» в настройках синхронизации;
 - тесты QR-пейлоада и токена.
 
-Следующий этап — **4**: Android-клиент, QR-сканер, разрешение
-`ACCESS_LOCAL_NETWORK`, прогресс/ошибки.
+Этап 4 реализован:
+
+- `PeerSyncClientViewModel` — сканирование QR, permission, подключение,
+  прогресс, ошибки, принятие `SyncId` для пустой базы;
+- Android-карточка «Прямая синхронизация по Wi-Fi»;
+- `ACCESS_LOCAL_NETWORK` в манифесте и runtime-запрос для API 37+;
+- тесты: удачная синхронизация через ViewModel, отказ permission, чужой `SyncId`.
+
+Осталось: ручная проверка на реальном Android-устройстве/эмуляторе, mDNS и
+доверенные устройства — опционально.
 
 Известное ограничение core: запись на самой отметке watermark может прийти/уйти
 повторно; применение идемпотентно. Записи с одинаковым `LastChange` не разрезаются

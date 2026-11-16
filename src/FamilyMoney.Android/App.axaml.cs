@@ -47,6 +47,7 @@ public partial class App : Application
     {
         services.AddSingleton<MainViewHolder>();
         services.AddSingleton<IQrScannerService, AndroidQrScannerService>();
+        services.AddSingleton<ILocalNetworkPermissionService, AndroidLocalNetworkPermissionService>();
         services.AddSingleton<ISpeechToTextService, AndroidSpeechToTextService>();
         services.AddSingleton<IFilePickerService>(sp =>
         {

@@ -134,6 +134,28 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="Card" IsVisible="{Binding Settings.IsQrImportAvailable}">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Classes="IconWell">
+              <mi:MaterialIcon Kind="Wifi" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12 0 0 0" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="Title" Text="Прямая синхронизация по Wi-Fi" />
+              <TextBlock Classes="Caption"
+                         Text="Откройте «По Wi-Fi» на компьютере и отсканируйте QR." />
+            </StackPanel>
+          </Grid>
+          <Button Classes="Flat"
+                  Content="Сканировать QR и синхронизировать"
+                  Command="{Binding Settings.PeerSync.StartCommand}"
+                  IsEnabled="{Binding !Settings.PeerSync.IsSyncing}" />
+          <TextBlock Classes="Caption"
+                     Text="{Binding Settings.PeerSync.Status}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
       <Border Classes="Card">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="Auto,*">

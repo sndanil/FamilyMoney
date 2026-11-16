@@ -65,13 +65,18 @@ public partial class SettingsViewModel : ViewModelBase
 
     public bool IsQrImportAvailable => _qrScanner != null;
 
+    public PeerSyncClientViewModel PeerSync { get; }
+
     public SettingsViewModel(
         IGlobalConfiguration configuration,
         IDatabaseBackup databaseBackup,
         IFilePickerService filePickerService,
         ISyncService syncService,
         SyncConnectionTester connectionTester,
-        IQrScannerService? qrScanner = null)
+        IRepository repository,
+        LocalSyncStateStore localState,
+        IQrScannerService? qrScanner = null,
+        ILocalNetworkPermissionService? localNetworkPermission = null)
     {
         _configuration = configuration;
         _databaseBackup = databaseBackup;
@@ -79,6 +84,13 @@ public partial class SettingsViewModel : ViewModelBase
         _syncService = syncService;
         _connectionTester = connectionTester;
         _qrScanner = qrScanner;
+        PeerSync = new PeerSyncClientViewModel(
+            configuration,
+            repository,
+            localState,
+            qrScanner,
+            localNetworkPermission,
+            null);
         Load();
     }
 
