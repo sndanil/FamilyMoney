@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.X11;
 using System;
 
 namespace FamilyMoney;
@@ -16,6 +17,8 @@ internal sealed class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // WM_CLASS для Linux: по нему .desktop-файл находит иконку и группирует окно.
+            .With(new X11PlatformOptions { WmClass = "familymoney" })
 #if DEBUG
             .WithDeveloperTools()
 #endif

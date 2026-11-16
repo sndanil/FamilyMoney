@@ -1,11 +1,25 @@
 <Project>
-  <!-- Release publish: framework-dependent single-file + ReadyToRun (быстрее холодный старт).
-       Требуется установленный .NET 10 runtime на машине пользователя.
-       Сборка: dotnet publish -c Release -r win-x64 -->
+  <!-- Release publish: single-file + ReadyToRun (быстрее холодный старт).
+       По умолчанию сборка framework-dependent: нужен установленный .NET 10 runtime.
+       Самодостаточная сборка для Linux (runtime внутрь, ~150 МБ):
+       dotnet publish -c Release -r linux-x64 -p:SelfContained=true -p:PublishSelfContained=true -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <SelfContained>false</SelfContained>
     <PublishSelfContained>false</PublishSelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
   </PropertyGroup>
+
+  <!-- Символы отладки в поставке не нужны. Копирование .pdb от собственного проекта
+       гасит CopyOutputSymbolsToPublishDirectory, но .pdb ссылаемых проектов приходят
+       отдельными элементами ResolvedFileToPublish — их убираем здесь. -->
+  <Target Name="ExcludeSymbolsFromPublish"
+          AfterTargets="ComputeFilesToPublish"
+          Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
 </Project>

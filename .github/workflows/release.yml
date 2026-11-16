@@ -10,7 +10,51 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Test
+      run: dotnet test ./tests/FamilyMoney.Tests/FamilyMoney.Tests.csproj -c Release --nologo
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build navigation desktop (Release)
+      run: dotnet build ./src/FamilyMoney.Navigation.Desktop/FamilyMoney.Navigation.Desktop.csproj -c Release --nologo
+
+    - name: Publish
+      run: >
+        dotnet publish ./src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj
+        -c Release -r linux-x64 -o publish/linux-x64
+        -p:SelfContained=true -p:PublishSelfContained=true
+
+    - name: Package
+      run: bash packaging/linux/package.sh publish/linux-x64 FamilyMoney.Desktop-linux-x64.tar.gz
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: FamilyMoney.Desktop-linux-x64
+        path: FamilyMoney.Desktop-linux-x64.tar.gz
+        if-no-files-found: error
+
+  build-windows:
     runs-on: windows-latest
 
     steps:
@@ -27,12 +71,35 @@ jobs:
     - name: Create archive
       run: |
         $publishDir = "./src/FamilyMoney.Desktop/bin/Release/net10.0/win-x64/publish"
-        Compress-Archive -Path "$publishDir/*" -DestinationPath FamilyMoney.Desktop.zip -Force
+        Compress-Archive -Path "$publishDir/*" -DestinationPath FamilyMoney.Desktop-win-x64.zip -Force
 
-    - name: Create GitHub Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    - name: Upload artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: FamilyMoney.Desktop-win-x64
+        path: FamilyMoney.Desktop-win-x64.zip
+        if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ test, build-linux, build-windows ]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v5
+      with:
+        path: dist
+        merge-multiple: true
+
+    - name: Publish GitHub Release
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        $version = "v0.$(Get-Date -Format yyMMdd)"
-        gh release create $version FamilyMoney.Desktop.zip --title $version --generate-notes
+        version="v0.$(date +%y%m%d)"
+        if gh release view "$version" >/dev/null 2>&1; then
+          # Повторный запуск в тот же день: обновляем файлы, а не падаем.
+          gh release upload "$version" dist/* --clobber
+        else
+          gh release create "$version" dist/* --title "$version" --generate-notes
+        fi

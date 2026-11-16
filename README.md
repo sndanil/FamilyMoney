@@ -119,8 +119,8 @@
 
 | Проект | Назначение |
 |--------|------------|
-| `FamilyMoney.Desktop` | Классический интерфейс для Windows |
-| `FamilyMoney.Navigation.Desktop` | Компактный интерфейс с навигацией (Windows) |
+| `FamilyMoney.Desktop` | Классический интерфейс для Windows и Linux |
+| `FamilyMoney.Navigation.Desktop` | Компактный интерфейс с навигацией (Windows, Linux) |
 | `FamilyMoney.Android` | Мобильное приложение для Android |
 
 ## Технологии
@@ -136,7 +136,7 @@
 Требуется [.NET SDK 10](https://dotnet.microsoft.com/download).
 
 ```bash
-# Классический desktop (Windows)
+# Классический desktop (Windows, Linux)
 dotnet run --project src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj
 
 # Навигационный desktop
@@ -146,7 +146,40 @@ dotnet run --project src/FamilyMoney.Navigation.Desktop/FamilyMoney.Navigation.D
 dotnet build src/FamilyMoney.Android/FamilyMoney.Android.csproj
 ```
 
-Настройки и база данных по умолчанию сохраняются в `%LOCALAPPDATA%\FamilyMoney\`.
+Самодостаточная сборка для Linux и архив для раздачи:
+
+```bash
+dotnet publish src/FamilyMoney.Desktop/FamilyMoney.Desktop.csproj -c Release -r linux-x64 \
+  -o publish/linux-x64 -p:SelfContained=true -p:PublishSelfContained=true
+bash packaging/linux/package.sh publish/linux-x64 FamilyMoney.Desktop-linux-x64.tar.gz
+```
+
+Настройки и база данных по умолчанию сохраняются в `%LOCALAPPDATA%\FamilyMoney\` на Windows и в `~/.local/share/FamilyMoney/` на Linux.
+
+### Linux
+
+В релизах публикуется `FamilyMoney.Desktop-linux-x64.tar.gz` — самодостаточная сборка, .NET runtime внутри. В архиве есть установщик без root:
+
+```bash
+mkdir -p familymoney
+tar -xzf FamilyMoney.Desktop-linux-x64.tar.gz -C familymoney
+cd familymoney
+./install.sh            # в ~/.local/opt/familymoney + ярлык в меню приложений
+```
+
+Затем приложение запускается из меню как «Семейные деньги» или напрямую:
+`~/.local/opt/familymoney/FamilyMoney.Desktop`.
+
+Параметры установщика: `--dir DIR` — другой каталог, `--uninstall` — удалить приложение, ярлык и иконки (данные остаются).
+
+Можно и без установки — запустить бинарник из распакованного архива:
+
+```bash
+chmod +x FamilyMoney.Desktop
+./FamilyMoney.Desktop
+```
+
+База, резервные копии и логи лежат в `~/.local/share/FamilyMoney/` (`logs/` внутри). Нужны системные `libicu`, `fontconfig` и `freetype` — на обычных десктопных дистрибутивах они уже установлены. Приложение работает через X11 или XWayland; на Wayland-сессиях возможен мыльный текст при дробном масштабировании.
 
 ## Лицензия
 

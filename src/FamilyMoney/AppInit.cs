@@ -27,7 +27,10 @@ public static class AppInit
             .ConfigureAppConfiguration((_, config) =>
             {
                 var userSettingsPath = GlobalConfiguration.UserSettingsPath;
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                // appsettings.json лежит рядом с приложением, а не в рабочем каталоге:
+                // при запуске из .desktop-файла или ярлыка рабочий каталог бывает чужим.
+                var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                config.AddJsonFile(appSettingsPath, optional: true, reloadOnChange: true)
                     .AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
                 config.AddCommandLine(Environment.GetCommandLineArgs());
             })
