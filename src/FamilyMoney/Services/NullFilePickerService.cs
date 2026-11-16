@@ -2,6 +2,8 @@ namespace FamilyMoney.Services;
 
 public sealed class NullFilePickerService : IFilePickerService
 {
+    public bool IsAvailable => false;
+
     public Task<string?> PickSaveDatabaseFileAsync(string? suggestedFileName = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>(null);

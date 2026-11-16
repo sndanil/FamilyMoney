@@ -85,7 +85,6 @@
 			<Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Sum">
-			<Setter Property="FontFamily" Value="Verdana" />
 			<Setter Property="HorizontalAlignment" Value="Right" />
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="0 0 4 0" />

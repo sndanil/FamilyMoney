@@ -18,6 +18,10 @@ public partial class MainViewModel : ViewModelBase
 
     private const int DefaultLeftSideWidth = 500;
 
+    private const int DefaultWindowWidth = 1400;
+
+    private const int DefaultWindowHeight = 900;
+
     private readonly IStateManager _stateManager;
     private readonly IRepository _repository;
     private readonly IDatabaseBackup _databaseBackup;
@@ -156,17 +160,56 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Сохраняет последнюю ширину списка счетов локально для текущего пользователя.</summary>
-    public void SaveLayout()
+    /// <summary>Размер главного окна, сохранённый при прошлом закрытии.</summary>
+    public (int Width, int Height, bool Maximized) GetWindowPlacement()
     {
         var root = _configuration.Get();
-        if (root.AccountsPaneWidth == LeftSideWidth)
+        var hasSavedSize = root.WindowWidth is int width && width > 0
+            && root.WindowHeight is int height && height > 0;
+
+        if (!hasSavedSize)
         {
-            return;
+            // Первый запуск: как раньше — развёрнутое окно, без «прыжка» на весь экран.
+            return (DefaultWindowWidth, DefaultWindowHeight, true);
         }
 
-        root.AccountsPaneWidth = LeftSideWidth;
-        _configuration.Save(root);
+        return (root.WindowWidth ?? DefaultWindowWidth, root.WindowHeight ?? DefaultWindowHeight, root.WindowMaximized);
+    }
+
+    /// <summary>Сохраняет последнюю раскладку: ширину списка счетов и размер окна.</summary>
+    public void SaveLayout(int? windowWidth = null, int? windowHeight = null, bool? maximized = null)
+    {
+        var root = _configuration.Get();
+        var changed = false;
+
+        if (root.AccountsPaneWidth != LeftSideWidth)
+        {
+            root.AccountsPaneWidth = LeftSideWidth;
+            changed = true;
+        }
+
+        if (windowWidth is int width && width > 0 && root.WindowWidth != width)
+        {
+            root.WindowWidth = width;
+            changed = true;
+        }
+
+        if (windowHeight is int height && height > 0 && root.WindowHeight != height)
+        {
+            root.WindowHeight = height;
+            changed = true;
+        }
+
+        if (maximized is bool maximizedValue && root.WindowMaximized != maximizedValue)
+        {
+            root.WindowMaximized = maximizedValue;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            _configuration.Save(root);
+        }
     }
 
     [RelayCommand]

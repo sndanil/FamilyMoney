@@ -158,7 +158,7 @@ public partial class DatabaseViewModel : ViewModelBase
         }
     }
 
-    private bool CanBrowse() => _filePickerService is not null;
+    private bool CanBrowse() => _filePickerService is { IsAvailable: true };
 
     public void FillFrom(DatabaseConfiguration config)
     {

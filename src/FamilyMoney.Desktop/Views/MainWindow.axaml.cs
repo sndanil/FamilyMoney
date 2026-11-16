@@ -19,13 +19,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        Closing += (_, _) =>
-        {
-            if (DataContext is MainViewModel viewModel)
-            {
-                viewModel.SaveLayout();
-            }
-        };
+        Opened += OnOpened;
+        Closing += OnClosing;
 
         WeakReferenceMessenger.Default.Register<MainWindow, ModelEditMessage<AccountViewModel>>(this, static (w, m) =>
         {
@@ -62,6 +57,50 @@ public partial class MainWindow : Window
             var dialog = new DatabaseWindow { DataContext = m?.From };
             m?.Reply(dialog.ShowDialog<DatabaseViewModel?>(w));
         });
+    }
+
+    private void OnOpened(object? sender, EventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+        {
+            return;
+        }
+
+        var (width, height, maximized) = viewModel.GetWindowPlacement();
+        ApplySavedSize(width, height);
+
+        if (maximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
+
+    private void OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+        {
+            return;
+        }
+
+        // Ширину «нормального» окна не затираем размерами развёрнутого:
+        // иначе после снятия Maximized окно окажется во весь экран.
+        var maximized = WindowState == WindowState.Maximized;
+        viewModel.SaveLayout(
+            maximized ? null : (int)Width,
+            maximized ? null : (int)Height,
+            maximized);
+    }
+
+    /// <summary>Возвращает окно в экран, если сохранённый размер больше рабочей области.</summary>
+    private void ApplySavedSize(int width, int height)
+    {
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+        var scaling = screen?.Scaling ?? 1d;
+        var maxWidth = screen is null ? width : screen.WorkingArea.Width / scaling;
+        var maxHeight = screen is null ? height : screen.WorkingArea.Height / scaling;
+
+        Width = Math.Clamp(width, 800d, Math.Max(800d, maxWidth));
+        Height = Math.Clamp(height, 500d, Math.Max(500d, maxHeight));
     }
 
     private void AccountsSplitter_DragCompleted(object? sender, VectorEventArgs e)

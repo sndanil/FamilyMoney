@@ -5,10 +5,12 @@ using Avalonia.Markup.Xaml;
 using FamilyMoney.Configuration;
 using FamilyMoney.Navigation;
 using FamilyMoney.Navigation.Desktop.Services;
+using FamilyMoney.Navigation.Services;
 using FamilyMoney.Services;
 using FamilyMoney.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Navigation.Desktop;
 
@@ -49,7 +51,9 @@ public partial class App : Application
         services.AddSingleton<IFilePickerService>(sp =>
         {
             var mainView = sp.GetRequiredService<MainViewHolder>().View;
-            return new AvaloniaFilePickerService(() => TopLevel.GetTopLevel(mainView));
+            return new AvaloniaFilePickerService(
+                () => TopLevel.GetTopLevel(mainView),
+                sp.GetService<ILogger<AvaloniaFilePickerService>>());
         });
         services.AddSingleton<IQrScannerService>(sp =>
         {

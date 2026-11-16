@@ -21,6 +21,11 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly SyncConnectionTester _connectionTester;
     private readonly IQrScannerService? _qrScanner;
 
+    /// <summary>На Linux диалоги идут через XDG-портал: без него кнопки молча не работали бы.</summary>
+    private const string FilePickerUnavailableMessage =
+        "Файловый диалог недоступен: в системе нет xdg-desktop-portal. " +
+        "Путь можно вписать вручную в поле рядом.";
+
     public ObservableCollection<DatabaseViewModel> Databases { get; } = [];
 
     [ObservableProperty]
@@ -450,6 +455,12 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        if (!_filePickerService.IsAvailable)
+        {
+            BackupStatus = FilePickerUnavailableMessage;
+            return;
+        }
+
         var configuration = SelectedDatabase.ToConfiguration();
         if (!File.Exists(configuration.GetResolvedPath()))
         {
@@ -494,6 +505,12 @@ public partial class SettingsViewModel : ViewModelBase
     {
         if (SelectedDatabase == null)
         {
+            return;
+        }
+
+        if (!_filePickerService.IsAvailable)
+        {
+            BackupStatus = FilePickerUnavailableMessage;
             return;
         }
 

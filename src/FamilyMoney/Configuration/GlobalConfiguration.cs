@@ -11,14 +11,24 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
     private readonly IConfiguration _configuration;
     private RootConfiguration? _rootConfiguration;
 
+    /// <summary>Каталог данных: база, резервные копии, журналы, снимки синхронизации.</summary>
     public static string HomeFolder { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FamilyMoney");
 
+    /// <summary>
+    /// Каталог настроек. На Linux это <c>$XDG_CONFIG_HOME/FamilyMoney</c> (~/.config/FamilyMoney):
+    /// по XDG конфигурация и данные живут в разных местах. На остальных платформах —
+    /// рядом с данными, как было раньше.
+    /// </summary>
+    public static string SettingsFolder { get; } = ResolveSettingsFolder();
+
+    public static string UserSettingsPath { get; } = ResolveSettingsPath();
+
 #if DEBUG
-    public static string UserSettingsPath { get; } = Path.Combine(HomeFolder, "appsettings.debug.json");
+    private const string SettingsFileName = "appsettings.debug.json";
 #else
-    public static string UserSettingsPath { get; } = Path.Combine(HomeFolder, "appsettings.json");
+    private const string SettingsFileName = "appsettings.json";
 #endif
 
     public GlobalConfiguration(IConfiguration configuration)
@@ -74,10 +84,61 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
             database.S3 = s3;
         }
 
-        Directory.CreateDirectory(HomeFolder);
+        var folder = Path.GetDirectoryName(UserSettingsPath);
+        if (!string.IsNullOrEmpty(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
         var json = JsonSerializer.Serialize(configuration, JsonDefaults.Indented);
         File.WriteAllText(UserSettingsPath, json);
         _rootConfiguration = configuration;
+    }
+
+    /// <summary>Linux: конфигурация по XDG. Если каталог не определился — остаёмся рядом с данными.</summary>
+    private static string ResolveSettingsFolder()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return HomeFolder;
+        }
+
+        var configHome = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return string.IsNullOrWhiteSpace(configHome)
+            ? HomeFolder
+            : Path.Combine(configHome, "FamilyMoney");
+    }
+
+    /// <summary>
+    /// Настройки старого образца лежали рядом с данными. Если новых ещё нет,
+    /// переносим файл один раз, а при неудаче продолжаем читать старый путь,
+    /// чтобы список баз не потерялся.
+    /// </summary>
+    private static string ResolveSettingsPath()
+    {
+        var settings = Path.Combine(SettingsFolder, SettingsFileName);
+        if (string.Equals(SettingsFolder, HomeFolder, StringComparison.Ordinal)
+            || File.Exists(settings))
+        {
+            return settings;
+        }
+
+        var legacy = Path.Combine(HomeFolder, SettingsFileName);
+        if (!File.Exists(legacy))
+        {
+            return settings;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(SettingsFolder);
+            File.Move(legacy, settings);
+            return settings;
+        }
+        catch (Exception)
+        {
+            return legacy;
+        }
     }
 
     private static RootConfiguration CreateDefault()

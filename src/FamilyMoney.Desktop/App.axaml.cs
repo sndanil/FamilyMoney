@@ -3,12 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FamilyMoney.DataAccess;
-using FamilyMoney.Desktop.Services;
+using FamilyMoney.Navigation.Services;
 using FamilyMoney.Services;
 using FamilyMoney.ViewModels;
 using FamilyMoney.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney;
 
@@ -51,16 +52,16 @@ public partial class App : Application
         }
 
         services.AddSingleton<IFilePickerService>(sp =>
-        {
-            return new AvaloniaFilePickerService(() =>
-            {
-                if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            new AvaloniaFilePickerService(
+                () =>
                 {
-                    return TopLevel.GetTopLevel(desktop.MainWindow);
-                }
+                    if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        return TopLevel.GetTopLevel(desktop.MainWindow);
+                    }
 
-                return null;
-            });
-        });
+                    return null;
+                },
+                sp.GetService<ILogger<AvaloniaFilePickerService>>()));
     }
 }

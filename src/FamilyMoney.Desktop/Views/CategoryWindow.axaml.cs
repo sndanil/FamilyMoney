@@ -30,29 +30,47 @@ public partial class CategoryWindow : Window
             return;
         }
 
-        using var stream = File.OpenRead(file.Path.LocalPath);
+        var path = file.TryGetLocalPath();
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        using var stream = File.OpenRead(path);
         category.ImageData = ImageConverter.ToImageData(stream);
     }
 
     private async void ChangeImage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var topLevel = GetTopLevel(this);
-        var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        var provider = GetTopLevel(this)?.StorageProvider;
+        if (provider is not { CanOpen: true })
         {
-            Title = "Выбор изображения",
-            AllowMultiple = false,
-            FileTypeFilter =
-            [
-                new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
-                FilePickerFileTypes.All
-            ]
-        });
+            return;
+        }
 
-        if (files.Any() && DataContext is BaseCategoryViewModel category)
+        try
         {
-            var file = files.Single();
-            await using var stream = await file.OpenReadAsync();
-            category.ImageData = ImageConverter.ToImageData(stream);
+            var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Выбор изображения",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
+                    FilePickerFileTypes.All
+                ]
+            });
+
+            if (files.Any() && DataContext is BaseCategoryViewModel category)
+            {
+                var file = files.Single();
+                await using var stream = await file.OpenReadAsync();
+                category.ImageData = ImageConverter.ToImageData(stream);
+            }
+        }
+        catch (System.Exception)
+        {
+            // Диалог недоступен (например, нет xdg-desktop-portal) — просто не меняем картинку.
         }
     }
 }

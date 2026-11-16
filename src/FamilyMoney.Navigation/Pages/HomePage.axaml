@@ -57,7 +57,6 @@
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
         <Style Selector="SelectableTextBlock.Sum">
-            <Setter Property="FontFamily" Value="Verdana" />
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="8 0 0 0" />

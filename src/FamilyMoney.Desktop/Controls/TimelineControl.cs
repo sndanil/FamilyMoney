@@ -40,6 +40,7 @@ public sealed class TimelineControl : Control
     private const double BandTitleHeight = 15d;
     private const double BandGap = 8d;
     private const double MaxColumnWidth = 56d;
+    private const double WheelPanPixels = 48d;
 
     private readonly Dictionary<(string Text, double Size, bool Bold, IBrush? Brush), FormattedText> _textCache = new();
 
@@ -72,10 +73,10 @@ public sealed class TimelineControl : Control
         AddHandler(PinchEndedEvent, OnPinchEnded);
     }
 
-    /// <summary>Прокрутка шкалы (перетаскивание, Shift+колесо, стрелки).</summary>
+    /// <summary>Прокрутка шкалы (перетаскивание, колесо, стрелки).</summary>
     public event EventHandler<TimelinePanEventArgs>? PanRequested;
 
-    /// <summary>Изменение масштаба (колесо, pinch, кнопки, клавиши).</summary>
+    /// <summary>Изменение масштаба (Ctrl+колесо, pinch, кнопки, клавиши).</summary>
     public event EventHandler<TimelineZoomEventArgs>? ZoomRequested;
 
     /// <summary>Сброс к периоду главного экрана (двойной клик, клавиша 0).</summary>
@@ -302,18 +303,27 @@ public sealed class TimelineControl : Control
             return;
         }
 
-        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        // Масштаб — только с модификатором: на трекпаде обычная прокрутка даёт
+        // десятки мелких событий, и зум «дёргался» бы на каждом.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
         {
-            PanRequested?.Invoke(this, new TimelinePanEventArgs(e.Delta.Y * 48d));
+            var position = e.GetPosition(this);
+            var anchor = Math.Clamp((position.X - layout.Plot.Left) / layout.Plot.Width, 0d, 1d);
+            var factor = e.Delta.Y > 0d ? ZoomFactor : 1d / ZoomFactor;
+
+            ZoomRequested?.Invoke(this, new TimelineZoomEventArgs(anchor, factor));
             e.Handled = true;
             return;
         }
 
-        var position = e.GetPosition(this);
-        var anchor = Math.Clamp((position.X - layout.Plot.Left) / layout.Plot.Width, 0d, 1d);
-        var factor = e.Delta.Y > 0d ? ZoomFactor : 1d / ZoomFactor;
+        // Обычное колесо и горизонтальная прокрутка тачпада — панорама по времени.
+        var delta = Math.Abs(e.Delta.X) > Math.Abs(e.Delta.Y) ? e.Delta.X : e.Delta.Y;
+        if (Math.Abs(delta) < 0.0001d)
+        {
+            return;
+        }
 
-        ZoomRequested?.Invoke(this, new TimelineZoomEventArgs(anchor, factor));
+        PanRequested?.Invoke(this, new TimelinePanEventArgs(delta * WheelPanPixels));
         e.Handled = true;
     }
 

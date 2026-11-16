@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using System.Globalization;
 
 namespace FamilyMoney;
 
@@ -20,6 +21,8 @@ public static class AppInit
 
     public static IHost InitHost(Action<IServiceCollection> configureDelegate, bool isDesignMode)
     {
+        ApplyFormattingCulture();
+
         GlobalHost = Host
             .CreateDefaultBuilder()
             .ConfigureServices(services => ConfigureServices(services, isDesignMode))
@@ -41,6 +44,20 @@ public static class AppInit
             .Build();
 
         return GlobalHost;
+    }
+
+    /// <summary>
+    /// Интерфейс приложения русский, поэтому и формат чисел, дат и месяцев русский.
+    /// Без этого на машине с английской локалью суммы выглядят как 1,234.56,
+    /// а подписи месяцев на графике — как «Nov».
+    /// </summary>
+    private static void ApplyFormattingCulture()
+    {
+        var culture = CultureInfo.GetCultureInfo("ru-RU");
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
     }
 
     /// <summary>Снимает резервные копии перед закрытием. Сбой не мешает завершению приложения.</summary>

@@ -7,6 +7,8 @@ namespace FamilyMoney.Android.Services;
 
 public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) : IFilePickerService
 {
+    public bool IsAvailable => topLevelProvider()?.StorageProvider is { CanOpen: true };
+
     public async Task<string?> PickSaveDatabaseFileAsync(string? suggestedFileName = null, CancellationToken cancellationToken = default)
     {
         var topLevel = topLevelProvider();
@@ -26,7 +28,7 @@ public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) :
             SuggestedFileName = suggestedFileName ?? "database.db",
         });
 
-        return file?.Path.LocalPath;
+        return file?.TryGetLocalPath();
     }
 
     public async Task<string?> PickSaveBackupFileAsync(string suggestedDirectory, string suggestedFileName, CancellationToken cancellationToken = default)
@@ -51,7 +53,7 @@ public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) :
             ],
         });
 
-        return file?.Path.LocalPath;
+        return file?.TryGetLocalPath();
     }
 
     public async Task<string?> PickBackupFileAsync(string suggestedDirectory, CancellationToken cancellationToken = default)
@@ -74,7 +76,7 @@ public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) :
             ],
         });
 
-        return files.FirstOrDefault()?.Path.LocalPath;
+        return files.FirstOrDefault()?.TryGetLocalPath();
     }
 
     public Task<string?> PickDatabaseFileAsync(CancellationToken cancellationToken = default)
@@ -96,7 +98,7 @@ public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) :
             AllowMultiple = false,
         });
 
-        return folders.FirstOrDefault()?.Path.LocalPath;
+        return folders.FirstOrDefault()?.TryGetLocalPath();
     }
 
     private async Task<string?> PickFilePathAsync(string[] patterns)
@@ -116,6 +118,6 @@ public sealed class AndroidFilePickerService(Func<TopLevel?> topLevelProvider) :
             ],
         });
 
-        return files.FirstOrDefault()?.Path.LocalPath;
+        return files.FirstOrDefault()?.TryGetLocalPath();
     }
 }
