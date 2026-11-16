@@ -105,6 +105,9 @@ jobs:
     - name: Publish GitHub Release
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # В этом джобе нет checkout, поэтому gh не может определить репозиторий
+        # через git — задаём его явно.
+        GH_REPO: ${{ github.repository }}
       run: |
         version="v0.$(date +%y%m%d)"
         if gh release view "$version" >/dev/null 2>&1; then
