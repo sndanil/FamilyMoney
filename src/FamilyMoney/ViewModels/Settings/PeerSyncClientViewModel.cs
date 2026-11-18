@@ -5,6 +5,7 @@ using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Services;
+using FamilyMoney.State;
 using FamilyMoney.Sync;
 using FamilyMoney.Sync.Peer;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ public partial class PeerSyncClientViewModel : ViewModelBase
     private readonly IQrScannerService? _scanner;
     private readonly ILocalNetworkPermissionService? _permission;
     private readonly ILogger<PeerSyncClientViewModel>? _logger;
+    private readonly IAccountLocalSettingsStore? _localSettings;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
@@ -39,7 +41,8 @@ public partial class PeerSyncClientViewModel : ViewModelBase
         LocalSyncStateStore localState,
         IQrScannerService? scanner,
         ILocalNetworkPermissionService? permission = null,
-        ILogger<PeerSyncClientViewModel>? logger = null)
+        ILogger<PeerSyncClientViewModel>? logger = null,
+        IAccountLocalSettingsStore? localSettings = null)
     {
         _configuration = configuration;
         _repository = repository;
@@ -47,6 +50,7 @@ public partial class PeerSyncClientViewModel : ViewModelBase
         _scanner = scanner;
         _permission = permission;
         _logger = logger;
+        _localSettings = localSettings;
     }
 
     [RelayCommand(CanExecute = nameof(CanStart))]
@@ -100,14 +104,17 @@ public partial class PeerSyncClientViewModel : ViewModelBase
 
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            // Первая синхронизация переливает всю историю (десятки тысяч записей),
+            // поэтому времени нужно заметно больше, чем на инкрементальную.
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(15));
             var stateStore = new PeerSyncStateStore(_localState.HomeFolder);
             var engine = new PeerSyncClientEngine(
                 database.SyncId,
                 _localState.DeviceId,
                 GetDeviceName(),
                 _repository,
-                stateStore);
+                stateStore,
+                localSettings: _localSettings);
 
             var endpoint = new PeerServerEndpoint(
                 pairing.Host,
@@ -121,8 +128,8 @@ public partial class PeerSyncClientViewModel : ViewModelBase
             var progress = new Progress<PeerSyncProgress>(value =>
             {
                 Status = value.Phase == "pull"
-                    ? $"Получено записей: {value.Entities}, фото: {value.Images}..."
-                    : $"Отправлено записей: {value.Entities}, фото: {value.Images}...";
+                    ? $"Получено записей: {value.Entities}, фото: {value.Images}"
+                    : $"Отправлено записей: {value.Entities}, фото: {value.Images}";
             });
 
             var result = await engine.SyncAsync(

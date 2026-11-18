@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
@@ -9,9 +10,14 @@ namespace FamilyMoney.Navigation;
 
 public partial class AppShell : UserControl
 {
+    // На широком экране ящик со счетами показывается постоянно, на узком — только по кнопке.
+    private bool? _lastWide;
+
     public AppShell()
     {
         InitializeComponent();
+
+        SizeChanged += OnShellSizeChanged;
 
         WeakReferenceMessenger.Default.Register<AppShell, ModelEditMessage<BaseTransactionViewModel>>(this, static (shell, m) =>
         {
@@ -48,7 +54,22 @@ public partial class AppShell : UserControl
     /// </summary>
     public TransactionRowViewModel? PendingTransactionRow { get; set; }
 
-    private async Task<BaseTransactionViewModel?> EditTransactionAsync(BaseTransactionViewModel viewModel)
+    private void OnShellSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        var wide = e.NewSize.Width >= ShellDrawer.DrawerBreakpointLength;
+        if (_lastWide == wide)
+        {
+            return;
+        }
+
+        _lastWide = wide;
+
+        // При запуске в портретном режиме ящик должен быть скрыт, в альбомном —
+        // открыт, если позволяет ширина.
+        ShellDrawer.IsOpen = wide;
+    }
+
+    private async System.Threading.Tasks.Task<BaseTransactionViewModel?> EditTransactionAsync(BaseTransactionViewModel viewModel)
     {
         var row = PendingTransactionRow;
         PendingTransactionRow = null;

@@ -20,6 +20,7 @@ public sealed class PeerSyncServerEngine
     private readonly string _pairingToken;
     private readonly DateTimeOffset _expiresAt;
     private readonly bool _publishReceivedChanges;
+    private readonly FamilyMoney.State.IAccountLocalSettingsStore? _localSettings;
     private readonly ILogger<PeerSyncServerEngine>? _logger;
 
     public PeerSyncServerEngine(
@@ -31,7 +32,8 @@ public sealed class PeerSyncServerEngine
         IRepository repository,
         PeerSyncStateStore stateStore,
         ILogger<PeerSyncServerEngine>? logger = null,
-        bool publishReceivedChanges = false)
+        bool publishReceivedChanges = false,
+        FamilyMoney.State.IAccountLocalSettingsStore? localSettings = null)
     {
         _syncId = syncId;
         _deviceId = deviceId;
@@ -42,6 +44,7 @@ public sealed class PeerSyncServerEngine
         _stateStore = stateStore;
         _logger = logger;
         _publishReceivedChanges = publishReceivedChanges;
+        _localSettings = localSettings;
     }
 
     public PeerHelloAck Hello(PeerHello hello)
@@ -98,6 +101,7 @@ public sealed class PeerSyncServerEngine
             DeviceName = _deviceName,
             ServerAppliedFromClient = state.AppliedFromPeer,
             ServerNow = DateTime.UtcNow,
+            HiddenAccountIds = _localSettings?.GetHiddenAccountIds().ToList() ?? [],
         };
     }
 

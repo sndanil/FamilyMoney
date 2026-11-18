@@ -1,6 +1,7 @@
-﻿<ContentPage xmlns="https://github.com/avaloniaui"
+<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.HomePage"
@@ -77,6 +78,37 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="Padding" Value="10 0" />
         </Style>
+        <Style Selector="Button.HeaderIcon">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4 0 0 0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.HeaderIcon:pointerover">
+            <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.HeaderIcon">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4 0 0 0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="ToggleButton.HeaderIcon:pointerover">
+            <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.HeaderIcon:checked">
+            <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+        </Style>
         <Style Selector="mi|MaterialIcon">
             <Setter Property="Height" Value="14" />
             <Setter Property="Width" Value="14" />
@@ -86,19 +118,24 @@
     </ContentPage.Styles>
 
     <Grid RowDefinitions="Auto *" Background="{DynamicResource SidebarBackBrush}">
-        <Grid ColumnDefinitions="Auto * Auto" Margin="8 8 8 0">
+        <Grid ColumnDefinitions="Auto * Auto Auto Auto" Margin="8 8 8 0">
             <Button Classes="Period"
                     CornerRadius="12 0 0 12"
                     Command="{Binding Period.PrevCommand}">
                 <mi:MaterialIcon Kind="ChevronLeft" />
             </Button>
-            <Button Grid.Column="1"
+            <Button x:Name="PeriodButton"
+                    Grid.Column="1"
                     Classes="Period"
                     CornerRadius="0"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
-                    Command="{Binding Period.ToMonthCommand}">
-                <TextBlock Text="{Binding Period.Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    ToolTip.Tip="Выбрать период"
+                    Click="OnPeriodClick">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="{Binding Period.Text}" VerticalAlignment="Center" />
+                    <mi:MaterialIcon Kind="ChevronDown" Width="12" Height="12" VerticalAlignment="Center" />
+                </StackPanel>
             </Button>
             <Button Grid.Column="2"
                     Classes="Period"
@@ -106,10 +143,46 @@
                     Command="{Binding Period.NextCommand}">
                 <mi:MaterialIcon Kind="ChevronRight" />
             </Button>
+            <Button Grid.Column="3"
+                    Classes="HeaderIcon"
+                    Command="{Binding Settings.SyncNowCommand}"
+                    IsVisible="{Binding Settings.IsSyncAvailable}"
+                    IsEnabled="{Binding !Settings.IsSyncing}"
+                    ToolTip.Tip="Синхронизировать">
+                <mi:MaterialIcon Kind="Sync" Classes.SyncSpin="{Binding Settings.IsSyncing}">
+                    <mi:MaterialIcon.RenderTransform>
+                        <RotateTransform />
+                    </mi:MaterialIcon.RenderTransform>
+                </mi:MaterialIcon>
+            </Button>
+            <ToggleButton Grid.Column="4"
+                          Classes="HeaderIcon"
+                          IsChecked="{Binding IsSummaryMode, Mode=TwoWay}"
+                          ToolTip.Tip="Сводка по категориям">
+                <Panel>
+                    <mi:MaterialIcon Kind="ViewGrid"
+                                     Width="18"
+                                     Height="18"
+                                     IsVisible="{Binding IsSummaryMode}" />
+                    <mi:MaterialIcon Kind="CalendarMonth"
+                                     Width="18"
+                                     Height="18"
+                                     IsVisible="{Binding !IsSummaryMode}" />
+                </Panel>
+            </ToggleButton>
         </Grid>
 
-        <ScrollViewer Grid.Row="1">
-            <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" 
+        <Popup x:Name="PeriodPopup"
+               Grid.Row="0"
+               PlacementTarget="{Binding #PeriodButton}"
+               Placement="Bottom"
+               VerticalOffset="4"
+               IsLightDismissEnabled="True">
+            <controls:PeriodPicker x:Name="PeriodPickerControl" />
+        </Popup>
+
+        <ScrollViewer Grid.Row="1" IsVisible="{Binding !IsSummaryMode}">
+            <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}"
                           Margin="5 5 5 88">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -149,7 +222,7 @@
 
                                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                                     <WrapPanel Orientation="Horizontal" ItemSpacing="6">
-                                                        <TextBlock Classes="Name" Text="{Binding Category.Name}" />
+                                                        <TextBlock Classes="Name" Text="{Binding CategoryName}" />
                                                         <TextBlock Classes="Name"
                                                                    Opacity="0.8"
                                                                    Text="{Binding SubCategory.Name}"
@@ -189,53 +262,9 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <Border Grid.Row="1"
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Center"
-                Margin="16 0 16 16"
-                Padding="10 2"
-                CornerRadius="24"
-                BorderBrush="{DynamicResource LikeGridLinesBrush}"
-                BorderThickness="1"
-                BoxShadow="0 2 12 0 #20000000">
-            <Border.Background>
-                <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
-            </Border.Background>
-            <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
-                <CommandBar.PrimaryCommands>
-                    <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
-                        <CommandBarButton.Icon>
-                            <mi:MaterialIcon Kind="CashMinus" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
-                        </CommandBarButton.Icon>
-                    </CommandBarButton>
-                    <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
-                        <CommandBarButton.Icon>
-                            <mi:MaterialIcon Kind="CashPlus" Foreground="{DynamicResource PositiveBrush}" Width="20" Height="20" />
-                        </CommandBarButton.Icon>
-                    </CommandBarButton>
-                    <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
-                        <CommandBarButton.Icon>
-                            <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
-                        </CommandBarButton.Icon>
-                    </CommandBarButton>
-                    <CommandBarButton Label="Синхронизация"
-                                      CornerRadius="20"
-                                      Command="{Binding Settings.SyncNowCommand}"
-                                      IsVisible="{Binding Settings.IsSyncAvailable}"
-                                      IsEnabled="{Binding !Settings.IsSyncing}">
-                        <CommandBarButton.Icon>
-                            <mi:MaterialIcon Kind="Sync"
-                                             Width="20"
-                                             Height="20"
-                                             Classes.SyncSpin="{Binding Settings.IsSyncing}">
-                                <mi:MaterialIcon.RenderTransform>
-                                    <RotateTransform />
-                                </mi:MaterialIcon.RenderTransform>
-                            </mi:MaterialIcon>
-                        </CommandBarButton.Icon>
-                    </CommandBarButton>
-                </CommandBar.PrimaryCommands>
-            </CommandBar>
-        </Border>
+        <controls:TransactionsSummaryView Grid.Row="1"
+                                          IsVisible="{Binding IsSummaryMode}" />
+
+        <controls:TransactionsActionBar Grid.Row="1" />
     </Grid>
 </ContentPage>

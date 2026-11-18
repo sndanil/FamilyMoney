@@ -2,6 +2,7 @@ using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Models;
 using FamilyMoney.State;
+using LiteDB;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -28,8 +29,7 @@ public sealed class SyncOutboxTests : IDisposable
     }
 
     [Fact]
-    public void ClearPendingSyncChanges_KeepsEditsMadeAfterThePublishedSnapshot()
-    {
+    public void ClearPendingSyncChanges_KeepsEditsMadeAfterThePublishedSnapshot()    {
         var database = new DatabaseConfiguration
         {
             SyncId = Guid.NewGuid(),
@@ -67,6 +67,52 @@ public sealed class SyncOutboxTests : IDisposable
 
         repository.ClearPendingSyncChanges(remaining);
         Assert.Empty(repository.GetPendingSyncChanges().Entities);
+    }
+
+    [Fact]
+    public void FullSyncIncludesRecordsWithoutLastChange()
+    {
+        var database = new DatabaseConfiguration
+        {
+            SyncId = Guid.NewGuid(),
+            Name = "Full",
+            Path = Path.Combine(_root, "full.db"),
+            BackupsFolder = "Backups",
+            MaxBackups = 10,
+        };
+        var configuration = new TestConfiguration(database);
+        var repository = new LiteDbRepository(
+            configuration,
+            new AccountLocalSettingsStore(configuration),
+            NullLogger<LiteDbRepository>.Instance);
+        repository.UpdateDbSchema();
+
+        // Запись «из прошлой жизни»: LastChange не выставлялся и LiteDB хранит его
+        // как отсутствующее значение. Раньше полная синхронизация её пропускала.
+        using (var raw = new LiteDatabase(database.Path))
+        {
+            raw.GetCollection("Account").Insert(new BsonDocument
+            {
+                ["_id"] = Guid.NewGuid(),
+                ["Name"] = "Без LastChange",
+                ["Sum"] = 0m,
+                ["IsGroup"] = false,
+                ["IsHidden"] = false,
+            });
+        }
+
+        repository.UpdateAccount(new Account
+        {
+            Id = Guid.NewGuid(),
+            Name = "Свежий",
+            LastChange = DateTime.UtcNow,
+        });
+
+        var full = repository.GetSyncChangesSince(DateTime.MinValue);
+        Assert.Equal(2, full.Changes.Entities.Count);
+
+        var recent = repository.GetSyncChangesSince(DateTime.UtcNow.AddMinutes(-1));
+        Assert.Single(recent.Changes.Entities);
     }
 
     private sealed class TestConfiguration : IGlobalConfiguration

@@ -333,6 +333,8 @@ public sealed class PeerSyncTests : IDisposable
         var result = await client.SyncAsync(transport, Token);
 
         Assert.Equal(3, result.ReceivedEntities);
+        // Пустая база не выгружает обратно то, что только что получила.
+        Assert.Equal(0, result.SentEntities);
         foreach (var account in accounts)
         {
             Assert.Contains(phone.Repository.GetAccounts(), item => item.Id == account.Id);

@@ -41,11 +41,19 @@ public partial class BaseSubCategoryViewModel : ViewModelBase
     public void FillFrom(Guid id, IRepository repository)
     {
         var subCategory = repository.GetSubCategory(id);
-        FillFrom(subCategory, repository);
+        if (subCategory != null)
+        {
+            FillFrom(subCategory, repository);
+        }
     }
 
     public void FillFrom(SubCategory subCategory, IRepository repository)
     {
+        if (subCategory == null)
+        {
+            return;
+        }
+
         Id = subCategory.Id;
         Name = subCategory.Name;
         CategoryId = subCategory.CategoryId;

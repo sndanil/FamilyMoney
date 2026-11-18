@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Controls.TransactionsSummaryView"
+             x:DataType="vm:MainViewModel">
+  <UserControl.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:IsNegativeConverter x:Key="isNegativeConverter" />
+
+    <DataTemplate x:Key="CategoryCard" x:DataType="vm:CategoryTransactionsGroupViewModel">
+      <Border Padding="12"
+              CornerRadius="12"
+              Background="{DynamicResource CardBackBrush}"
+              BorderBrush="{DynamicResource LikeGridLinesBrush}"
+              BorderThickness="1"
+              Tapped="OnCategoryTapped">
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="Auto *">
+            <Image Width="20" Height="20"
+                   Stretch="Uniform"
+                   VerticalAlignment="Center"
+                   Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+                   IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding DisplayName}"
+                       Margin="8 0 0 0"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+          </Grid>
+
+          <Grid ColumnDefinitions="* Auto">
+            <SelectableTextBlock Text="{Binding Sum, StringFormat='#,##0'}"
+                                 FontSize="16"
+                                 FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Percent, StringFormat=P0}"
+                       FontSize="12"
+                       VerticalAlignment="Bottom"
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+          </Grid>
+
+          <ProgressBar Minimum="0"
+                       Maximum="1"
+                       MinWidth="0"
+                       Height="4"
+                       Value="{Binding Percent}"
+                       Background="{DynamicResource LikeGridLinesBrush}"
+                       Foreground="{DynamicResource AccentBrush}"
+                       CornerRadius="2" />
+        </StackPanel>
+      </Border>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <ScrollViewer>
+    <StackPanel Margin="12 8 12 96" Spacing="16">
+      <Grid ColumnDefinitions="* Auto">
+        <TextBlock Text="{Binding Accounts.SelectedAccount.Name}"
+                   FontSize="12"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource TextSecondaryBrush}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Итого"
+                     FontSize="12"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource TextSecondaryBrush}" />
+          <SelectableTextBlock Text="{Binding Transactions.Total, StringFormat='#,##0.00'}"
+                               FontWeight="SemiBold"
+                               Classes.Negative="{Binding Transactions.Total, Converter={StaticResource isNegativeConverter}}" />
+        </StackPanel>
+      </Grid>
+
+      <StackPanel Spacing="8"
+                  IsVisible="{Binding Transactions.DebetTransactions.HasCategories}">
+        <Grid ColumnDefinitions="* Auto">
+          <TextBlock Text="ДОХОДЫ"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource TextSecondaryBrush}" />
+          <SelectableTextBlock Grid.Column="1"
+                               Text="{Binding Transactions.DebetTransactions.Sum, StringFormat='#,##0'}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource PositiveBrush}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Transactions.DebetTransactions.Categories}"
+                      ItemTemplate="{StaticResource CategoryCard}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="2" ColumnSpacing="8" RowSpacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </StackPanel>
+
+      <StackPanel Spacing="8"
+                  IsVisible="{Binding Transactions.CreditTransactions.HasCategories}">
+        <Grid ColumnDefinitions="* Auto">
+          <TextBlock Text="РАСХОДЫ"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource TextSecondaryBrush}" />
+          <SelectableTextBlock Grid.Column="1"
+                               Text="{Binding Transactions.CreditTransactions.Sum, StringFormat='#,##0'}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource NegativeBrush}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Transactions.CreditTransactions.Categories}"
+                      ItemTemplate="{StaticResource CategoryCard}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="2" ColumnSpacing="8" RowSpacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </StackPanel>
+
+      <StackPanel Spacing="8"
+                  IsVisible="{Binding Transactions.TransferTransactions.HasCategories}">
+        <Grid ColumnDefinitions="* Auto">
+          <TextBlock Text="ПЕРЕВОДЫ"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource TextSecondaryBrush}" />
+          <SelectableTextBlock Grid.Column="1"
+                               Text="{Binding Transactions.TransferTransactions.Sum, StringFormat='#,##0'}"
+                               FontWeight="SemiBold" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Transactions.TransferTransactions.Categories}"
+                      ItemTemplate="{StaticResource CategoryCard}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="2" ColumnSpacing="8" RowSpacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

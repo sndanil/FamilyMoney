@@ -1,5 +1,6 @@
 using FamilyMoney.DataAccess;
 using FamilyMoney.Models.Sync;
+using FamilyMoney.State;
 using Microsoft.Extensions.Logging;
 
 namespace FamilyMoney.Sync.Peer;
@@ -17,6 +18,7 @@ public sealed class PeerSyncClientEngine
     private readonly string _deviceName;
     private readonly int _maxRecords;
     private readonly ILogger<PeerSyncClientEngine>? _logger;
+    private readonly IAccountLocalSettingsStore? _localSettings;
 
     public PeerSyncClientEngine(
         Guid syncId,
@@ -25,7 +27,8 @@ public sealed class PeerSyncClientEngine
         IRepository repository,
         PeerSyncStateStore stateStore,
         int maxRecords = PeerProtocol.DefaultMaxRecords,
-        ILogger<PeerSyncClientEngine>? logger = null)
+        ILogger<PeerSyncClientEngine>? logger = null,
+        IAccountLocalSettingsStore? localSettings = null)
     {
         _syncId = syncId;
         _deviceId = deviceId;
@@ -34,6 +37,7 @@ public sealed class PeerSyncClientEngine
         _stateStore = stateStore;
         _maxRecords = Math.Clamp(maxRecords, 1, 5000);
         _logger = logger;
+        _localSettings = localSettings;
     }
 
     public async Task<PeerSyncResult> SyncAsync(
@@ -71,6 +75,16 @@ public sealed class PeerSyncClientEngine
         state.PeerName = ack.DeviceName;
         state.PeerAppliedFromUs = ack.ServerAppliedFromClient;
         _stateStore.Save(state);
+
+        // Переносим видимость счетов с компьютера: скрываем те, что скрыты там.
+        // Счета, у которых на телефоне уже есть своя настройка, не трогаем.
+        if (ack.HiddenAccountIds.Count > 0)
+        {
+            _localSettings?.ApplyPeerHidden(ack.HiddenAccountIds);
+        }
+
+        var hadLocalChanges = _repository.GetPendingSyncChanges().HasChanges;
+        var firstSync = state.AppliedFromPeer == DateTime.MinValue;
 
         var receivedEntities = 0;
         var receivedImages = 0;
@@ -141,9 +155,21 @@ public sealed class PeerSyncClientEngine
             pageSince = response.Next;
         }
 
+        // Первая синхронизация пустой базы: всё полученное уже есть у пира,
+        // отправлять его обратно не нужно. Иначе пустой телефон «выгружает»
+        // ровно то, что только что скачал.
+        if (firstSync && !hadLocalChanges)
+        {
+            state.PushFrom = NextCursor(state.AppliedFromPeer);
+            state.LastSyncAt = DateTime.UtcNow;
+            _stateStore.Save(state);
+        }
+
         var sentEntities = 0;
         var sentImages = 0;
-        var pushSince = ack.ServerAppliedFromClient;
+        var pushSince = ack.ServerAppliedFromClient > state.PushFrom
+            ? NextCursor(ack.ServerAppliedFromClient)
+            : state.PushFrom;
 
         while (true)
         {
@@ -178,6 +204,9 @@ public sealed class PeerSyncClientEngine
             }
 
             state.PeerAppliedFromUs = pushAck.ServerAppliedFromClient;
+            state.PushFrom = pushAck.ServerAppliedFromClient > state.PushFrom
+                ? NextCursor(pushAck.ServerAppliedFromClient)
+                : state.PushFrom;
             state.LastSyncAt = DateTime.UtcNow;
             _stateStore.Save(state);
 
@@ -222,4 +251,8 @@ public sealed class PeerSyncClientEngine
             state.AppliedFromPeer,
             state.PeerAppliedFromUs);
     }
+
+    /// <summary>Следующая миллисекунда, чтобы не переотправлять записи на самой отметке.</summary>
+    private static DateTime NextCursor(DateTime value) =>
+        value == DateTime.MaxValue ? value : value.AddMilliseconds(1);
 }

@@ -251,6 +251,12 @@ public sealed class MergeSubCategoriesTests : IDisposable
         {
         }
 
+        public IReadOnlyCollection<Guid> GetHiddenAccountIds() => [];
+
+        public void ApplyPeerHidden(IEnumerable<Guid> accountIds)
+        {
+        }
+
         public void Seed(IEnumerable<AccountLocalFlags> flags)
         {
         }

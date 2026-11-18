@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
@@ -151,6 +151,43 @@ public partial class PeriodViewModel: ViewModelBase
         From = DateTime.MinValue;
         To = DateTime.MaxValue;
         PeriodType = PeriodType.All;
+        Update();
+    }
+
+    /// <summary>Выбор конкретного дня (мобильный выбор периода).</summary>
+    public void SetDay(DateTime date)
+    {
+        From = date.Date;
+        To = date.Date;
+        PeriodType = PeriodType.Day;
+        Update();
+    }
+
+    /// <summary>Выбор конкретного месяца (мобильный выбор периода).</summary>
+    public void SetMonth(int year, int month)
+    {
+        From = new DateTime(year, month, 1);
+        To = From.AddMonths(1).AddDays(-1);
+        PeriodType = PeriodType.Month;
+        Update();
+    }
+
+    /// <summary>Выбор конкретного квартала (мобильный выбор периода).</summary>
+    public void SetQuarter(int year, int quarter)
+    {
+        var month = ((quarter - 1) * 3) + 1;
+        From = new DateTime(year, month, 1);
+        To = From.AddMonths(3).AddDays(-1);
+        PeriodType = PeriodType.Quarter;
+        Update();
+    }
+
+    /// <summary>Выбор конкретного года (мобильный выбор периода).</summary>
+    public void SetYear(int year)
+    {
+        From = new DateTime(year, 1, 1);
+        To = new DateTime(year, 12, 31);
+        PeriodType = PeriodType.Year;
         Update();
     }
 

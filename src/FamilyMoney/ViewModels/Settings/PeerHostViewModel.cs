@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
+using FamilyMoney.State;
 using FamilyMoney.Sync;
 using FamilyMoney.Sync.Peer;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public partial class PeerHostViewModel : ViewModelBase, IAsyncDisposable
     private readonly PeerCloudPublisher _publisher;
     private readonly SyncOperationGate _operationGate;
     private readonly ILogger<PeerHostViewModel>? _logger;
+    private readonly IAccountLocalSettingsStore _localSettings;
 
     private CancellationTokenSource? _sessionCts;
     private Task? _sessionTask;
@@ -57,6 +59,7 @@ public partial class PeerHostViewModel : ViewModelBase, IAsyncDisposable
         ISyncService syncService,
         PeerCloudPublisher publisher,
         SyncOperationGate operationGate,
+        IAccountLocalSettingsStore localSettings,
         ILogger<PeerHostViewModel>? logger = null)
     {
         _configuration = configuration;
@@ -65,6 +68,7 @@ public partial class PeerHostViewModel : ViewModelBase, IAsyncDisposable
         _syncService = syncService;
         _publisher = publisher;
         _operationGate = operationGate;
+        _localSettings = localSettings;
         _logger = logger;
         RefreshAddresses();
     }
@@ -122,7 +126,8 @@ public partial class PeerHostViewModel : ViewModelBase, IAsyncDisposable
             _repository,
             new PeerSyncStateStore(_localState.HomeFolder),
             logger: null,
-            publishReceivedChanges: publishReceivedChanges);
+            publishReceivedChanges: publishReceivedChanges,
+            localSettings: _localSettings);
 
         PeerSyncServer server;
         try

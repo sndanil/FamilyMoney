@@ -28,6 +28,11 @@ public partial class TransactionsViewModel : ViewModelBase
     private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = [];
     private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = [];
 
+    // Ссылки на удалённые/несинхронизированные категории не кэшируем как объекты,
+    // но запоминаем, чтобы не ходить в базу на каждой транзакции.
+    private readonly HashSet<Guid> _missingCategoryIds = [];
+    private readonly HashSet<Guid> _missingSubCategoryIds = [];
+
     // Кэш готовых списков для страницы/окна редактирования транзакции: их построение
     // требует нескольких проходов по базе и выполняется заметно долго на Android.
     // Доступ под блокировкой — списки строятся в фоновом потоке (Task.Run).
@@ -60,6 +65,12 @@ public partial class TransactionsViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial BaseTransactionsGroupViewModel? SelectedTransactionGroup { get; set; }
+
+    /// <summary>
+    /// Категория, открытая на мобильной странице категории. Новая транзакция,
+    /// созданная с этой страницы, сразу получает категорию.
+    /// </summary>
+    public CategoryTransactionsGroupViewModel? AddCategoryContext { get; set; }
 
     [ObservableProperty]
     public partial string FilterCommentText { get; set; } = string.Empty;
@@ -111,11 +122,23 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task ToggleExpandAsync(BaseTransactionsGroupViewModel child)
     {
-        child.IsExpanded = !child.IsExpanded;
+        SetExpanded(child, !child.IsExpanded);
+        await Task.CompletedTask;
+    }
+
+    /// <summary>Раскрывает или сворачивает узел, запоминая состояние между обновлениями.</summary>
+    public void SetExpanded(BaseTransactionsGroupViewModel child, bool expanded)
+    {
+        if (child.IsExpanded == expanded)
+        {
+            return;
+        }
+
+        child.IsExpanded = expanded;
         var id = ((child as CategoryTransactionsGroupViewModel)?.Category?.Id
                 ?? (child as SubCategoryTransactionsGroupViewModel)?.SubCategory?.Id)
                 ?? Guid.Empty;
-        if (child.IsExpanded)
+        if (expanded)
         {
             _openedNodes.Add(id);
         }
@@ -173,6 +196,7 @@ public partial class TransactionsViewModel : ViewModelBase
                 lock (t._listsCacheLock)
                 {
                     t._categoriesCache.Remove(m.CategoryId.GetValueOrDefault());
+                    t._missingCategoryIds.Remove(m.CategoryId.GetValueOrDefault());
                 }
             }
 
@@ -207,6 +231,7 @@ public partial class TransactionsViewModel : ViewModelBase
                 foreach (var id in m.RemovedIds)
                 {
                     t._subCategoriesCache.Remove(id);
+                    t._missingSubCategoryIds.Remove(id);
                 }
             }
 
@@ -227,6 +252,8 @@ public partial class TransactionsViewModel : ViewModelBase
             {
                 t._categoriesCache.Clear();
                 t._subCategoriesCache.Clear();
+                t._missingCategoryIds.Clear();
+                t._missingSubCategoryIds.Clear();
             }
 
             t.InvalidateListsCache(categories: true, subCategories: true);
@@ -239,12 +266,13 @@ public partial class TransactionsViewModel : ViewModelBase
     public async Task AddTransferAsync()
     {
         // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
+        var byGroup = GetAddContext<TransferCategoryViewModel>();
         var transactionViewModel = await Task.Run(() =>
         {
             var viewModel = CreateNewTransaction<TransferTransactionViewModel>(
                 GetCategories<TransferCategory, TransferCategoryViewModel>(),
                 GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-                null
+                byGroup
                 );
             viewModel.IsTransfer = true;
             return viewModel;
@@ -260,10 +288,11 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddCreditAsync()
     {
+        var byGroup = GetAddContext<CreditCategoryViewModel>();
         var transactionViewModel = await Task.Run(() => CreateNewTransaction<CreditTransactionViewModel>(
             GetCategories<CreditCategory, CreditCategoryViewModel>(),
             GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-            null
+            byGroup
             ));
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
@@ -276,10 +305,11 @@ public partial class TransactionsViewModel : ViewModelBase
     [RelayCommand]
     public async Task AddDebetAsync()
     {
+        var byGroup = GetAddContext<DebetCategoryViewModel>();
         var transactionViewModel = await Task.Run(() => CreateNewTransaction<DebetTransactionViewModel>(
             GetCategories<DebetCategory, DebetCategoryViewModel>(),
             GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-            null
+            byGroup
             ));
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
@@ -373,11 +403,15 @@ public partial class TransactionsViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new TransactionChangedMessage(before, after));
     }
 
+    private BaseTransactionsGroupViewModel? GetAddContext<T>() where T : BaseCategoryViewModel
+    {
+        return AddCategoryContext?.Category is T ? AddCategoryContext : null;
+    }
+
     private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, 
                                                             IList<BaseSubCategoryViewModel> subCategories,
                                                             BaseTransactionsGroupViewModel? byGroup) 
-        where T : BaseTransactionViewModel, new()
-    {
+        where T : BaseTransactionViewModel, new()    {
         var state = _stateManager.GetMainState();
         var flatAccounts = state.FlatAccounts.Where(a => !a.IsHidden && a.Parent?.IsHidden == false).ToList();
         var account = state.SelectedAccountId.HasValue ?
@@ -767,43 +801,49 @@ public partial class TransactionsViewModel : ViewModelBase
         where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
         summary.Sum += transaction.Sum;
-        var category = summary.TryAddCategory(transaction.CategoryId.GetValueOrDefault(), () => 
+
+        // Если категория или подкатегория не найдена (например, ссылка осталась
+        // после удаления или неполной синхронизации), транзакция попадает в группы
+        // «Без категории» / «Без подкатегории» вместо падения построения дерева.
+        var categoryViewModel = transaction.CategoryId == null
+            ? null
+            : GetCategory<C>(transaction.CategoryId.Value);
+        var categoryKey = categoryViewModel?.Id ?? Guid.Empty;
+
+        var category = summary.TryAddCategory(categoryKey, () =>
         {
-            return transaction.CategoryId == null ? new CategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this }
-             : new CategoryTransactionsGroupViewModel
-             {
-                 Category = GetCategory<C>(transaction.CategoryId.Value),
-                 Parent = this,
-                 IsExpanded = _openedNodes.Contains(transaction.CategoryId.Value),
-                 IsSelected = selected is CategoryTransactionsGroupViewModel selectedCategory && selectedCategory!.Category?.Id == transaction.CategoryId,
-                 IsDebet = isDebet(transaction, null),
-             };
+            return new CategoryTransactionsGroupViewModel
+            {
+                Category = categoryViewModel,
+                Parent = this,
+                IsExpanded = categoryKey != Guid.Empty && _openedNodes.Contains(categoryKey),
+                IsSelected = categoryKey != Guid.Empty
+                    && selected is CategoryTransactionsGroupViewModel selectedCategory
+                    && selectedCategory.Category?.Id == categoryKey,
+                IsDebet = isDebet(transaction, null),
+            };
         });
         SelectedTransactionGroup = category.IsSelected ? category : SelectedTransactionGroup;
         category.Sum += transaction.Sum;
 
-        var subCategory = category.TryAddSubCategory(transaction.SubCategoryId.GetValueOrDefault(), () =>
+        var subCategoryViewModel = transaction.SubCategoryId == null
+            ? null
+            : GetSubCategory<S>(transaction.SubCategoryId.Value);
+        var subCategoryKey = subCategoryViewModel?.Id ?? Guid.Empty;
+
+        var subCategory = category.TryAddSubCategory(subCategoryKey, () =>
         {
-            return transaction.SubCategoryId == null ? new SubCategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this }
-            : new SubCategoryTransactionsGroupViewModel
+            return new SubCategoryTransactionsGroupViewModel
             {
                 Parent = this,
-                SubCategory = GetSubCategory<S>(transaction.SubCategoryId.Value),
-                IsExpanded = _openedNodes.Contains(transaction.SubCategoryId.Value),
-                IsSelected = selected is SubCategoryTransactionsGroupViewModel selectedSubCategory
-                                    && selectedSubCategory!.SubCategory?.Id == transaction.SubCategoryId,
+                SubCategory = subCategoryViewModel,
+                IsExpanded = subCategoryKey != Guid.Empty && _openedNodes.Contains(subCategoryKey),
+                IsSelected = subCategoryKey != Guid.Empty
+                    && selected is SubCategoryTransactionsGroupViewModel selectedSubCategory
+                    && selectedSubCategory.SubCategory?.Id == subCategoryKey,
                 IsDebet = isDebet(transaction, null),
             };
         });
-        if (transaction.SubCategoryId == null)
-        {
-            subCategory = category.SubCategories.FirstOrDefault(t => t.SubCategory == null);
-            if (subCategory == null)
-            {
-                subCategory = new SubCategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this };
-                category.SubCategories.Add(subCategory);
-            }
-        }
         SelectedTransactionGroup = subCategory.IsSelected ? subCategory : SelectedTransactionGroup;
         subCategory.Sum += transaction.Sum;
 
@@ -832,7 +872,7 @@ public partial class TransactionsViewModel : ViewModelBase
         return viewTransaction;
     }
 
-    private BaseCategoryViewModel GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()
+    private BaseCategoryViewModel? GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()
     {
         lock (_listsCacheLock)
         {
@@ -840,10 +880,26 @@ public partial class TransactionsViewModel : ViewModelBase
             {
                 return cached;
             }
+
+            if (_missingCategoryIds.Contains(id))
+            {
+                return null;
+            }
+        }
+
+        var entity = _repository.GetCategory(id);
+        if (entity == null)
+        {
+            lock (_listsCacheLock)
+            {
+                _missingCategoryIds.Add(id);
+            }
+
+            return null;
         }
 
         var category = new C();
-        category.FillFrom(id, _repository);
+        category.FillFrom(entity, _repository);
 
         lock (_listsCacheLock)
         {
@@ -853,7 +909,7 @@ public partial class TransactionsViewModel : ViewModelBase
         return category;
     }
 
-    private BaseSubCategoryViewModel GetSubCategory<C>(Guid id) where C : BaseSubCategoryViewModel, new()
+    private BaseSubCategoryViewModel? GetSubCategory<C>(Guid id) where C : BaseSubCategoryViewModel, new()
     {
         lock (_listsCacheLock)
         {
@@ -861,10 +917,26 @@ public partial class TransactionsViewModel : ViewModelBase
             {
                 return cached;
             }
+
+            if (_missingSubCategoryIds.Contains(id))
+            {
+                return null;
+            }
+        }
+
+        var entity = _repository.GetSubCategory(id);
+        if (entity == null)
+        {
+            lock (_listsCacheLock)
+            {
+                _missingSubCategoryIds.Add(id);
+            }
+
+            return null;
         }
 
         var subCategory = new C();
-        subCategory.FillFrom(id, _repository);
+        subCategory.FillFrom(entity, _repository);
 
         lock (_listsCacheLock)
         {

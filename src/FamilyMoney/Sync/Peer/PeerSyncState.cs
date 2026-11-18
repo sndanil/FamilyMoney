@@ -17,5 +17,11 @@ public sealed class PeerSyncState
 
     public DateTime PeerAppliedFromUs { get; set; }
 
+    /// <summary>
+    /// Отметка, с которой отправляются свои изменения. Всё, что не новее,
+    /// у пира уже есть (получено от него или подтверждено им).
+    /// </summary>
+    public DateTime PushFrom { get; set; }
+
     public DateTime LastSyncAt { get; set; }
 }

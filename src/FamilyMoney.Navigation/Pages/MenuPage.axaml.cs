@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using FamilyMoney.ViewModels;
@@ -19,7 +19,7 @@ public partial class MenuPage : ContentPage
     private void CloseDrawer()
     {
         var drawer = Shell?.DrawerPage;
-        if (drawer != null)
+        if (drawer is { DisplayMode: SplitViewDisplayMode.Overlay })
         {
             drawer.IsOpen = false;
         }

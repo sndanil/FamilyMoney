@@ -27,6 +27,17 @@ public interface IAccountLocalSettingsStore
 
     void SetExpanded(Guid accountId, bool value);
 
+    /// <summary>Идентификаторы счетов, скрытых на этом устройстве.</summary>
+    IReadOnlyCollection<Guid> GetHiddenAccountIds();
+
+    /// <summary>
+    /// Применяет скрытые счета, полученные от другого устройства. Затрагивает
+    /// только счета, для которых на этом устройстве ещё нет своей настройки:
+    /// так при первой синхронизации видимость переносится с источника,
+    /// а последующие локальные переключения не перетираются.
+    /// </summary>
+    void ApplyPeerHidden(IEnumerable<Guid> accountIds);
+
     /// <summary>Признак, что начальная миграция флагов из базы уже выполнена.</summary>
     bool IsSeeded { get; }
 
@@ -109,9 +120,44 @@ public sealed class AccountLocalSettingsStore : IAccountLocalSettingsStore
         }
     }
 
-    public bool IsSeeded
+    public IReadOnlyCollection<Guid> GetHiddenAccountIds()
     {
-        get
+        lock (_lock)
+        {
+            return GetDocument().Accounts
+                .Where(pair => pair.Value.IsHidden)
+                .Select(pair => pair.Key)
+                .ToList();
+        }
+    }
+
+    public void ApplyPeerHidden(IEnumerable<Guid> accountIds)
+    {
+        lock (_lock)
+        {
+            var document = GetDocument();
+            var changed = false;
+
+            foreach (var accountId in accountIds)
+            {
+                if (document.Accounts.ContainsKey(accountId))
+                {
+                    continue;
+                }
+
+                document.Accounts[accountId] = new AccountFlagsDocument { IsHidden = true };
+                changed = true;
+            }
+
+            if (changed)
+            {
+                Save(document);
+            }
+        }
+    }
+
+    public bool IsSeeded
+    {        get
         {
             lock (_lock)
             {

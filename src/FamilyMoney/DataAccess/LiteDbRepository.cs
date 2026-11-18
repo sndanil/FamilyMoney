@@ -75,8 +75,10 @@ public class LiteDbRepository : IRepository
         AddEntities(db.GetCollection<Transaction>(nameof(Transaction)));
 
         var images = new Dictionary<Guid, SyncImageOutboxEntry>();
-        foreach (var meta in db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName)
-                     .Find(x => x.LastChange >= effectiveSince))
+        foreach (var meta in effectiveSince == DateTime.MinValue
+                     ? db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName).FindAll()
+                     : db.GetCollection<SyncImageMeta>(SyncImageMetaCollectionName)
+                         .Find(x => x.LastChange >= effectiveSince))
         {
             AddImage(new SyncImageOutboxEntry
             {
@@ -88,8 +90,10 @@ public class LiteDbRepository : IRepository
         }
 
         // Старые версии писали картинки только в outbox; meta могла не существовать.
-        foreach (var outbox in db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName)
-                     .Find(x => x.LastChange >= effectiveSince))
+        foreach (var outbox in effectiveSince == DateTime.MinValue
+                     ? db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName).FindAll()
+                     : db.GetCollection<SyncImageOutboxEntry>(SyncImageOutboxCollectionName)
+                         .Find(x => x.LastChange >= effectiveSince))
         {
             AddImage(outbox);
         }
@@ -153,7 +157,15 @@ public class LiteDbRepository : IRepository
         void AddEntities<T>(ILiteCollection<T> collection)
             where T : class, ISyncable
         {
-            foreach (var entity in collection.Find(x => x.LastChange >= effectiveSince))
+            // Записи, созданные до появления LastChange, лежат в базе с null в этом
+            // поле (DateTime.MinValue LiteDB сохраняет как отсутствующее значение).
+            // Запрос «LastChange >= DateTime.MinValue» их не находит, поэтому при
+            // самой первой, полной синхронизации читаем коллекцию целиком.
+            var entities = effectiveSince == DateTime.MinValue
+                ? collection.FindAll()
+                : collection.Find(x => x.LastChange >= effectiveSince);
+
+            foreach (var entity in entities)
             {
                 var record = SyncEntitySerializer.CreateRecord(entity);
                 items.Add(new SyncChangeItem(
@@ -230,27 +242,44 @@ public class LiteDbRepository : IRepository
         using var _ = SyncContext.EnterApplyScope();
         using var db = OpenDatabase();
 
-        foreach (var record in delta.Accounts)
+        // Страница применяется целиком: если приложение упадёт посреди страницы,
+        // транзакции не останутся без своих категорий и подкатегорий.
+        if (!db.BeginTrans())
         {
-            ApplySyncRecord(db.GetCollection<Account>(nameof(Account)), record);
+            throw new InvalidOperationException("Не удалось начать применение синхронизации.");
         }
 
-        foreach (var record in delta.Categories)
+        try
         {
-            ApplySyncRecord(db.GetCollection<Category>(nameof(Category)), record);
-        }
+            foreach (var record in delta.Accounts)
+            {
+                ApplySyncRecord(db.GetCollection<Account>(nameof(Account)), record);
+            }
 
-        foreach (var record in delta.SubCategories)
+            foreach (var record in delta.Categories)
+            {
+                ApplySyncRecord(db.GetCollection<Category>(nameof(Category)), record);
+            }
+
+            foreach (var record in delta.SubCategories)
+            {
+                ApplySyncRecord(db.GetCollection<SubCategory>(nameof(SubCategory)), record);
+            }
+
+            foreach (var record in delta.Transactions)
+            {
+                ApplySyncRecord(db.GetCollection<Transaction>(nameof(Transaction)), record);
+            }
+
+            RecalculateAccountBalances(db);
+
+            db.Commit();
+        }
+        catch
         {
-            ApplySyncRecord(db.GetCollection<SubCategory>(nameof(SubCategory)), record);
+            db.Rollback();
+            throw;
         }
-
-        foreach (var record in delta.Transactions)
-        {
-            ApplySyncRecord(db.GetCollection<Transaction>(nameof(Transaction)), record);
-        }
-
-        RecalculateAccountBalances(db);
 
         _logger.LogInformation(
             "Applied sync delta {Revision} from device {DeviceId}",

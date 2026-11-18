@@ -5,6 +5,7 @@ using FamilyMoney.Configuration;
 using FamilyMoney.DataAccess;
 using FamilyMoney.Messages;
 using FamilyMoney.Services;
+using FamilyMoney.State;
 using FamilyMoney.Sync;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -80,6 +81,7 @@ public partial class SettingsViewModel : ViewModelBase
         SyncConnectionTester connectionTester,
         IRepository repository,
         LocalSyncStateStore localState,
+        IAccountLocalSettingsStore accountLocalSettings,
         IQrScannerService? qrScanner = null,
         ILocalNetworkPermissionService? localNetworkPermission = null)
     {
@@ -95,7 +97,8 @@ public partial class SettingsViewModel : ViewModelBase
             localState,
             qrScanner,
             localNetworkPermission,
-            null);
+            null,
+            accountLocalSettings);
         Load();
     }
 

@@ -1,0 +1,122 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Controls.PeriodPicker"
+             x:DataType="controls:PeriodPickerViewModel">
+  <UserControl.Styles>
+    <Style Selector="Button.Chip">
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="2 0" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Chip:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.Chip.Selected">
+      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.Cell">
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="Button.Cell:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.Cell.Current">
+      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.Cell:disabled">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="Button.Nav">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.Nav:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Width="320"
+          Padding="12"
+          CornerRadius="14"
+          Background="{DynamicResource DialogBackBrush}"
+          BorderBrush="{DynamicResource LikeGridLinesBrush}"
+          BorderThickness="1"
+          BoxShadow="0 8 24 0 #30000000">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="4">
+        <Button Classes="Chip" Classes.Selected="{Binding IsDayMode}"
+                Content="День" Command="{Binding SetDayModeCommand}" />
+        <Button Grid.Column="1" Classes="Chip" Classes.Selected="{Binding IsMonthMode}"
+                Content="Месяц" Command="{Binding SetMonthModeCommand}" />
+        <Button Grid.Column="2" Classes="Chip" Classes.Selected="{Binding IsQuarterMode}"
+                Content="Квартал" Command="{Binding SetQuarterModeCommand}" />
+        <Button Grid.Column="3" Classes="Chip" Classes.Selected="{Binding IsYearMode}"
+                Content="Год" Command="{Binding SetYearModeCommand}" />
+      </Grid>
+
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Button Classes="Nav" Command="{Binding PrevCommand}">
+          <mi:MaterialIcon Kind="ChevronLeft" Width="18" Height="18" />
+        </Button>
+        <TextBlock Grid.Column="1"
+                   Text="{Binding Header}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontWeight="SemiBold" />
+        <Button Grid.Column="2" Classes="Nav" Command="{Binding NextCommand}">
+          <mi:MaterialIcon Kind="ChevronRight" Width="18" Height="18" />
+        </Button>
+      </Grid>
+
+      <ItemsControl ItemsSource="{Binding Cells}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Columns="{Binding Columns}" ColumnSpacing="4" RowSpacing="4" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="controls:PeriodPickerCell">
+            <Button Classes="Cell"
+                    Classes.Current="{Binding IsCurrent}"
+                    IsEnabled="{Binding !IsEmpty}"
+                    Content="{Binding Label}"
+                    Click="OnCellClick" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Button Content="Сегодня"
+              HorizontalAlignment="Center"
+              Classes="Chip"
+              Padding="12 0"
+              Height="30"
+              Command="{Binding TodayCommand}" />
+    </StackPanel>
+  </Border>
+</UserControl>

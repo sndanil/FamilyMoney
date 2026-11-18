@@ -23,6 +23,9 @@ public sealed class RootConfiguration
     /// <summary>Окно было развёрнуто на весь экран при закрытии.</summary>
     public bool WindowMaximized { get; set; }
 
+    /// <summary>Последний выбранный вид главного экрана на мобильном: сводка или дни.</summary>
+    public bool MobileSummaryMode { get; set; }
+
     /// <summary>
     /// За сколько дней до окончания подсвечивать вклад. Пусто — значение по умолчанию.
     /// 0 показывает пометку только в день окончания. Локально для устройства.

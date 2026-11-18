@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="FamilyMoney.Navigation.Controls.TransactionsActionBar"
+             x:CompileBindings="False">
+  <Border VerticalAlignment="Bottom"
+          HorizontalAlignment="Center"
+          Margin="16 0 16 16"
+          Padding="10 2"
+          CornerRadius="24"
+          BorderBrush="{DynamicResource LikeGridLinesBrush}"
+          BorderThickness="1"
+          BoxShadow="0 2 12 0 #20000000">
+    <Border.Background>
+      <SolidColorBrush Color="{DynamicResource SystemAltMediumColor}" Opacity="0.92" />
+    </Border.Background>
+    <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
+      <CommandBar.PrimaryCommands>
+        <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="CashMinus" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+        <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="CashPlus" Foreground="{DynamicResource PositiveBrush}" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+        <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
+          <CommandBarButton.Icon>
+            <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
+          </CommandBarButton.Icon>
+        </CommandBarButton>
+      </CommandBar.PrimaryCommands>
+    </CommandBar>
+  </Border>
+</UserControl>

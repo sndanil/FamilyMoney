@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace FamilyMoney.ViewModels;
@@ -8,6 +8,8 @@ public class CategoryTransactionsGroupViewModel : BaseTransactionsGroupViewModel
     private readonly Dictionary<Guid, SubCategoryTransactionsGroupViewModel> _subCategoryGroupsCache = [];
 
     public BaseCategoryViewModel? Category { get; init; }
+
+    public string DisplayName => Category?.Name ?? "Без категории";
 
     public List<SubCategoryTransactionsGroupViewModel> SubCategories { get; set; } = [];
 

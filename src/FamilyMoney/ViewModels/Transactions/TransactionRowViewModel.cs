@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace FamilyMoney.ViewModels;
@@ -20,4 +20,6 @@ public class TransactionRowViewModel : BaseTransactionsGroupViewModel
     public BaseCategoryViewModel? Category { get; init; }
 
     public BaseSubCategoryViewModel? SubCategory { get; init; }
+
+    public string CategoryName => Category?.Name ?? "Без категории";
 }

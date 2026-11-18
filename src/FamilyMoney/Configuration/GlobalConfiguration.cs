@@ -38,7 +38,34 @@ public sealed class GlobalConfiguration : IGlobalConfiguration
 
     public RootConfiguration Get()
     {
-        var root = _rootConfiguration ??= _configuration.Get<RootConfiguration>() ?? CreateDefault();
+        if (_rootConfiguration == null)
+        {
+            var loaded = _configuration.Get<RootConfiguration>();
+            _rootConfiguration = loaded ?? CreateDefault();
+
+            // На Android appsettings.json из APK не оказывается рядом с приложением,
+            // поэтому конфигурация может быть пустой или отсутствовать. Без сохранённой
+            // базы GetSelectedDatabase() каждый раз возвращал бы новый случайный SyncId,
+            // и QR-синхронизация считала бы, что это другая база.
+            if (loaded == null || _rootConfiguration.Databases.Length == 0)
+            {
+                if (_rootConfiguration.Databases.Length == 0)
+                {
+                    _rootConfiguration.Databases = CreateDefault().Databases;
+                }
+
+                try
+                {
+                    Save(_rootConfiguration);
+                }
+                catch (Exception)
+                {
+                    // Если сохранить не удалось, работаем с базой по умолчанию в памяти.
+                }
+            }
+        }
+
+        var root = _rootConfiguration;
 
         foreach (var database in root.Databases)
         {

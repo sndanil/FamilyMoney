@@ -26,6 +26,9 @@ public sealed class PeerHelloAck
     public DateTime ServerAppliedFromClient { get; set; }
 
     public DateTime ServerNow { get; set; }
+
+    /// <summary>Счета, скрытые на сервере: при первой синхронизации переносим видимость на клиент.</summary>
+    public List<Guid> HiddenAccountIds { get; set; } = [];
 }
 
 public sealed class PeerPullRequest

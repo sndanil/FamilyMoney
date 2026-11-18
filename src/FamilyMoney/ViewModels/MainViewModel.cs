@@ -43,6 +43,10 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool ShowTransactionsTree { get; set; } = true;
 
+    /// <summary>Главный экран мобильного интерфейса показывает сводку по категориям, а не дни.</summary>
+    [ObservableProperty]
+    public partial bool IsSummaryMode { get; set; }
+
     [ObservableProperty]
     public partial MainPanel CurrentPanel { get; set; } = MainPanel.Transactions;
 
@@ -92,6 +96,8 @@ public partial class MainViewModel : ViewModelBase
         _transactionsViewModel = transactionsViewModel;
         _reportsViewModel = reportsViewModel;
         _period = period;
+
+        IsSummaryMode = _configuration.Get().MobileSummaryMode;
 
         PropertyChanged += MainViewModel_PropertyChanged;
 
@@ -210,6 +216,18 @@ public partial class MainViewModel : ViewModelBase
         {
             _configuration.Save(root);
         }
+    }
+
+    partial void OnIsSummaryModeChanged(bool value)
+    {
+        var root = _configuration.Get();
+        if (root.MobileSummaryMode == value)
+        {
+            return;
+        }
+
+        root.MobileSummaryMode = value;
+        _configuration.Save(root);
     }
 
     [RelayCommand]

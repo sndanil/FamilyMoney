@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +13,8 @@ public sealed class SummaryTransactionsGroup : ViewModelBase
     public decimal Sum { get; set; }
 
     public List<CategoryTransactionsGroupViewModel> Categories { get; private set; } = [];
+
+    public bool HasCategories => Categories.Count > 0;
 
     public CategoryTransactionsGroupViewModel TryAddCategory(Guid categoryId, Func<CategoryTransactionsGroupViewModel> factory)
     {

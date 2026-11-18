@@ -24,6 +24,26 @@
     <Setter Property="CornerRadius" Value="8" />
   </Style>
 
+  <Style Selector="Button.HeaderIcon, ToggleButton.HeaderIcon">
+    <Setter Property="Width" Value="40" />
+    <Setter Property="Height" Value="40" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="4 0 0 0" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.HeaderIcon:pointerover, ToggleButton.HeaderIcon:pointerover">
+    <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+  </Style>
+
+  <Style Selector="ToggleButton.HeaderIcon:checked">
+    <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+  </Style>
+
   <Style Selector="ListBox">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />

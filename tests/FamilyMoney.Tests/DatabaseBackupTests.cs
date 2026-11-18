@@ -303,6 +303,12 @@ public sealed class DatabaseBackupTests : IDisposable
         {
         }
 
+        public IReadOnlyCollection<Guid> GetHiddenAccountIds() => [];
+
+        public void ApplyPeerHidden(IEnumerable<Guid> accountIds)
+        {
+        }
+
         public void Seed(IEnumerable<AccountLocalFlags> flags)
         {
         }
