@@ -7,6 +7,7 @@ using FamilyMoney.Messages;
 using FamilyMoney.Services;
 using FamilyMoney.State;
 using FamilyMoney.Sync;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly ISyncService _syncService;
     private readonly SyncConnectionTester _connectionTester;
     private readonly IQrScannerService? _qrScanner;
+    private readonly IRepository _repository;
 
     /// <summary>На Linux диалоги идут через XDG-портал: без него кнопки молча не работали бы.</summary>
     private const string FilePickerUnavailableMessage =
@@ -97,6 +99,7 @@ public partial class SettingsViewModel : ViewModelBase
         _syncService = syncService;
         _connectionTester = connectionTester;
         _qrScanner = qrScanner;
+        _repository = repository;
         PeerSync = new PeerSyncClientViewModel(
             configuration,
             repository,
@@ -313,6 +316,7 @@ public partial class SettingsViewModel : ViewModelBase
         }
 
         var config = payload.ToConfiguration();
+        var previousActive = Databases.FirstOrDefault(d => d.IsSelected);
 
         var existing = Databases.FirstOrDefault(d => d.SyncId == config.SyncId);
         if (existing != null)
@@ -326,11 +330,6 @@ public partial class SettingsViewModel : ViewModelBase
         {
             database = new DatabaseViewModel();
             database.FillFrom(config);
-            if (Databases.Count == 0)
-            {
-                database.IsSelected = true;
-            }
-
             Databases.Add(database);
         }
         else
@@ -340,13 +339,47 @@ public partial class SettingsViewModel : ViewModelBase
             database.ApplyFrom(updated);
         }
 
-        Save();
+        // На новом устройстве стартовая пустая база только мешает: убираем её,
+        // если она действительно пуста и это именно автоматически созданная база.
+        if (existing == null
+            && previousActive != null
+            && !ReferenceEquals(previousActive, database)
+            && Databases.Count == 2
+            && IsEmptyStartupDatabase(previousActive))
+        {
+            Databases.Remove(previousActive);
+        }
+
+        // Пользователь сканирует QR, чтобы подключиться к этой базе, поэтому
+        // импортированная база сразу становится активной. Иначе на новом
+        // устройстве остаётся выделенной пустая «База данных», а «Сафоновы»
+        // появляется в списке неактивной.
+        foreach (var item in Databases)
+        {
+            item.IsSelected = ReferenceEquals(item, database);
+        }
+
         SelectedDatabase = database;
+        Save();
+        RefreshSyncState();
         DeleteDatabaseCommand.NotifyCanExecuteChanged();
-        OnPropertyChanged(nameof(IsSyncAvailable));
-        OnPropertyChanged(nameof(HasAnySync));
-        SyncNowCommand.NotifyCanExecuteChanged();
         SyncStatus = $"Настройки получены: {config.Name}";
+    }
+
+    private bool IsEmptyStartupDatabase(DatabaseViewModel database)
+    {
+        var fileName = System.IO.Path.GetFileName(database.Path);
+        if (!string.Equals(fileName, GlobalConfiguration.DefaultDatabaseFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.Equals(database.Name, GlobalConfiguration.DefaultDatabaseName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return !_repository.HasLocalData();
     }
 
     /// <summary>
@@ -605,6 +638,13 @@ public partial class SettingsViewModel : ViewModelBase
             }
         }
 
+        var previousSyncId = previousIndex >= 0 && previousIndex < root.Databases.Length
+            ? root.Databases[previousIndex].SyncId
+            : Guid.Empty;
+        var selectedSyncId = selectedIndex >= 0 && selectedIndex < Databases.Count
+            ? Databases[selectedIndex].SyncId
+            : Guid.Empty;
+
         if (selectedIndex != previousIndex
             && previousIndex >= 0
             && previousIndex < root.Databases.Length)
@@ -628,7 +668,7 @@ public partial class SettingsViewModel : ViewModelBase
             BackupStatus = "Резервные копии выключены: максимум равен 0.";
         }
 
-        if (selectedIndex != previousIndex)
+        if (selectedIndex != previousIndex || previousSyncId != selectedSyncId)
         {
             WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
         }

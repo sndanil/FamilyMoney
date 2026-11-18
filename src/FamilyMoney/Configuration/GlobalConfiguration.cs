@@ -8,6 +8,12 @@ namespace FamilyMoney.Configuration;
 
 public sealed class GlobalConfiguration : IGlobalConfiguration
 {
+    /// <summary>Name of the database created on a fresh install.</summary>
+    public const string DefaultDatabaseName = "\u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445";
+
+    /// <summary>File name of the database created on a fresh install.</summary>
+    public const string DefaultDatabaseFileName = "database.db";
+
     private readonly IConfiguration _configuration;
     private RootConfiguration? _rootConfiguration;
 
