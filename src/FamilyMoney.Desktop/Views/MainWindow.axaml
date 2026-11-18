@@ -224,18 +224,17 @@
 
 						<StackPanel Orientation="Horizontal" Grid.Column="2" ZIndex="10">
 
-							<ToggleButton IsChecked="{Binding ShowTransactionsTree}" 
+							<ToggleButton IsChecked="{Binding ShowTransactionsTree, Mode=TwoWay}"
 										  Height="30" 
 										  VerticalAlignment="Center" 
-										  Margin="5 0">
-								<mi:MaterialIcon Kind="FormatListGroup" />
-							</ToggleButton >
-
-							<ToggleButton IsChecked="{Binding !ShowTransactionsTree}"
-										  Height="30" 
-										  VerticalAlignment="Center" 
-										  Margin="10 0">
-								<mi:MaterialIcon Kind="CalendarCheck" />
+										  Margin="10 0"
+										  ToolTip.Tip="Дерево / дни">
+								<Panel>
+									<mi:MaterialIcon Kind="FormatListGroup"
+													 IsVisible="{Binding ShowTransactionsTree}" />
+									<mi:MaterialIcon Kind="CalendarCheck"
+													 IsVisible="{Binding !ShowTransactionsTree}" />
+								</Panel>
 							</ToggleButton >
 
 							<views:PeriodView DataContext="{Binding Period}" Margin="10 0 0 0" />
