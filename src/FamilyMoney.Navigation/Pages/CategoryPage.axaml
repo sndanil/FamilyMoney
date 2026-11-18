@@ -2,11 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:pages="using:FamilyMoney.Navigation.Pages"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.CategoryPage"
              x:DataType="pages:CategoryPageViewModel"
              Header="{Binding Title}">
+  <ContentPage.Resources>
+    <cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
+  </ContentPage.Resources>
+
   <ContentPage.Styles>
     <Style Selector="Button.SubCategoryRow">
       <Setter Property="Height" Value="48" />
@@ -82,10 +87,21 @@
                       Command="{Binding Parent.ToggleExpandCommand}"
                       CommandParameter="{Binding}">
                 <Grid ColumnDefinitions="Auto * Auto Auto" Margin="14 0 14 0">
-                  <Panel Width="18" Height="18" VerticalAlignment="Center">
-                    <mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-                    <mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-                  </Panel>
+                  <mi:MaterialIcon Kind="ChevronRight"
+                                   Width="18"
+                                   Height="18"
+                                   VerticalAlignment="Center"
+                                   RenderTransformOrigin="50%,50%">
+                    <mi:MaterialIcon.RenderTransform>
+                      <RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+                        <RotateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Angle" Duration="0:0:0.22" />
+                          </Transitions>
+                        </RotateTransform.Transitions>
+                      </RotateTransform>
+                    </mi:MaterialIcon.RenderTransform>
+                  </mi:MaterialIcon>
 
                   <TextBlock Grid.Column="1"
                              Text="{Binding DisplayName}"

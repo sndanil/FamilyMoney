@@ -12,6 +12,7 @@
 	<UserControl.Resources>
 		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+		<cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
@@ -131,10 +132,18 @@
 						<Button Classes="TreeChevron" 
 								Command="{Binding Parent.ToggleExpandCommand}" 
 								CommandParameter="{Binding}">
-							<Grid>
-								<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-								<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-							</Grid>
+							<mi:MaterialIcon Kind="ChevronRight"
+											 RenderTransformOrigin="50%,50%">
+								<mi:MaterialIcon.RenderTransform>
+									<RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+										<RotateTransform.Transitions>
+											<Transitions>
+												<DoubleTransition Property="Angle" Duration="0:0:0.22" />
+											</Transitions>
+										</RotateTransform.Transitions>
+									</RotateTransform>
+								</mi:MaterialIcon.RenderTransform>
+							</mi:MaterialIcon>
 						</Button>
 
 						<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
@@ -181,10 +190,18 @@
 										<Button Classes="TreeChevron" 
 												Command="{Binding Parent.ToggleExpandCommand}"
 												CommandParameter="{Binding}">
-											<Grid>
-												<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-												<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-											</Grid>
+											<mi:MaterialIcon Kind="ChevronRight"
+															 RenderTransformOrigin="50%,50%">
+												<mi:MaterialIcon.RenderTransform>
+													<RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+														<RotateTransform.Transitions>
+															<Transitions>
+																<DoubleTransition Property="Angle" Duration="0:0:0.22" />
+															</Transitions>
+														</RotateTransform.Transitions>
+													</RotateTransform>
+												</mi:MaterialIcon.RenderTransform>
+											</mi:MaterialIcon>
 										</Button>
 										<Border Classes="Category" Classes.Selected="{Binding IsSelected}">
 											<Interaction.Behaviors>

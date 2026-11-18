@@ -9,6 +9,7 @@
              x:DataType="pages:CategoryPageViewModel">
   <UserControl.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+    <cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -104,10 +105,21 @@
                       Command="{Binding Parent.ToggleExpandCommand}"
                       CommandParameter="{Binding}">
                 <Grid ColumnDefinitions="Auto * Auto Auto" Margin="12 0 12 0">
-                  <Panel Width="18" Height="18" VerticalAlignment="Center">
-                    <mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-                    <mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-                  </Panel>
+                  <mi:MaterialIcon Kind="ChevronRight"
+                                   Width="18"
+                                   Height="18"
+                                   VerticalAlignment="Center"
+                                   RenderTransformOrigin="50%,50%">
+                    <mi:MaterialIcon.RenderTransform>
+                      <RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+                        <RotateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Angle" Duration="0:0:0.22" />
+                          </Transitions>
+                        </RotateTransform.Transitions>
+                      </RotateTransform>
+                    </mi:MaterialIcon.RenderTransform>
+                  </mi:MaterialIcon>
                   <TextBlock Grid.Column="1"
                              Text="{Binding DisplayName}"
                              Margin="8 0"
