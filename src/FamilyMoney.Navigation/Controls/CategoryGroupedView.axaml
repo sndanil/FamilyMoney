@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:pages="using:FamilyMoney.Navigation.Pages"
              xmlns:vm="using:FamilyMoney.ViewModels"
@@ -126,7 +127,8 @@
                 </Grid>
               </Button>
 
-              <ItemsControl ItemsSource="{Binding Transactions}" IsVisible="{Binding IsExpanded}">
+              <controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
+                <ItemsControl ItemsSource="{Binding Transactions}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" />
@@ -152,7 +154,8 @@
                     </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
-              </ItemsControl>
+                </ItemsControl>
+              </controls:CollapsiblePanel>
             </StackPanel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

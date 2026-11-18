@@ -107,7 +107,8 @@
                 </Grid>
               </Button>
 
-              <ItemsControl ItemsSource="{Binding Transactions}" IsVisible="{Binding IsExpanded}">
+              <controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
+                <ItemsControl ItemsSource="{Binding Transactions}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" />
@@ -135,7 +136,8 @@
                     </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
-              </ItemsControl>
+                </ItemsControl>
+              </controls:CollapsiblePanel>
             </StackPanel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

@@ -1,10 +1,11 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:cv="using:FamilyMoney.Converters"
+			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:SummaryTransactionsGroup"
              x:Class="FamilyMoney.Views.TransactionsTreeControl">
@@ -24,6 +25,36 @@
 			<Setter Property="Margin" Value="15 0 0 0" />
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
+		</Style>
+		<Style Selector="Button.TreeChevron">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Height" Value="26" />
+			<Setter Property="Width" Value="26" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Margin" Value="10 0 0 0" />
+			<Setter Property="ZIndex" Value="10" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="Transparent">
+						<ContentPresenter Content="{TemplateBinding Content}"
+										  HorizontalContentAlignment="Center"
+										  VerticalContentAlignment="Center" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.TreeChevron:pointerover">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.TreeChevron mi|MaterialIcon">
+			<Setter Property="Height" Value="18" />
+			<Setter Property="Width" Value="18" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
 		</Style>
 		<Style Selector="mi|MaterialIcon">
 			<Setter Property="Height" Value="14" />
@@ -97,7 +128,7 @@
 			<DataTemplate>
 				<StackPanel>
 					<Grid>
-						<Button Classes="Expander" 
+						<Button Classes="TreeChevron" 
 								Command="{Binding Parent.ToggleExpandCommand}" 
 								CommandParameter="{Binding}">
 							<Grid>
@@ -134,9 +165,9 @@
 						</Border>
 					</Grid>
 
-					<ItemsControl Margin="30 0 0 0"
-								  IsVisible="{Binding IsExpanded}"
-								  ItemsSource="{Binding SubCategories}">
+					<controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
+						<ItemsControl Margin="30 0 0 0"
+									  ItemsSource="{Binding SubCategories}">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>
 								<StackPanel Orientation="Vertical" />
@@ -147,7 +178,7 @@
 							<DataTemplate>
 								<StackPanel>
 									<Grid>
-										<Button Classes="Expander" 
+										<Button Classes="TreeChevron" 
 												Command="{Binding Parent.ToggleExpandCommand}"
 												CommandParameter="{Binding}">
 											<Grid>
@@ -180,9 +211,9 @@
 										</Border>
 									</Grid>
 
-									<ItemsControl Margin="30 0 0 0"
-												  IsVisible="{Binding IsExpanded}"
-												  ItemsSource="{Binding Transactions}">
+									<controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
+										<ItemsControl Margin="30 0 0 0"
+													  ItemsSource="{Binding Transactions}">
 										<ItemsControl.ItemsPanel>
 											<ItemsPanelTemplate>
 												<StackPanel Orientation="Vertical" />
@@ -260,11 +291,13 @@
 												</Grid>
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+										</ItemsControl>
+									</controls:CollapsiblePanel>
 								</StackPanel>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
-					</ItemsControl>
+						</ItemsControl>
+					</controls:CollapsiblePanel>
 				</StackPanel>
 			</DataTemplate>
 		</ItemsControl.ItemTemplate>
