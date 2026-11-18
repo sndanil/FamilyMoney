@@ -12,6 +12,7 @@
   <UserControl.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
     <cv:IsNegativeConverter x:Key="isNegativeConverter" />
+    <cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
     <cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
   </UserControl.Resources>
 
@@ -228,7 +229,14 @@
                   <TextBlock Grid.Column="3"
                              Classes="Sum"
                              Classes.Negative="{Binding Sum, Converter={StaticResource isNegativeConverter}}"
-                             Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                             Text="{Binding Sum, StringFormat='#,##0.00'}">
+                    <TextBlock.IsVisible>
+                      <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="Sum" Converter="{StaticResource isNotZeroConverter}" />
+                        <Binding Path="!IsGroup" />
+                      </MultiBinding>
+                    </TextBlock.IsVisible>
+                  </TextBlock>
                 </Grid>
               </Border>
 
