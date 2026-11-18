@@ -57,6 +57,11 @@ public partial class CategoryPageViewModel : ViewModelBase
     {
         Transactions.PropertyChanged += OnTransactionsChanged;
         ResolveCategory();
+        if (Category != null)
+        {
+            Category.IsSelected = true;
+        }
+
         Transactions.AddCategoryContext = Category;
         ApplyDefaultExpansion();
     }
@@ -65,6 +70,11 @@ public partial class CategoryPageViewModel : ViewModelBase
     public void Detach()
     {
         Transactions.PropertyChanged -= OnTransactionsChanged;
+
+        if (Category != null)
+        {
+            Category.IsSelected = false;
+        }
 
         // Группа могла быть пересобрана после сохранения транзакции, поэтому
         // сравниваем по идентификатору категории, а не по ссылке.
@@ -85,10 +95,18 @@ public partial class CategoryPageViewModel : ViewModelBase
     private void ResolveCategory()
     {
         var group = Section.Categories.FirstOrDefault(c => c.Category?.Id == _categoryId);
-        if (group != null && !ReferenceEquals(group, Category))
+        if (group == null || ReferenceEquals(group, Category))
         {
-            Category = group;
+            return;
         }
+
+        if (Category != null)
+        {
+            Category.IsSelected = false;
+        }
+
+        Category = group;
+        group.IsSelected = true;
     }
 
     private void ApplyDefaultExpansion()
@@ -100,10 +118,17 @@ public partial class CategoryPageViewModel : ViewModelBase
 
         _defaultsApplied = true;
 
-        // Единственный раздел раскрываем сразу, иначе страница выглядит пустой.
-        if (Category.SubCategories.Count == 1)
+        // Единственный раздел или совсем немного операций — раскрываем сразу,
+        // иначе панель выглядит пустой. При большом списке подкатегории свёрнуты,
+        // чтобы можно было их разворачивать по одной.
+        var subCategories = Category.SubCategories;
+        var transactionsCount = subCategories.Sum(sub => sub.Transactions.Count);
+        if (subCategories.Count == 1 || transactionsCount <= 12)
         {
-            Transactions.SetExpanded(Category.SubCategories[0], true);
+            foreach (var subCategory in subCategories)
+            {
+                Transactions.SetExpanded(subCategory, true);
+            }
         }
     }
 

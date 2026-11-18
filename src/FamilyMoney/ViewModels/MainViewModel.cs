@@ -47,6 +47,10 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsSummaryMode { get; set; }
 
+    /// <summary>Широкий экран: сводка и дни (или выбранная категория) видны двумя панелями.</summary>
+    [ObservableProperty]
+    public partial bool IsWideLayout { get; set; }
+
     [ObservableProperty]
     public partial MainPanel CurrentPanel { get; set; } = MainPanel.Transactions;
 

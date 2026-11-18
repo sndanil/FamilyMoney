@@ -67,7 +67,7 @@
       </Button>
     </Grid>
 
-    <ScrollViewer Grid.Row="1">
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
       <ItemsControl ItemsSource="{Binding Category.SubCategories}" Margin="0 0 0 96">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>

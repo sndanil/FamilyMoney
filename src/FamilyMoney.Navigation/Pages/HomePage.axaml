@@ -2,16 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
-             xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Pages.HomePage"
              x:DataType="vm:MainViewModel"
              Header="Главная">
-    <ContentPage.Resources>
-        <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
-        <cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
-    </ContentPage.Resources>
-
     <ContentPage.Styles>
         <Style Selector="Border.Total">
             <Setter Property="Margin" Value="0" />
@@ -158,6 +152,7 @@
             <ToggleButton Grid.Column="4"
                           Classes="HeaderIcon"
                           IsChecked="{Binding IsSummaryMode, Mode=TwoWay}"
+                          IsVisible="{Binding !IsWideLayout}"
                           ToolTip.Tip="Сводка по категориям">
                 <Panel>
                     <mi:MaterialIcon Kind="ViewGrid"
@@ -181,90 +176,26 @@
             <controls:PeriodPicker x:Name="PeriodPickerControl" />
         </Popup>
 
-        <ScrollViewer Grid.Row="1" IsVisible="{Binding !IsSummaryMode}">
-            <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}"
-                          Margin="5 5 5 88">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+        <Grid Grid.Row="1">
+            <!-- Узкий экран: либо дни, либо сводка, переключаются кнопкой в шапке. -->
+            <Grid IsVisible="{Binding !IsWideLayout}">
+                <controls:DaysView IsVisible="{Binding !IsSummaryMode}" />
+                <controls:TransactionsSummaryView x:Name="CompactSummary"
+                                                  IsVisible="{Binding IsSummaryMode}" />
+            </Grid>
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <Border Classes="Total">
-                                <Grid ColumnDefinitions="* Auto">
-                                    <TextBlock Text="{Binding Date, StringFormat=dd MMMM yyyy}" HorizontalAlignment="Center" />
-                                    <SelectableTextBlock Grid.Column="1"
-                                                         Classes="Sum"
-                                                         Classes.Debet="{Binding IsDebet}"
-                                                         Classes.Negative="{Binding !IsDebet}"
-                                                         Text="{Binding Sum, StringFormat='#,##0.00'}" />
-                                </Grid>
-                            </Border>
+            <!-- Широкий экран: сводка слева, дни или выбранная категория справа. -->
+            <Grid IsVisible="{Binding IsWideLayout}" ColumnDefinitions="340 *">
+                <controls:TransactionsSummaryView x:Name="WideSummary"
+                                                  Grid.Column="0"
+                                                  Margin="0 0 6 0" />
+                <Grid Grid.Column="1" Margin="6 0 0 0">
+                    <controls:DaysView x:Name="WideDays" />
+                    <controls:CategoryGroupedView x:Name="WideCategory" IsVisible="False" />
+                </Grid>
+            </Grid>
 
-                            <ItemsControl ItemsSource="{Binding Transactions}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Vertical" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Classes="Transaction" Tapped="OnTransactionTapped">
-                                            <Grid ColumnDefinitions="Auto * Auto">
-                                                <Image Classes="Category"
-                                                       Stretch="Uniform"
-                                                       Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                                                       IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-
-                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                    <WrapPanel Orientation="Horizontal" ItemSpacing="6">
-                                                        <TextBlock Classes="Name" Text="{Binding CategoryName}" />
-                                                        <TextBlock Classes="Name"
-                                                                   Opacity="0.8"
-                                                                   Text="{Binding SubCategory.Name}"
-                                                                   IsVisible="{Binding SubCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                                    </WrapPanel>
-                                                    <TextBlock Classes="Comment"
-                                                               Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
-                                                               IsVisible="{Binding Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                                    <ItemsControl ItemsSource="{Binding Tags}" IsVisible="{Binding HasTags}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <WrapPanel Orientation="Horizontal" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Border Classes="TransactionTag">
-                                                                    <TextBlock Text="{Binding}" />
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </StackPanel>
-
-                                                <SelectableTextBlock Grid.Column="2"
-                                                                     Classes="Sum"
-                                                                     Classes.Debet="{Binding IsDebet}"
-                                                                     Text="{Binding Sum, StringFormat='#,##0.00'}" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-
-        <controls:TransactionsSummaryView Grid.Row="1"
-                                          IsVisible="{Binding IsSummaryMode}" />
-
-        <controls:TransactionsActionBar Grid.Row="1" />
+            <controls:TransactionsActionBar />
+        </Grid>
     </Grid>
 </ContentPage>

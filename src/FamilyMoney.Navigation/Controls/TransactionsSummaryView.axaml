@@ -9,7 +9,9 @@
     <cv:IsNegativeConverter x:Key="isNegativeConverter" />
 
     <DataTemplate x:Key="CategoryCard" x:DataType="vm:CategoryTransactionsGroupViewModel">
-      <Border Padding="12"
+      <Border Classes="CategoryCard"
+              Classes.Selected="{Binding IsSelected}"
+              Padding="12"
               CornerRadius="12"
               Background="{DynamicResource CardBackBrush}"
               BorderBrush="{DynamicResource LikeGridLinesBrush}"
@@ -53,7 +55,14 @@
     </DataTemplate>
   </UserControl.Resources>
 
-  <ScrollViewer>
+  <UserControl.Styles>
+    <Style Selector="Border.CategoryCard.Selected">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="12 8 12 96" Spacing="16">
       <Grid ColumnDefinitions="* Auto">
         <TextBlock Text="{Binding Accounts.SelectedAccount.Name}"

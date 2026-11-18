@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:pages="using:FamilyMoney.Navigation.Pages"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Controls.CategoryGroupedView"
+             x:DataType="pages:CategoryPageViewModel">
+  <UserControl.Resources>
+    <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <Style Selector="Button.GroupHeader">
+      <Setter Property="Height" Value="40" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="0 1 0 1" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.GroupHeader:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Border.TransactionRow">
+      <Setter Property="MinHeight" Value="44" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="0 0 0 1" />
+    </Style>
+    <Style Selector="Border.TransactionRow:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="TextBlock.Muted">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.ClosePanel">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.ClosePanel:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto *" Background="{DynamicResource SidebarBackBrush}">
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="12 6 8 6">
+      <Image Width="20" Height="20"
+             Stretch="Uniform"
+             VerticalAlignment="Center"
+             Source="{Binding Category.Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+             IsVisible="{Binding Category.Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
+                  Spacing="8"
+                  Margin="8 0"
+                  VerticalAlignment="Center">
+        <TextBlock Text="{Binding Title}"
+                   FontSize="15"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" />
+        <SelectableTextBlock Text="{Binding Category.Sum, StringFormat='#,##0.00'}"
+                             VerticalAlignment="Center" />
+        <TextBlock Text="{Binding Category.Percent, StringFormat=P0}"
+                   Classes="Muted"
+                   FontSize="12" />
+        <TextBlock Text="{Binding SectionGenitive}"
+                   Classes="Muted"
+                   FontSize="12" />
+      </StackPanel>
+
+      <Button Grid.Column="2"
+              Classes="ClosePanel"
+              ToolTip.Tip="Вернуться к дням"
+              Click="OnCloseClick">
+        <mi:MaterialIcon Kind="Close" Width="18" Height="18" />
+      </Button>
+    </Grid>
+
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <ItemsControl ItemsSource="{Binding Category.SubCategories}" Margin="0 0 0 96">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SubCategoryTransactionsGroupViewModel">
+            <StackPanel>
+              <Button Classes="GroupHeader"
+                      Command="{Binding Parent.ToggleExpandCommand}"
+                      CommandParameter="{Binding}">
+                <Grid ColumnDefinitions="Auto * Auto Auto" Margin="12 0 12 0">
+                  <Panel Width="18" Height="18" VerticalAlignment="Center">
+                    <mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
+                    <mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
+                  </Panel>
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding DisplayName}"
+                             Margin="8 0"
+                             FontWeight="SemiBold"
+                             VerticalAlignment="Center"
+                             TextTrimming="CharacterEllipsis" />
+                  <SelectableTextBlock Grid.Column="2"
+                                       Text="{Binding Sum, StringFormat='#,##0.00'}"
+                                       Margin="8 0"
+                                       VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="3"
+                             Text="{Binding Percent, StringFormat=P0}"
+                             MinWidth="40"
+                             TextAlignment="Right"
+                             Classes="Muted"
+                             FontSize="12" />
+                </Grid>
+              </Button>
+
+              <ItemsControl ItemsSource="{Binding Transactions}" IsVisible="{Binding IsExpanded}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TransactionRowViewModel">
+                    <Border Classes="TransactionRow" Tapped="OnTransactionTapped">
+                      <Grid ColumnDefinitions="42 * Auto" Margin="14 0">
+                        <TextBlock Text="{Binding Date, StringFormat=dd.MM}"
+                                   FontSize="12"
+                                   Classes="Muted" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Comment}"
+                                   Margin="8 0"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <SelectableTextBlock Grid.Column="2"
+                                             Text="{Binding Sum, StringFormat='#,##0.00'}"
+                                             VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
