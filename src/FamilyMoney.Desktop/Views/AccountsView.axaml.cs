@@ -1,8 +1,9 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using FamilyMoney.ViewModels;
 
 namespace FamilyMoney.Views;
@@ -26,6 +27,28 @@ public partial class AccountsView : UserControl
     {
         GhostItem.IsVisible = false;
         base.OnLoaded(e);
+    }
+
+    private void OnChevronTapped(object? sender, TappedEventArgs e)
+    {
+        // Клик по шеврону только раскрывает/сворачивает группу, не выделяя её.
+        e.Handled = true;
+    }
+
+    private void OnGroupTapped(object? sender, TappedEventArgs e)
+    {
+        // Тап по кнопке-шеврону не должен выделять группу.
+        if (e.Source is Visual source
+            && source.FindAncestorOfType<Button>(includeSelf: true) is { } button
+            && button.Classes.Contains("Chevron"))
+        {
+            return;
+        }
+
+        if (sender is Border { DataContext: AccountViewModel account })
+        {
+            account.SelectCommand();
+        }
     }
 
     private void DragOver(object? sender, DragEventArgs e)

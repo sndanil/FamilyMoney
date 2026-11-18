@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:cv="using:FamilyMoney.Converters"
+			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
 			 xmlns:views="clr-namespace:FamilyMoney.Views"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -15,6 +16,7 @@
 		<cv:IsNotZeroConverter x:Key="isNotZeroConverter" />
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
 		<cv:FirstIsMainConverter x:Key="firstIsMainConverter" />
+		<cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.Separator">
@@ -237,6 +239,7 @@
 									Classes.Selected="{Binding IsSelected}"
 									Classes.Hidden="{Binding IsHidden}"
 									Classes.WithDeposit="{Binding HasDepositDetails}"
+									Tapped="OnGroupTapped"
 									>
 								<Border.IsVisible>
 									<MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -245,9 +248,6 @@
 									</MultiBinding>
 								</Border.IsVisible>
 								<Interaction.Behaviors>
-									<EventTriggerBehavior EventName="Tapped">
-										<InvokeCommandAction Command="{Binding SelectCommand}" />
-									</EventTriggerBehavior>
 									<EventTriggerBehavior EventName="DoubleTapped">
 										<InvokeCommandAction Command="{Binding $parent[UserControl].((vm:AccountsViewModel)DataContext).EditCommand}"
 															 CommandParameter="{Binding}"/>
@@ -272,13 +272,22 @@
 										>
 										<mi:MaterialIcon Kind="DotsVertical" />
 									</Grid>
-									<Button Grid.Column="1"  Classes="Expander" 
+									<Button Grid.Column="1"  Classes="Chevron" 
 											IsVisible="{Binding IsGroup}"
-											Command="{Binding ToggleExpandCommand}">
-										<Grid>
-											<mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-											<mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-										</Grid>
+											Command="{Binding ToggleExpandCommand}"
+											Tapped="OnChevronTapped">
+										<mi:MaterialIcon Kind="ChevronRight"
+														 RenderTransformOrigin="50%,50%">
+											<mi:MaterialIcon.RenderTransform>
+												<RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+													<RotateTransform.Transitions>
+														<Transitions>
+															<DoubleTransition Property="Angle" Duration="0:0:0.22" />
+														</Transitions>
+													</RotateTransform.Transitions>
+												</RotateTransform>
+											</mi:MaterialIcon.RenderTransform>
+										</mi:MaterialIcon>
 									</Button>
 									<Image Grid.Column="2"
 										   Stretch="Uniform"
@@ -345,16 +354,17 @@
 									</SelectableTextBlock>
 								</Grid>
 							</Border>
-							<ItemsControl ItemsSource="{Binding Children}" 
-									Classes="Children">
-								<ItemsControl.IsVisible>
+							<controls:CollapsiblePanel>
+								<controls:CollapsiblePanel.IsExpanded>
 									<MultiBinding Converter="{StaticResource firstIsMainConverter}">
 										<Binding Path="IsExpanded" />
 										<Binding Path="$parent[UserControl].((vm:AccountsViewModel)DataContext).ShowHidden"/>
 										<Binding Path="!IsHidden" /> 
 									</MultiBinding>
-								</ItemsControl.IsVisible>
+								</controls:CollapsiblePanel.IsExpanded>
 
+							<ItemsControl ItemsSource="{Binding Children}" 
+									Classes="Children">
 								<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
 										<StackPanel Orientation="Vertical" />
@@ -438,6 +448,7 @@
 									</DataTemplate>
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>
+							</controls:CollapsiblePanel>
 						</StackPanel>
 						</Border>
 					</DataTemplate>

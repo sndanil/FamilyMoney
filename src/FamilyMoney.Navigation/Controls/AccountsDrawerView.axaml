@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:vm="using:FamilyMoney.ViewModels"
              mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="600"
              x:DataType="vm:AccountsViewModel"
@@ -11,6 +12,7 @@
   <UserControl.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
     <cv:IsNegativeConverter x:Key="isNegativeConverter" />
+    <cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -181,13 +183,21 @@
                 </Border.ContextMenu>
 
                 <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                  <Button Classes="Expander"
+                  <Button Classes="Chevron"
                           IsVisible="{Binding IsGroup}"
                           Command="{Binding ToggleExpandCommand}">
-                    <Grid>
-                      <mi:MaterialIcon Kind="ChevronDown" IsVisible="{Binding IsExpanded}" />
-                      <mi:MaterialIcon Kind="ChevronRight" IsVisible="{Binding !IsExpanded}" />
-                    </Grid>
+                    <mi:MaterialIcon Kind="ChevronRight"
+                                     RenderTransformOrigin="50%,50%">
+                      <mi:MaterialIcon.RenderTransform>
+                        <RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+                          <RotateTransform.Transitions>
+                            <Transitions>
+                              <DoubleTransition Property="Angle" Duration="0:0:0.22" />
+                            </Transitions>
+                          </RotateTransform.Transitions>
+                        </RotateTransform>
+                      </mi:MaterialIcon.RenderTransform>
+                    </mi:MaterialIcon>
                   </Button>
                   <Image Grid.Column="1"
                          Stretch="Uniform"
@@ -222,9 +232,9 @@
                 </Grid>
               </Border>
 
-              <ItemsControl ItemsSource="{Binding Children}"
-                            Classes="Children"
-                            IsVisible="{Binding IsExpanded}">
+              <controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
+                <ItemsControl ItemsSource="{Binding Children}"
+                              Classes="Children">
 
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -291,6 +301,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+              </controls:CollapsiblePanel>
             </StackPanel>
             </Border>
           </DataTemplate>

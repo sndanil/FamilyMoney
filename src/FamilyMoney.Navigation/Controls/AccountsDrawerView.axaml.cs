@@ -19,7 +19,7 @@ public partial class AccountsDrawerView : UserControl
         // кнопка сама переключает IsExpanded.
         if (e.Source is Visual source
             && source.FindAncestorOfType<Button>(includeSelf: true) is { } button
-            && button.Classes.Contains("Expander"))
+            && (button.Classes.Contains("Expander") || button.Classes.Contains("Chevron")))
         {
             return;
         }
