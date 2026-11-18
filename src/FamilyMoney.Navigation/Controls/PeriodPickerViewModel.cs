@@ -43,14 +43,18 @@ public partial class PeriodPickerViewModel : ViewModelBase
     private int _year;
     private int _month;
 
-    public PeriodPickerViewModel(PeriodViewModel period)
+    public PeriodPickerViewModel(PeriodViewModel period, bool isExtended = false)
     {
         _period = period ?? throw new ArgumentNullException(nameof(period));
+        IsExtended = isExtended;
         Reset();
     }
 
     /// <summary>Период выбран; страница закрывает поповер.</summary>
     public event EventHandler? Applied;
+
+    /// <summary>Показывать дополнительные варианты десктопа: «Выбрать» и «Всё время».</summary>
+    public bool IsExtended { get; }
 
     [ObservableProperty]
     public partial PeriodPickerMode Mode { get; set; }
@@ -106,8 +110,7 @@ public partial class PeriodPickerViewModel : ViewModelBase
 
     [RelayCommand]
     private void Today()
-    {
-        var today = DateTime.Today;
+    {        var today = DateTime.Today;
         _year = today.Year;
         _month = today.Month;
 
@@ -127,6 +130,21 @@ public partial class PeriodPickerViewModel : ViewModelBase
                 break;
         }
 
+        Applied?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand]
+    private void Custom()
+    {
+        // Сначала закрываем поповер, чтобы диалог не открывался поверх него.
+        Applied?.Invoke(this, EventArgs.Empty);
+        _period.ToCustomCommand.Execute(null);
+    }
+
+    [RelayCommand]
+    private void All()
+    {
+        _period.ToAllCommand.Execute(null);
         Applied?.Invoke(this, EventArgs.Empty);
     }
 

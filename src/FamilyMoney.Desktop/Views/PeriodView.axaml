@@ -3,9 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
-			 x:DataType="vm:PeriodViewModel"
+             x:DataType="vm:PeriodViewModel"
              x:Class="FamilyMoney.Views.PeriodView">
 	<Grid ColumnDefinitions="auto auto auto" Height="50">
 		<Button HotKey="Ctrl+D1" Command="{Binding ToDayCommand}" IsVisible="False" />
@@ -21,21 +22,13 @@
 				>
 			<mi:MaterialIcon Kind="ChevronLeft" />
 		</Button>
-		<Button Grid.Column="1" MinWidth="200"
+		<Button x:Name="PeriodButton"
+				Grid.Column="1"
+				MinWidth="200"
 				Height="30"
 				HotKey="Ctrl+P"
-				CornerRadius="0">
-			<Button.Flyout>
-				<MenuFlyout>
-					<MenuItem Width="200" Header="День" Command="{Binding ToDayCommand}" />
-					<MenuItem Header="Месяц" Command="{Binding ToMonthCommand}" />
-					<MenuItem Header="Квартал" Command="{Binding ToQuarterCommand}" />
-					<MenuItem Header="Год" Command="{Binding ToYearCommand}" />
-					<MenuItem Header="Выбрать" Command="{Binding ToCustomCommand}" />
-					<MenuItem Header="-" />
-					<MenuItem Header="Всё время" Command="{Binding ToAllCommand}" />
-				</MenuFlyout>
-			</Button.Flyout>
+				CornerRadius="0"
+				Click="OnPeriodClick">
 			<TextBlock Text="{Binding Text}" HorizontalAlignment="Center"></TextBlock>
 		</Button>
 		<Button Grid.Column="2" Command="{Binding NextCommand}"
@@ -45,5 +38,13 @@
 				>
 			<mi:MaterialIcon Kind="ChevronRight" />
 		</Button>
+
+		<Popup x:Name="PeriodPopup"
+			   PlacementTarget="{Binding #PeriodButton}"
+			   Placement="Bottom"
+			   VerticalOffset="4"
+			   IsLightDismissEnabled="True">
+			<controls:PeriodPicker x:Name="PeriodPickerControl" />
+		</Popup>
 	</Grid>
 </UserControl>

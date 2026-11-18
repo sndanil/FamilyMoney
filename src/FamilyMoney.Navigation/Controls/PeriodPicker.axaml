@@ -111,11 +111,32 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4" IsVisible="{Binding IsExtended}">
+        <Button Content="Выбрать"
+                Classes="Chip"
+                Height="30"
+                Padding="2 0"
+                Command="{Binding CustomCommand}" />
+        <Button Grid.Column="1"
+                Content="Сегодня"
+                Classes="Chip"
+                Height="30"
+                Padding="2 0"
+                Command="{Binding TodayCommand}" />
+        <Button Grid.Column="2"
+                Content="Всё время"
+                Classes="Chip"
+                Height="30"
+                Padding="2 0"
+                Command="{Binding AllCommand}" />
+      </Grid>
+
       <Button Content="Сегодня"
               HorizontalAlignment="Center"
               Classes="Chip"
               Padding="12 0"
               Height="30"
+              IsVisible="{Binding !IsExtended}"
               Command="{Binding TodayCommand}" />
     </StackPanel>
   </Border>
