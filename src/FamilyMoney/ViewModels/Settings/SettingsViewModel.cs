@@ -69,6 +69,12 @@ public partial class SettingsViewModel : ViewModelBase
 
     public bool IsSyncAvailable => _syncService.IsEnabled;
 
+    /// <summary>На устройстве доступен сценарий синхронизации по Wi-Fi (сканер QR).</summary>
+    public bool CanPeerSync => PeerSync.IsAvailable;
+
+    /// <summary>Есть хотя бы один способ синхронизации: облако или Wi-Fi.</summary>
+    public bool HasAnySync => IsSyncAvailable || CanPeerSync;
+
     public bool IsQrImportAvailable => _qrScanner != null;
 
     public PeerSyncClientViewModel PeerSync { get; }
@@ -136,6 +142,7 @@ public partial class SettingsViewModel : ViewModelBase
     private void RefreshSyncState()
     {
         OnPropertyChanged(nameof(IsSyncAvailable));
+        OnPropertyChanged(nameof(HasAnySync));
 
         var sync = _configuration.GetSelectedDatabase().GetSyncConfiguration();
         SyncStatus = IsSyncAvailable
@@ -337,6 +344,7 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedDatabase = database;
         DeleteDatabaseCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsSyncAvailable));
+        OnPropertyChanged(nameof(HasAnySync));
         SyncNowCommand.NotifyCanExecuteChanged();
         SyncStatus = $"Настройки получены: {config.Name}";
     }

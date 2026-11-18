@@ -1,7 +1,9 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using FamilyMoney.Navigation.Controls;
 using FamilyMoney.ViewModels;
 
@@ -105,5 +107,62 @@ public partial class HomePage : ContentPage
 
         PeriodPickerControl.DataContext = picker;
         PeriodPopup.IsOpen = true;
+    }
+
+    private void OnSyncClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+        {
+            return;
+        }
+
+        // Оба способа — показываем выбор; один — сразу выполняем его.
+        if (viewModel.Settings.IsSyncAvailable && viewModel.Settings.PeerSync.IsAvailable)
+        {
+            (this.FindResource("SyncMenu") as MenuFlyout)?.ShowAt(SyncButton);
+            return;
+        }
+
+        if (viewModel.Settings.IsSyncAvailable)
+        {
+            viewModel.Settings.SyncNowCommand.Execute(null);
+            return;
+        }
+
+        _ = OpenPeerSyncAsync();
+    }
+
+    private void OnSyncCloudClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.Settings.SyncNowCommand.Execute(null);
+        }
+    }
+
+    private void OnPeerSyncClick(object? sender, RoutedEventArgs e) => _ = OpenPeerSyncAsync();
+
+    private void OnSyncSettingsClick(object? sender, RoutedEventArgs e) => _ = OpenSettingsAsync();
+
+    private async Task OpenPeerSyncAsync()
+    {
+        var shell = this.FindAncestorOfType<AppShell>();
+        if (shell == null || shell.NavigationPage.CurrentPage is PeerSyncPage)
+        {
+            return;
+        }
+
+        await shell.NavigationPage.PushAsync(new PeerSyncPage { DataContext = DataContext });
+    }
+
+    private async Task OpenSettingsAsync()
+    {
+        var shell = this.FindAncestorOfType<AppShell>();
+        if (shell == null || shell.NavigationPage.CurrentPage is SettingsPage)
+        {
+            return;
+        }
+
+        await shell.NavigationPage.PushAsync(new SettingsPage { DataContext = DataContext });
     }
 }

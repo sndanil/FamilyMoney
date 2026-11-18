@@ -1,0 +1,38 @@
+﻿<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             x:Class="FamilyMoney.Navigation.Pages.PeerSyncPage"
+             x:DataType="vm:MainViewModel"
+             Header="По Wi-Fi">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="16">
+      <TextBlock Text="Откройте «По Wi-Fi» на компьютере и отсканируйте QR-код."
+                 TextWrapping="Wrap"
+                 FontSize="14" />
+
+      <Button Content="Сканировать QR и синхронизировать"
+              Classes="Accent"
+              Height="48"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              CornerRadius="10"
+              Command="{Binding Settings.PeerSync.StartCommand}"
+              IsVisible="{Binding Settings.PeerSync.IsAvailable}" />
+
+      <TextBlock Text="Сканер QR недоступен на этом устройстве."
+                 TextWrapping="Wrap"
+                 Foreground="{DynamicResource WarningBrush}"
+                 IsVisible="{Binding !Settings.PeerSync.IsAvailable}" />
+
+      <ProgressBar IsIndeterminate="True"
+                   Height="4"
+                   MinWidth="0"
+                   IsVisible="{Binding Settings.PeerSync.IsSyncing}" />
+
+      <TextBlock Text="{Binding Settings.PeerSync.Status}"
+                 TextWrapping="Wrap"
+                 Foreground="{DynamicResource TextSecondaryBrush}" />
+    </StackPanel>
+  </ScrollViewer>
+</ContentPage>

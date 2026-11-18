@@ -67,7 +67,18 @@ public partial class PeerSyncClientViewModel : ViewModelBase
             return;
         }
 
-        var json = await _scanner.ScanAsync();
+        string? json;
+        try
+        {
+            json = await _scanner.ScanAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "QR scanner failed");
+            Status = "Не удалось открыть сканер QR: " + ex.Message;
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(json))
         {
             Status = "Сканирование отменено.";

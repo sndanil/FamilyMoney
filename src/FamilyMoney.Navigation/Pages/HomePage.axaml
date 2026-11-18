@@ -6,6 +6,15 @@
              x:Class="FamilyMoney.Navigation.Pages.HomePage"
              x:DataType="vm:MainViewModel"
              Header="Главная">
+    <ContentPage.Resources>
+        <MenuFlyout x:Key="SyncMenu">
+            <MenuItem Header="Синхронизировать сейчас" Click="OnSyncCloudClick" />
+            <MenuItem Header="По Wi-Fi…" Click="OnPeerSyncClick" />
+            <MenuItem Header="-" IsEnabled="False" />
+            <MenuItem Header="Настройки синхронизации" Click="OnSyncSettingsClick" />
+        </MenuFlyout>
+    </ContentPage.Resources>
+
     <ContentPage.Styles>
         <Style Selector="Border.Total">
             <Setter Property="Margin" Value="0" />
@@ -137,12 +146,13 @@
                     Command="{Binding Period.NextCommand}">
                 <mi:MaterialIcon Kind="ChevronRight" />
             </Button>
-            <Button Grid.Column="3"
+            <Button x:Name="SyncButton"
+                    Grid.Column="3"
                     Classes="HeaderIcon"
-                    Command="{Binding Settings.SyncNowCommand}"
-                    IsVisible="{Binding Settings.IsSyncAvailable}"
+                    Click="OnSyncClick"
+                    IsVisible="{Binding Settings.HasAnySync}"
                     IsEnabled="{Binding !Settings.IsSyncing}"
-                    ToolTip.Tip="Синхронизировать">
+                    ToolTip.Tip="Синхронизация">
                 <mi:MaterialIcon Kind="Sync" Classes.SyncSpin="{Binding Settings.IsSyncing}">
                     <mi:MaterialIcon.RenderTransform>
                         <RotateTransform />

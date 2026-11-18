@@ -24,6 +24,10 @@
 		<cv:GridLengthConverter x:Key="gridLengthConverter" />
 		<cv:IsEqualToConverter x:Key="isEqualToConverter" />
 		<cv:IsNotEqualToConverter x:Key="isNotEqualToConverter" />
+		<MenuFlyout x:Key="SyncMenu">
+			<MenuItem Header="Синхронизировать сейчас" Click="OnSyncCloudClick" />
+			<MenuItem Header="По Wi-Fi (показать QR)…" Click="OnPeerSyncClick" />
+		</MenuFlyout>
 	</Window.Resources>
 	<Window.Styles>
 		<Style Selector="Window">
@@ -248,11 +252,11 @@
 								HotKey="Alt+T"
 								Command="{Binding Transactions.AddTransferCommand}">Перевод</Button>
 
-							<Button Classes="AddButton"
-									Command="{Binding Settings.SyncNowCommand}"
-									IsVisible="{Binding Settings.IsSyncAvailable}"
+							<Button x:Name="SyncButton"
+									Classes="AddButton"
+									Click="OnSyncClick"
 									IsEnabled="{Binding !Settings.IsSyncing}"
-									ToolTip.Tip="Синхронизировать">
+									ToolTip.Tip="Синхронизация">
 								<StackPanel Orientation="Horizontal" Spacing="6">
 									<mi:MaterialIcon Kind="Sync"
 													 Classes.SyncSpin="{Binding Settings.IsSyncing}">

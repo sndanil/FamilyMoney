@@ -1,5 +1,7 @@
-using Android.Gms.Extensions;
+using AndroidTask = global::Android.Gms.Tasks.Task;
+using AndroidTaskListener = global::Android.Gms.Tasks.IOnCompleteListener;
 using FamilyMoney.Services;
+using Java.Lang;
 using Xamarin.Google.MLKit.Vision.Barcode.Common;
 using Xamarin.Google.MLKit.Vision.CodeScanner;
 
@@ -23,15 +25,50 @@ public sealed class AndroidQrScannerService : IQrScannerService
 
         var scanner = GmsBarcodeScanning.GetClient(activity, options);
 
+        // Не используем AsAsync: его слушатель вызывает SetException(null), когда
+        // задачу отменяют закрытием сканера, и это роняет процесс из Java-колбэка.
+        var completion = new TaskCompletionSource<Barcode?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        scanner.StartScan().AddOnCompleteListener(new BarcodeCompleteListener(completion));
+
         try
         {
-            var barcode = await scanner.StartScan().AsAsync<Barcode>();
+            var barcode = await completion.Task.ConfigureAwait(false);
             return barcode?.RawValue;
         }
-        catch (global::Android.Gms.Common.Apis.ApiException ex)
-            when (ex.StatusCode == global::Android.Gms.Common.Apis.CommonStatusCodes.Canceled)
+        catch (System.Exception)
         {
             return null;
+        }
+    }
+
+    private sealed class BarcodeCompleteListener : Java.Lang.Object, AndroidTaskListener
+    {
+        private readonly TaskCompletionSource<Barcode?> _completion;
+
+        public BarcodeCompleteListener(TaskCompletionSource<Barcode?> completion)
+        {
+            _completion = completion;
+        }
+
+        public void OnComplete(AndroidTask task)
+        {
+            if (task.IsSuccessful)
+            {
+                _completion.TrySetResult(task.Result as Barcode);
+                return;
+            }
+
+            // Закрытие сканера без кода — это отмена, а не ошибка.
+            if (task.IsCanceled)
+            {
+                _completion.TrySetResult(null);
+                return;
+            }
+
+            var error = task.Exception;
+            _completion.TrySetException(error is null
+                ? new InvalidOperationException("QR scan failed.")
+                : error);
         }
     }
 }

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
 using FamilyMoney.ViewModels;
 using FamilyMoney.ViewModels.Settings;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FamilyMoney.Views;
 
@@ -109,5 +110,36 @@ public partial class MainWindow : Window
         {
             viewModel.SaveLayout();
         }
+    }
+
+    private void OnSyncClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel && viewModel.Settings.IsSyncAvailable)
+        {
+            (this.FindResource("SyncMenu") as MenuFlyout)?.ShowAt(SyncButton);
+            return;
+        }
+
+        OnPeerSyncClick(sender, e);
+    }
+
+    private void OnSyncCloudClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.Settings.SyncNowCommand.Execute(null);
+        }
+    }
+
+    private async void OnPeerSyncClick(object? sender, RoutedEventArgs e)
+    {
+        var host = AppInit.GlobalHost?.Services.GetService<PeerHostViewModel>();
+        if (host == null)
+        {
+            return;
+        }
+
+        var window = new PeerSyncWindow { DataContext = host };
+        await window.ShowDialog(this);
     }
 }
