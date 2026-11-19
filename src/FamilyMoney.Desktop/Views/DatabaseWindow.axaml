@@ -163,7 +163,7 @@
 									 PasswordChar="•"
 									 PlaceholderText="Пароль приложения, не основной пароль" />
 
-							<TextBlock Text="Пароль не попадает в QR-код: на втором устройстве его нужно ввести отдельно."
+							<TextBlock Text="Пароль приложения передаётся в QR-коде вместе с ключами доступа. Снимите галочку «Передавать ключи доступа к хранилищу» в окне QR, если нужен код без секретов."
 									   FontSize="11"
 									   Foreground="{DynamicResource TextSecondaryBrush}"
 									   TextWrapping="Wrap"
@@ -220,7 +220,7 @@
 										   Foreground="{DynamicResource TextSecondaryBrush}"
 										   TextWrapping="Wrap"
 										   Margin="0 0 0 8" />
-								<TextBlock Text="Восстановить данные без парольной фразы нельзя. Ключ хранится на этом устройстве; в QR по умолчанию не передаётся. После включения шифрование нельзя отключить без пересоздания хранилища."
+								<TextBlock Text="Восстановить данные без парольной фразы нельзя. Ключ хранится на этом устройстве; при показе QR с передачей ключей он попадёт в код. После включения шифрование нельзя отключить без пересоздания хранилища."
 										   FontSize="11"
 										   Foreground="{DynamicResource TextSecondaryBrush}"
 										   TextWrapping="Wrap"
@@ -236,7 +236,7 @@
 								   TextWrapping="Wrap"
 								   Margin="0 0 0 10" />
 
-						<TextBlock Text="По умолчанию секреты синхронизации не попадают в QR-код. Для переноса на телефон, где нет формы ввода ключей, включите галочку в окне QR."
+						<TextBlock Text="Ключи доступа к S3/WebDAV передаются в QR-коде по умолчанию, чтобы новое устройство могло синхронизироваться. Снимите галочку в окне QR, если код должен быть без секретов."
 								   FontSize="11"
 								   Foreground="{DynamicResource TextSecondaryBrush}"
 								   TextWrapping="Wrap"
@@ -257,12 +257,21 @@
 							<TextBlock Text="Отсканируйте код в мобильном приложении"
 									   TextWrapping="Wrap"
 									   HorizontalAlignment="Center" />
-							<CheckBox Content="Передавать ключи и пароли"
+							<CheckBox Content="Передавать ключи доступа к хранилищу"
 									  IsChecked="{Binding IncludeSecretsInQr}"
 									  IsCheckedChanged="OnShowQrClick" />
-							<TextBlock Text="Только для личного переноса: любой, кто увидит код, получит доступ к хранилищу."
+							<TextBlock Text="Ключи доступа к S3/WebDAV нужны новому устройству для синхронизации. Ключ шифрования передаётся только при включённом шифровании."
 									   FontSize="11"
 									   Foreground="{DynamicResource TextSecondaryBrush}"
+									   TextWrapping="Wrap" />
+							<TextBlock Text="Без ключей доступа к хранилищу новое устройство не сможет синхронизироваться."
+									   FontSize="11"
+									   Foreground="{DynamicResource WarningBrush}"
+									   TextWrapping="Wrap"
+									   IsVisible="{Binding !IncludeSecretsInQr}" />
+							<TextBlock Text="В QR попадут ключи доступа к хранилищу (и ключ шифрования, если включено). Показывайте код только доверенным устройствам."
+									   FontSize="11"
+									   Foreground="{DynamicResource WarningBrush}"
 									   TextWrapping="Wrap"
 									   IsVisible="{Binding IncludeSecretsInQr}" />
 							<Image x:Name="QrImage" Width="260" Height="260" Stretch="Uniform" />

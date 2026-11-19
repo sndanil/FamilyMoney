@@ -363,7 +363,19 @@ public partial class SettingsViewModel : ViewModelBase
         Save();
         RefreshSyncState();
         DeleteDatabaseCommand.NotifyCanExecuteChanged();
-        SyncStatus = $"Настройки получены: {config.Name}";
+
+        var importedSync = database.ToConfiguration().GetSyncConfiguration();
+        if (importedSync.IsConfigured)
+        {
+            // Сразу подтягиваем данные, чтобы после сканирования QR база была не пустой.
+            await SyncNowAsync();
+        }
+        else
+        {
+            SyncStatus = importedSync.Enabled
+                ? "База добавлена, но синхронизация не включится: в QR-коде нет ключей доступа. На компьютере откройте QR базы, включите передачу секретов и отсканируйте снова."
+                : $"Настройки получены: {config.Name}. Синхронизация для этой базы выключена.";
+        }
     }
 
     private bool IsEmptyStartupDatabase(DatabaseViewModel database)

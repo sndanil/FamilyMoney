@@ -46,9 +46,9 @@ public partial class DatabaseViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
-    /// <summary>Передавать ключи и пароли в QR. По умолчанию выключено.</summary>
+    /// <summary>Передавать ключи доступа к хранилищу (и ключ шифрования) в QR. Включено по умолчанию.</summary>
     [ObservableProperty]
-    public partial bool IncludeSecretsInQr { get; set; }
+    public partial bool IncludeSecretsInQr { get; set; } = true;
 
     [ObservableProperty]
     public partial string ValidationMessage { get; set; } = string.Empty;
