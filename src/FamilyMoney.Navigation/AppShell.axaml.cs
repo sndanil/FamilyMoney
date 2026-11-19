@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
@@ -10,7 +11,7 @@ namespace FamilyMoney.Navigation;
 
 public partial class AppShell : UserControl
 {
-    // На широком экране ящик со счетами показывается постоянно, на узком — только по кнопке.
+    private TopLevel? _topLevel;
     private bool? _lastWide;
 
     public AppShell()
@@ -18,6 +19,24 @@ public partial class AppShell : UserControl
         InitializeComponent();
 
         SizeChanged += OnShellSizeChanged;
+
+        AttachedToVisualTree += (_, _) =>
+        {
+            _topLevel = TopLevel.GetTopLevel(this);
+            if (_topLevel != null)
+            {
+                _topLevel.BackRequested += OnBackRequested;
+            }
+        };
+
+        DetachedFromVisualTree += (_, _) =>
+        {
+            if (_topLevel != null)
+            {
+                _topLevel.BackRequested -= OnBackRequested;
+                _topLevel = null;
+            }
+        };
 
         WeakReferenceMessenger.Default.Register<AppShell, ModelEditMessage<BaseTransactionViewModel>>(this, static (shell, m) =>
         {
@@ -67,6 +86,25 @@ public partial class AppShell : UserControl
         // При запуске в портретном режиме ящик должен быть скрыт, в альбомном —
         // открыт, если позволяет ширина.
         ShellDrawer.IsOpen = wide;
+    }
+
+    private void OnBackRequested(object? sender, RoutedEventArgs e)
+    {
+        // Системный «назад» / свайп от края: сначала закрываем страницу,
+        // затем — открытый ящик. На корневой странице отдаём событие системе.
+        if (ShellNavigation.CanGoBack)
+        {
+            e.Handled = true;
+            _ = ShellNavigation.PopAsync();
+            return;
+        }
+
+        if (ShellDrawer.IsOpen
+            && ShellDrawer.DisplayMode is SplitViewDisplayMode.Overlay or SplitViewDisplayMode.CompactOverlay)
+        {
+            e.Handled = true;
+            ShellDrawer.IsOpen = false;
+        }
     }
 
     private async System.Threading.Tasks.Task<BaseTransactionViewModel?> EditTransactionAsync(BaseTransactionViewModel viewModel)
