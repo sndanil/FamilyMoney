@@ -177,8 +177,8 @@
     </Border>
 
     <Grid Grid.Row="3">
-      <ScrollViewer>
-        <StackPanel Margin="12 8 12 88" Spacing="12">
+      <ScrollViewer x:Name="DetailsScroll">
+        <StackPanel x:Name="ContentStack" Margin="12 8 12 88" Spacing="12">
           <!-- Основное -->
           <Border Classes="Section">
             <StackPanel Spacing="8">
@@ -335,6 +335,7 @@
                        MinLines="3"
                        MaxLines="3"
                        Text="{Binding Comment}"
+                       GotFocus="CommentGotFocus"
                        DoubleTapped="CommentDoubleTapped" />
               <TextBlock Text="Дважды коснитесь, чтобы выбрать из последних комментариев."
                          FontSize="10"
@@ -345,6 +346,7 @@
                 <TextBox x:Name="TagInputTextBox"
                          Text="{Binding TagInput, Mode=TwoWay}"
                          PlaceholderText="Новый тег"
+                         GotFocus="TagInputGotFocus"
                          KeyDown="TagInputKeyDown" />
                 <Button Grid.Column="1"
                         Classes="TagAdd"
@@ -405,7 +407,8 @@
         </StackPanel>
       </ScrollViewer>
 
-      <Border VerticalAlignment="Bottom"
+      <Border x:Name="BottomBar"
+              VerticalAlignment="Bottom"
               HorizontalAlignment="Center"
               Margin="8 0 8 12"
               Padding="8 2"

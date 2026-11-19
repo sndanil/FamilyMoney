@@ -4,11 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
 using FamilyMoney.Navigation.Utils;
@@ -32,6 +35,7 @@ public partial class TransactionEditPage : ContentPage
     private bool _isListening;
     private int _commentInsertIndex;
     private CancellationTokenSource? _voiceStatusCts;
+    private IInputPane? _inputPane;
 
     public TransactionEditPage()
     {
@@ -78,6 +82,91 @@ public partial class TransactionEditPage : ContentPage
     }
 
     public Task<BaseTransactionViewModel?> Result => _result.Task;
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        _inputPane = TopLevel.GetTopLevel(this)?.InputPane;
+        if (_inputPane != null)
+        {
+            _inputPane.StateChanged += OnInputPaneStateChanged;
+            if (_inputPane.State == InputPaneState.Open)
+            {
+                ApplyKeyboardInset(_inputPane.OccludedRect.Height);
+            }
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (_inputPane != null)
+        {
+            _inputPane.StateChanged -= OnInputPaneStateChanged;
+            _inputPane = null;
+        }
+
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void OnInputPaneStateChanged(object? sender, InputPaneStateEventArgs e)
+    {
+        var height = e.NewState == InputPaneState.Open ? e.EndRect.Height : 0;
+        ApplyKeyboardInset(height);
+
+        if (height > 0)
+        {
+            // Поле под клавиатурой: после применения отступа прокручиваем его.
+            Dispatcher.UIThread.Post(BringFocusedFieldIntoView, DispatcherPriority.Background);
+        }
+    }
+
+    private void ApplyKeyboardInset(double height)
+    {
+        // Освобождаем не только клавиатуру, но и полосу под нижней панелью:
+        // иначе панель ложится поверх поля, которое мы только что прокрутили.
+        var barHeight = BottomBar.Bounds.Height > 0 ? BottomBar.Bounds.Height : 56;
+        const double barGap = 12;
+
+        DetailsScroll.Margin = new Thickness(0, 0, 0, height + barHeight + barGap);
+        BottomBar.Margin = new Thickness(8, 0, 8, barGap + height);
+    }
+
+    private void BringFocusedFieldIntoView()
+    {
+        var field = CommentTextBox.IsFocused
+            ? CommentTextBox
+            : TagInputTextBox.IsFocused
+                ? TagInputTextBox
+                : null;
+
+        field?.BringIntoView();
+    }
+
+    private void CommentGotFocus(object? sender, FocusChangedEventArgs e)
+    {
+        ScrollIntoViewAfterKeyboard(CommentTextBox);
+    }
+
+    private void TagInputGotFocus(object? sender, FocusChangedEventArgs e)
+    {
+        ScrollIntoViewAfterKeyboard(TagInputTextBox);
+    }
+
+    private void ScrollIntoViewAfterKeyboard(Control control)
+    {
+        // Окно подстраивается под клавиатуру не мгновенно: сначала даём ему
+        // изменить высоту, потом прокручиваем поле в видимую область.
+        DispatcherTimer.RunOnce(
+            () =>
+            {
+                if (!_closing)
+                {
+                    control.BringIntoView();
+                }
+            },
+            TimeSpan.FromMilliseconds(250));
+    }
 
     private void Close(BaseTransactionViewModel? result)
     {
