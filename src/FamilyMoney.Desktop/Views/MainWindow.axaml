@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:services="clr-namespace:FamilyMoney.Services;assembly=FamilyMoney"
@@ -237,22 +237,22 @@
 								</Panel>
 							</ToggleButton >
 
-							<views:PeriodView DataContext="{Binding Period}" Margin="10 0 0 0" />
+							<views:PeriodView DataContext="{Binding Period}" Margin="0 0 10 0" />
 
-							<Button Classes="AddButton"
+							<Button Classes="ToolPill" Margin="0 0 6 0"
 									HotKey="Alt+C"
 									Command="{Binding Transactions.AddCreditCommand}">Расход</Button>
 
-							<Button Classes="AddButton"
+							<Button Classes="ToolPill" Margin="0 0 6 0"
 									HotKey="Alt+D"
 									Command="{Binding Transactions.AddDebetCommand}">Доход</Button>
 
-							<Button Classes="AddButton"
+							<Button Classes="ToolPill" Margin="0 0 6 0"
 								HotKey="Alt+T"
 								Command="{Binding Transactions.AddTransferCommand}">Перевод</Button>
 
 							<Button x:Name="SyncButton"
-									Classes="AddButton"
+									Classes="ToolPill" Margin="0 0 6 0"
 									Click="OnSyncClick"
 									IsEnabled="{Binding !Settings.IsSyncing}"
 									ToolTip.Tip="Синхронизация">
@@ -264,11 +264,16 @@
 										</mi:MaterialIcon.RenderTransform>
 									</mi:MaterialIcon>
 									<TextBlock Text="Синхронизация" VerticalAlignment="Center" />
+									<mi:MaterialIcon Kind="ChevronDown"
+													 Width="12"
+													 Height="12"
+													 VerticalAlignment="Center"
+													 IsVisible="{Binding Settings.IsSyncAvailable}" />
 								</StackPanel>
 							</Button>
 
 							<Button Name="FilterButton"
-									Classes="AddButton"
+									Classes="ToolPill" Margin="0 0 6 0"
 									ToolTip.Tip="Фильтр транзакций">
 								<StackPanel Orientation="Horizontal" Spacing="6">
 									<mi:MaterialIcon Kind="FilterVariant" />
@@ -317,7 +322,7 @@
 								</Button.Flyout>
 							</Button>
 
-							<Button Classes="AddButton"
+							<Button Classes="ToolPill" Margin="0 0 6 0"
 									Command="{Binding Transactions.ResetFilterCommand}"
 									IsVisible="{Binding Transactions.IsFilterActive}"
 									ToolTip.Tip="Сбросить фильтр">
