@@ -79,6 +79,24 @@ public sealed class SyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Pull_AppliesRemoteDeviceJournal_WhenListingKeysHaveLeadingSlash()
+    {
+        // FluentStorage поверх S3 возвращает ключи с ведущим «/». Раньше из-за
+        // этого манифесты устройств не находились по префиксу и чужие дельты
+        // молча не применялись: устройство показывало данные старой ревизии.
+        var store = new FakeSyncStore { ListKeysWithLeadingSlash = true };
+        var device = CreateDevice(store, "slash");
+        var account = NewAccount("Key with leading slash");
+        await SeedDeviceJournalAsync(store, device.Database, "remote", 1, Delta("remote", 1, account));
+
+        var result = await device.Service.SyncAsync();
+
+        Assert.True(result.Success, result.Message);
+        Assert.True(device.Repository.Applied.ContainsKey(account.Id));
+        Assert.Equal(1, LoadState(device).AppliedByDevice["remote"]);
+    }
+
+    [Fact]
     public async Task LegacyJournal_IsMigratedAndApplied()
     {
         var store = new FakeSyncStore();

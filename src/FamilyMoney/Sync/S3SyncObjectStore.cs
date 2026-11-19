@@ -36,10 +36,13 @@ public sealed class S3SyncObjectStore : ISyncObjectStore
             },
             cancellationToken);
 
+        // FluentStorage отдаёт полный путь с ведущим «/». Ключи протокола
+        // синхронизации заданы относительно корня бакета, поэтому листинг
+        // нормализуется: иначе манифесты устройств не находятся по префиксу.
         return blobs
             .Where(blob => blob.IsFile)
             .Select(blob => new SyncObjectInfo(
-                blob.FullPath,
+                SyncObjectKeys.Normalize(blob.FullPath),
                 blob.Size ?? 0,
                 GetETag(blob),
                 blob.LastModificationTime))

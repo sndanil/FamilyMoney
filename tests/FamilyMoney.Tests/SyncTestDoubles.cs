@@ -57,6 +57,9 @@ internal sealed class FakeSyncStore : ISyncObjectStore
 
         public bool ConditionalWriteSupported { get; set; } = true;
 
+        /// <summary>FluentStorage поверх S3 возвращает полный путь с ведущим «/».</summary>
+        public bool ListKeysWithLeadingSlash { get; set; }
+
         public bool SupportsConditionalWrite => ConditionalWriteSupported;
 
         public Func<string, Task>? BeforeConditionalWrite { get; set; }
@@ -76,7 +79,11 @@ internal sealed class FakeSyncStore : ISyncObjectStore
                             ? Encoding.UTF8.GetByteCount(text.Content)
                             : _files[key].LongLength;
                         var etag = _text.TryGetValue(key, out var entry) ? entry.ETag : null;
-                        return new SyncObjectInfo(key, size, etag, DateTimeOffset.UtcNow);
+                        return new SyncObjectInfo(
+                            ListKeysWithLeadingSlash ? "/" + key : key,
+                            size,
+                            etag,
+                            DateTimeOffset.UtcNow);
                     })
                     .ToList();
 

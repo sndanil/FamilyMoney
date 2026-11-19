@@ -667,9 +667,15 @@ public sealed class SyncService : ISyncService
             SyncPaths.SnapshotsPrefix(database) + "/",
             cancellationToken);
 
-        foreach (var item in objects.Where(entry => entry.Key.EndsWith(".json", StringComparison.Ordinal)))
+        foreach (var item in objects)
         {
-            var (json, _) = await objectStore.TryDownloadTextAsync(item.Key, cancellationToken);
+            var key = SyncObjectKeys.Normalize(item.Key);
+            if (!key.EndsWith(".json", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var (json, _) = await objectStore.TryDownloadTextAsync(key, cancellationToken);
             var metadata = DeserializeSnapshotMetadata(json);
             if (metadata == null)
             {
@@ -677,7 +683,7 @@ public sealed class SyncService : ISyncService
             }
 
             EnsureSupportedProtocol(metadata.ProtocolVersion);
-            var fileName = Path.GetFileNameWithoutExtension(item.Key);
+            var fileName = Path.GetFileNameWithoutExtension(key);
             if (!fileName.StartsWith("base-", StringComparison.Ordinal))
             {
                 continue;
@@ -721,15 +727,16 @@ public sealed class SyncService : ISyncService
             SyncPaths.DevicesPrefix(database) + "/",
             cancellationToken);
 
-        foreach (var item in objects.Where(entry =>
-                     entry.Key.EndsWith("/manifest.json", StringComparison.Ordinal)))
+        foreach (var item in objects)
         {
-            if (!item.Key.StartsWith(prefix, StringComparison.Ordinal))
+            var key = SyncObjectKeys.Normalize(item.Key);
+            if (!key.EndsWith("/manifest.json", StringComparison.Ordinal)
+                || !key.StartsWith(prefix, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            var rest = item.Key[prefix.Length..];
+            var rest = key[prefix.Length..];
             var slash = rest.IndexOf('/');
             if (slash <= 0)
             {
@@ -737,7 +744,7 @@ public sealed class SyncService : ISyncService
             }
 
             var deviceId = rest[..slash];
-            var (json, _) = await objectStore.TryDownloadTextAsync(item.Key, cancellationToken);
+            var (json, _) = await objectStore.TryDownloadTextAsync(key, cancellationToken);
             var manifest = DeserializeDeviceManifest(json);
             if (manifest == null)
             {
