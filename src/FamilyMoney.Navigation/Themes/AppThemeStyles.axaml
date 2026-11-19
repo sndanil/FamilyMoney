@@ -80,7 +80,7 @@
 
   <!-- Шапка навигации: сливается с фоном страницы, аккуратный шеврон. -->
   <Style Selector="NavigationPage /template/ Border#PART_NavigationBar">
-    <Setter Property="Background" Value="{DynamicResource MainBackBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SidebarBackBrush}" />
   </Style>
 
   <Style Selector="NavigationPage /template/ Path#PART_BackButtonDefaultIcon">

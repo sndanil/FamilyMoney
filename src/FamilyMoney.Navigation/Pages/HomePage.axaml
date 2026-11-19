@@ -20,7 +20,7 @@
             <Setter Property="Margin" Value="0" />
             <Setter Property="MinHeight" Value="36" />
             <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
             <Setter Property="BorderThickness" Value="0 0 1 0" />
             <Setter Property="Padding" Value="16 8" />
@@ -80,6 +80,24 @@
         <Style Selector="Button.Period">
             <Setter Property="Height" Value="32" />
             <Setter Property="Padding" Value="10 0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.PeriodNav">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.PeriodNav:pointerover">
+            <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
         </Style>
         <Style Selector="Button.HeaderIcon">
             <Setter Property="Width" Value="40" />
@@ -121,18 +139,14 @@
     </ContentPage.Styles>
 
     <Grid RowDefinitions="Auto *" Background="{DynamicResource SidebarBackBrush}">
-        <Grid ColumnDefinitions="Auto * Auto Auto Auto" Margin="8 8 8 0">
-            <Button Classes="Period"
-                    CornerRadius="12 0 0 12"
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" ColumnSpacing="4" Margin="8 6 8 0">
+            <Button Classes="PeriodNav"
                     Command="{Binding Period.PrevCommand}">
                 <mi:MaterialIcon Kind="ChevronLeft" />
             </Button>
             <Button x:Name="PeriodButton"
                     Grid.Column="1"
                     Classes="Period"
-                    CornerRadius="0"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
                     ToolTip.Tip="Выбрать период"
                     Click="OnPeriodClick">
                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -141,13 +155,12 @@
                 </StackPanel>
             </Button>
             <Button Grid.Column="2"
-                    Classes="Period"
-                    CornerRadius="0 12 12 0"
+                    Classes="PeriodNav"
                     Command="{Binding Period.NextCommand}">
                 <mi:MaterialIcon Kind="ChevronRight" />
             </Button>
             <Button x:Name="SyncButton"
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Classes="HeaderIcon"
                     Click="OnSyncClick"
                     IsVisible="{Binding Settings.HasAnySync}"
@@ -159,7 +172,7 @@
                     </mi:MaterialIcon.RenderTransform>
                 </mi:MaterialIcon>
             </Button>
-            <ToggleButton Grid.Column="4"
+            <ToggleButton Grid.Column="5"
                           Classes="HeaderIcon"
                           IsChecked="{Binding IsSummaryMode, Mode=TwoWay}"
                           IsVisible="{Binding !IsWideLayout}"
