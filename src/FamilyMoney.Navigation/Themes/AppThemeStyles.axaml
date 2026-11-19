@@ -78,6 +78,33 @@
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
   </Style>
 
+  <!-- Шапка навигации: сливается с фоном страницы, аккуратный шеврон. -->
+  <Style Selector="NavigationPage /template/ Border#PART_NavigationBar">
+    <Setter Property="Background" Value="{DynamicResource MainBackBrush}" />
+  </Style>
+
+  <Style Selector="NavigationPage /template/ Path#PART_BackButtonDefaultIcon">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <ScaleTransform ScaleX="0.75" ScaleY="0.75" />
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style Selector="ContentPage">
+    <Setter Property="HeaderTemplate">
+      <DataTemplate>
+        <TextBlock Text="{Binding}"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" />
+      </DataTemplate>
+    </Setter>
+  </Style>
+
   <Style Selector="ListBox">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />

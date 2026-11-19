@@ -14,7 +14,9 @@
       <pages:MenuPage x:Name="ShellMenu" />
     </DrawerPage.Drawer>
 
-    <NavigationPage x:Name="ShellNavigation">
+    <NavigationPage x:Name="ShellNavigation"
+                    BarHeight="48"
+                    HasShadow="False">
       <pages:HomePage x:Name="ShellHome" />
     </NavigationPage>
   </DrawerPage>
