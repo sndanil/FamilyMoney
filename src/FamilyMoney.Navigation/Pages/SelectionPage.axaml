@@ -35,6 +35,7 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="Margin" Value="8 1" />
       <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
     <Style Selector="ListBoxItem:selected">
@@ -213,7 +214,15 @@
                SelectionChanged="SelectionList_SelectionChanged"
                Background="Transparent"
                BorderThickness="0"
-               Padding="0 4" />
+               Padding="0 4">
+        <!-- Список небольшой: без виртуализации выбранный элемент не остаётся
+             с шириной, измеренной до окончательной раскладки страницы. -->
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+      </ListBox>
 
       <StackPanel HorizontalAlignment="Center"
                   VerticalAlignment="Center"

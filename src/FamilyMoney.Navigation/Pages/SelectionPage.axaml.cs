@@ -23,7 +23,14 @@ public partial class SelectionPage : ContentPage
         Header = viewModel.Title;
 
         AttachedToVisualTree += (_, _) =>
-            Dispatcher.UIThread.Post(() => _ready = true, DispatcherPriority.Loaded);
+            Dispatcher.UIThread.Post(() =>
+            {
+                _ready = true;
+                if (DataContext is SelectionViewModel viewModel && viewModel.SelectedItem != null)
+                {
+                    SelectionList.ScrollIntoView(viewModel.SelectedItem);
+                }
+            }, DispatcherPriority.Loaded);
         DetachedFromVisualTree += (_, _) =>
         {
             if (!_closing)
