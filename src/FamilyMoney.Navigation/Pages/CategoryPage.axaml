@@ -13,18 +13,41 @@
   </ContentPage.Resources>
 
   <ContentPage.Styles>
-    <Style Selector="Button.SubCategoryRow">
-      <Setter Property="Height" Value="48" />
+    <Style Selector="Border.SubCategoryCard">
+      <Setter Property="Margin" Value="0 0 0 8" />
+      <Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Button.SubCategoryHeaderButton">
+      <Setter Property="MinHeight" Value="48" />
       <Setter Property="Padding" Value="0" />
       <Setter Property="CornerRadius" Value="0" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+      <Setter Property="BorderThickness" Value="0 0 0 1" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
     </Style>
-    <Style Selector="Button.SubCategoryRow:pointerover">
+    <Style Selector="Button.SubCategoryHeaderButton:pointerover">
       <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.SubCategoryHeaderButton:pressed">
+      <Setter Property="RenderTransform" Value="none" />
     </Style>
     <Style Selector="Border.TransactionRow">
       <Setter Property="MinHeight" Value="44" />
@@ -82,10 +105,12 @@
 
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:SubCategoryTransactionsGroupViewModel">
+            <Border Classes="SubCategoryCard">
             <StackPanel>
-              <Button Classes="SubCategoryRow"
+              <Button Classes="SubCategoryHeaderButton"
                       Command="{Binding Parent.ToggleExpandCommand}"
                       CommandParameter="{Binding}">
+                <Panel>
                 <Grid ColumnDefinitions="Auto * Auto Auto" Margin="14 0 14 0">
                   <mi:MaterialIcon Kind="ChevronRight"
                                    Width="18"
@@ -121,6 +146,8 @@
                              VerticalAlignment="Center"
                              Foreground="{DynamicResource TextSecondaryBrush}" />
                 </Grid>
+                <controls:RippleLayer RippleBrush="{DynamicResource TextPrimaryBrush}" />
+                </Panel>
               </Button>
 
               <controls:CollapsiblePanel IsExpanded="{Binding IsExpanded}">
@@ -155,6 +182,7 @@
                 </ItemsControl>
               </controls:CollapsiblePanel>
             </StackPanel>
+            </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
