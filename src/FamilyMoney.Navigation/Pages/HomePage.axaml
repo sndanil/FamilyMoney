@@ -10,7 +10,7 @@
         <MenuFlyout x:Key="SyncMenu">
             <MenuItem Header="Синхронизировать сейчас" Click="OnSyncCloudClick" />
             <MenuItem Header="По Wi-Fi…" Click="OnPeerSyncClick" />
-            <MenuItem Header="-" IsEnabled="False" />
+            <MenuItem Header="-" IsEnabled="False" Classes="MenuSeparator" />
             <MenuItem Header="Настройки синхронизации" Click="OnSyncSettingsClick" />
         </MenuFlyout>
     </ContentPage.Resources>

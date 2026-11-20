@@ -142,6 +142,17 @@
     <Setter Property="BorderThickness" Value="0" />
   </Style>
 
+  <!-- Пункты выпадающих и контекстных меню: крупнее для попадания пальцем. -->
+  <Style Selector="MenuItem">
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="12 0" />
+  </Style>
+
+  <Style Selector="MenuItem.MenuSeparator">
+    <Setter Property="MinHeight" Value="1" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+
   <Style Selector="mi|MaterialIcon.SyncSpin">
     <Setter Property="RenderTransformOrigin" Value="50%,50%" />
     <Style.Animations>
