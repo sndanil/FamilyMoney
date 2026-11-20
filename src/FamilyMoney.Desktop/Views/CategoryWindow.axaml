@@ -35,12 +35,24 @@
 				Background="Transparent"
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center">
-			<controls:IconBadge ImageData="{Binding ImageData}"
-								Icon="{Binding Icon}"
-								IconColor="{Binding IconColor}"
-								EntityName="{Binding Name}"
-								Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
-								BadgeSize="112" />
+			<StackPanel Orientation="Vertical"
+						Spacing="6"
+						HorizontalAlignment="Center">
+				<controls:IconBadge ImageData="{Binding ImageData}"
+									Icon="{Binding Icon}"
+									IconColor="{Binding IconColor}"
+									EntityName="{Binding Name}"
+									Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+									BadgeSize="112" />
+				<TextBlock Text="Картинка будет сжата до 256×256 при сохранении."
+						   Classes="Hint"
+						   Foreground="{DynamicResource TextSecondaryBrush}"
+						   FontSize="12"
+						   MaxWidth="240"
+						   TextWrapping="Wrap"
+						   HorizontalAlignment="Center"
+						   IsVisible="{Binding ImageNeedsCompression}" />
+			</StackPanel>
 		</Border>
 
 		<Button Grid.Row="3"

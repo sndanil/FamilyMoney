@@ -309,6 +309,7 @@ public partial class CategoriesViewModel : ViewModelBase
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseCategoryViewModel>(category));
         if (result != null)
         {
+            result.ImageData = await ImageNormalizer.NormalizeLegacyAsync(result.ImageData);
             SaveCategory(result, editCategory);
             RefreshVisibleCategories();
         }

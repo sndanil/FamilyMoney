@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -12,6 +13,10 @@ namespace FamilyMoney.Views;
 
 public partial class IconPickerWindow : Window
 {
+    private byte[]? _sourceImageData;
+    private string? _sourceFileName;
+    private bool _fitImage;
+    private int _normalizeRequest;
     public IconPickerWindow()
     {
         InitializeComponent();
@@ -111,7 +116,15 @@ public partial class IconPickerWindow : Window
                 AllowMultiple = false,
                 FileTypeFilter =
                 [
-                    new("Изображения") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp"], MimeTypes = ["image/*"] },
+                    new("Изображения")
+                    {
+                        Patterns =
+                        [
+                            "*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp", "*.gif",
+                            "*.svg", "*.heic", "*.heif", "*.avif",
+                        ],
+                        MimeTypes = ["image/*"],
+                    },
                 ],
             });
 
@@ -131,14 +144,81 @@ public partial class IconPickerWindow : Window
                 return;
             }
 
-            vm.SelectImage(data);
-            ColorList.SelectedItem = null;
-            FileStatus.IsVisible = false;
+            _sourceImageData = data;
+            _sourceFileName = file.Name;
+            await NormalizeSelectedFileAsync();
         }
         catch (Exception)
         {
             ShowFileError("Не удалось прочитать файл.");
         }
+    }
+
+    private async void OnFileFitChanged(object? sender, RoutedEventArgs e)
+    {
+        if (FitMode is null)
+        {
+            return;
+        }
+
+        _fitImage = FitMode.IsChecked == true;
+        if (_sourceImageData is not null)
+        {
+            await NormalizeSelectedFileAsync();
+        }
+    }
+
+    private async Task NormalizeSelectedFileAsync()
+    {
+        var data = _sourceImageData;
+        if (data is null || ViewModel is not { } vm)
+        {
+            return;
+        }
+
+        var request = ++_normalizeRequest;
+        var fileName = _sourceFileName;
+        var fit = _fitImage ? ImageFitMode.Fit : ImageFitMode.Fill;
+        ImageNormalizationResult result;
+        try
+        {
+            result = await Task.Run(() => ImageNormalizer.Normalize(data, fileName, fit));
+        }
+        catch (Exception)
+        {
+            if (request == _normalizeRequest)
+            {
+                ShowFileError("Не удалось обработать изображение.");
+            }
+
+            return;
+        }
+
+        if (request != _normalizeRequest)
+        {
+            return;
+        }
+
+        if (!result.WasNormalized)
+        {
+            ShowFileError(result.Error ?? "Не удалось обработать изображение.");
+            return;
+        }
+
+        vm.SelectImage(result.Data);
+        ColorList.SelectedItem = null;
+
+        var original = result.OriginalWidth is { } width && result.OriginalHeight is { } height
+            ? $"Было {width}×{height} · {FormatBytes(result.OriginalBytes)} → "
+            : string.Empty;
+        ShowFileInfo($"{original}{result.Width}×{result.Height} · {FormatBytes(result.Bytes)}");
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        return bytes >= 1024 * 1024
+            ? $"{bytes / 1024d / 1024d:0.0} МБ"
+            : $"{Math.Max(1, bytes / 1024)} КБ";
     }
 
     private void OnClear(object? sender, RoutedEventArgs e)
@@ -159,7 +239,15 @@ public partial class IconPickerWindow : Window
 
     private void ShowFileError(string message)
     {
+        FileInfo.IsVisible = false;
         FileStatus.Text = message;
         FileStatus.IsVisible = true;
+    }
+
+    private void ShowFileInfo(string message)
+    {
+        FileStatus.IsVisible = false;
+        FileInfo.Text = message;
+        FileInfo.IsVisible = true;
     }
 }

@@ -39,10 +39,13 @@ public abstract partial class BaseCategoryViewModel : ViewModelBase
     public partial bool IsHidden { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ImageNeedsCompression))]
     public partial byte[]? ImageData { get; set; }
 
     [ObservableProperty]
     public partial string? Icon { get; set; }
+
+    public bool ImageNeedsCompression => ImageNormalizer.NeedsNormalization(ImageData);
 
     [ObservableProperty]
     public partial string? IconColor { get; set; }

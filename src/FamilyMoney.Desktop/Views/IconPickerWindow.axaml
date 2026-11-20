@@ -124,6 +124,7 @@
                    Width="160"
                    HorizontalAlignment="Left" />
           <TextBlock Classes="Hint"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
                      Text="По умолчанию — по первой букве каждого слова, не более двух." />
           <Border Background="{DynamicResource CardBackBrush}"
                   BorderBrush="{DynamicResource LikeGridLinesBrush}"
@@ -147,7 +148,25 @@
                   Width="150"
                   Classes="DialogButton" />
           <TextBlock Classes="Hint"
-                     Text="PNG, JPEG или WebP. Прозрачный фон не обязателен: картинка показывается в плитке." />
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     MaxWidth="700"
+                     TextWrapping="Wrap"
+                     Text="PNG, JPEG, WebP, SVG, BMP или GIF. Автоматически повернётся по EXIF. «Заполнить» обрежет в квадрат, «Вписать» оставит поля. HEIC не поддерживается." />
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <RadioButton x:Name="FillMode"
+                         GroupName="FileFit"
+                         Content="Заполнить квадрат"
+                         IsChecked="True"
+                         IsCheckedChanged="OnFileFitChanged" />
+            <RadioButton x:Name="FitMode"
+                         GroupName="FileFit"
+                         Content="Вписать целиком"
+                         IsCheckedChanged="OnFileFitChanged" />
+          </StackPanel>
+          <TextBlock x:Name="FileInfo"
+                     Classes="Hint"
+                     Foreground="{DynamicResource TextSecondaryBrush}"
+                     IsVisible="False" />
           <TextBlock x:Name="FileStatus"
                      Classes="Hint"
                      Foreground="{DynamicResource NegativeBrush}"

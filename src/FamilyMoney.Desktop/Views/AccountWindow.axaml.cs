@@ -8,6 +8,7 @@ using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FamilyMoney.Views;
 
@@ -22,7 +23,7 @@ public partial class AccountWindow : Window
         ImageControl.AddHandler(DragDrop.DropEvent, DropImage);
     }
 
-    private void DropImage(object? sender, DragEventArgs e)
+    private async void DropImage(object? sender, DragEventArgs e)
     {
         var file = e.DataTransfer.TryGetFiles()?.FirstOrDefault();
 
@@ -37,8 +38,14 @@ public partial class AccountWindow : Window
             return;
         }
 
-        using var stream = File.OpenRead(path);
-        account.ImageData = ImageConverter.ToImageData(stream);
+        var data = await File.ReadAllBytesAsync(path);
+        var result = await Task.Run(() => ImageNormalizer.Normalize(data, Path.GetFileName(path)));
+        if (!result.WasNormalized)
+        {
+            return;
+        }
+
+        account.ImageData = result.Data;
         account.Icon = null;
         account.IconColor = null;
     }

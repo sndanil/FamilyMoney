@@ -339,6 +339,7 @@ public partial class AccountsViewModel : ViewModelBase
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
         if (result != null)
         {
+            result.ImageData = await ImageNormalizer.NormalizeLegacyAsync(result.ImageData);
             Save(editAccount, result);
         }
     }

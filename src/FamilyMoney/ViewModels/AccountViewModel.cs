@@ -30,6 +30,7 @@ public partial class AccountViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasIconContent))]
+    [NotifyPropertyChangedFor(nameof(ImageNeedsCompression))]
     public partial byte[]? ImageData { get; set; }
 
     [ObservableProperty]
@@ -40,6 +41,8 @@ public partial class AccountViewModel : ViewModelBase
     public partial string? IconColor { get; set; }
 
     public bool HasIconContent => ImageData is { Length: > 0 } || !string.IsNullOrWhiteSpace(Icon);
+
+    public bool ImageNeedsCompression => ImageNormalizer.NeedsNormalization(ImageData);
 
     [ObservableProperty]
     public partial bool IsGroup { get; set; }
