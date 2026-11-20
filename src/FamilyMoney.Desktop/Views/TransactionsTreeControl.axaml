@@ -16,16 +16,36 @@
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Button.Expander">
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Foreground" Value="Gray" />
 			<Setter Property="Height" Value="24" />
 			<Setter Property="Width" Value="24" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
 			<Setter Property="Padding" Value="0" />
+			<Setter Property="CornerRadius" Value="0" />
 			<Setter Property="ZIndex" Value="10" />
-			<Setter Property="Margin" Value="15 0 0 0" />
+			<Setter Property="Margin" Value="0" />
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
+		</Style>
+		<Style Selector="Button.Expander /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pointerover">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander mi|MaterialIcon">
+			<Setter Property="Foreground" Value="Gray" />
 		</Style>
 		<Style Selector="Button.TreeChevron">
 			<Setter Property="Background" Value="Transparent" />
@@ -239,73 +259,69 @@
 
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
-												<Grid>
-													<Button Classes="Expander"
-															Command="{Binding Parent.CopyCommand}"
-															CommandParameter="{Binding}"
-															ToolTip.Tip="Копировать">
-														<mi:MaterialIcon Kind="ContentCopy" />
-													</Button>
-													<Button Margin="45 0 0 0" 
-															Classes="Expander"
-															ToolTip.Tip="Удалить">
-														<Button.Flyout>
-															<MenuFlyout>
-																<MenuItem Width="200" Header="Удалить"
-																		  Command="{Binding Parent.DeleteCommand}"
-																		  CommandParameter="{Binding}"
-																			  />
-															</MenuFlyout>
-														</Button.Flyout>
+												<Border Classes="Category TransactionRow" Classes.Selected="{Binding IsSelected}">
+													<Interaction.Behaviors>
+														<EventTriggerBehavior EventName="Tapped" >
+															<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+														</EventTriggerBehavior>
+														<EventTriggerBehavior EventName="DoubleTapped">
+															<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
+														</EventTriggerBehavior>
+													</Interaction.Behaviors>
 
-														<mi:MaterialIcon Kind="Delete" />
-													</Button>
+													<Grid ColumnDefinitions="30 30 * 100 150 100">
+														<Button Grid.Column="0"
+																Classes="Expander"
+																Command="{Binding Parent.CopyCommand}"
+																CommandParameter="{Binding}"
+																ToolTip.Tip="Копировать">
+															<mi:MaterialIcon Kind="ContentCopy" />
+														</Button>
+														<Button Grid.Column="1"
+																Classes="Expander"
+																ToolTip.Tip="Удалить">
+															<Button.Flyout>
+																<MenuFlyout>
+																	<MenuItem Width="200" Header="Удалить"
+																			  Command="{Binding Parent.DeleteCommand}"
+																			  CommandParameter="{Binding}" />
+																</MenuFlyout>
+															</Button.Flyout>
 
-													<Border Classes="Category TransactionRow" Classes.Selected="{Binding IsSelected}">
-														<Interaction.Behaviors>
-															<EventTriggerBehavior EventName="Tapped" >
-																<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-															</EventTriggerBehavior>
-															<EventTriggerBehavior EventName="DoubleTapped">
-																<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-															</EventTriggerBehavior>
-														</Interaction.Behaviors>
+															<mi:MaterialIcon Kind="Delete" />
+														</Button>
 
-														<Grid ColumnDefinitions="30 30 * 100 150 100">
-															<Grid Grid.Column="2" Margin="10 4 0 4" ColumnDefinitions="* auto">
-																<TextBlock Classes="Name"
-																		   Margin="0"
-																		   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
-																		   TextTrimming="CharacterEllipsis" />
-																<ItemsControl ItemsSource="{Binding Tags}"
-																				IsVisible="{Binding HasTags}"
-																				Grid.Column="1"
-																				>
-																	<ItemsControl.ItemsPanel>
-																		<ItemsPanelTemplate>
-																			<StackPanel Orientation="Horizontal" />
-																		</ItemsPanelTemplate>
-																	</ItemsControl.ItemsPanel>
-																	<ItemsControl.ItemTemplate>
-																		<DataTemplate>
-																			<Border Classes="TransactionTag">
-																				<TextBlock Text="{Binding}" />
-																			</Border>
-																		</DataTemplate>
-																	</ItemsControl.ItemTemplate>
-																</ItemsControl>
-															</Grid>
-															<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
-															<SelectableTextBlock Grid.Column="4" Classes="Sum"
-																	   Classes.Debet="{Binding IsDebet}"
-																	   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-															<SelectableTextBlock Grid.Column="5" Classes="Sum"
-																	   Classes.Debet="{Binding IsDebet}"
-																	   Text="{Binding Percent, StringFormat=P}" />
+														<Grid Grid.Column="2" Margin="10 4 0 4" ColumnDefinitions="* auto">
+															<TextBlock Classes="Name"
+																	   Margin="0"
+																	   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+																	   TextTrimming="CharacterEllipsis" />
+															<ItemsControl ItemsSource="{Binding Tags}"
+																			IsVisible="{Binding HasTags}"
+																			Grid.Column="1">
+																<ItemsControl.ItemsPanel>
+																	<ItemsPanelTemplate>
+																		<StackPanel Orientation="Horizontal" />
+																	</ItemsPanelTemplate>
+																</ItemsControl.ItemsPanel>
+																<ItemsControl.ItemTemplate>
+																	<DataTemplate>
+																		<Border Classes="TransactionTag">
+																			<TextBlock Text="{Binding}" />
+																		</Border>
+																	</DataTemplate>
+																</ItemsControl.ItemTemplate>
+															</ItemsControl>
 														</Grid>
-													</Border>
-
-												</Grid>
+														<TextBlock Grid.Column="3" Classes="Date" Text="{Binding Date, StringFormat=dd.MM.yyyy}" />
+														<SelectableTextBlock Grid.Column="4" Classes="Sum"
+																   Classes.Debet="{Binding IsDebet}"
+																   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+														<SelectableTextBlock Grid.Column="5" Classes="Sum"
+																   Classes.Debet="{Binding IsDebet}"
+																   Text="{Binding Percent, StringFormat=P}" />
+													</Grid>
+												</Border>
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 										</ItemsControl>

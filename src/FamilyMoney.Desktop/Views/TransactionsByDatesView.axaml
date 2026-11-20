@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,39 +16,45 @@
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
-		<Style Selector="Border.Total">
-			<Setter Property="Margin" Value="2 2 2 0" />
-			<Setter Property="MinHeight" Value="30" />
-			<Setter Property="CornerRadius" Value="5" />
+		<Style Selector="Border.DayCard">
+			<Setter Property="Margin" Value="2 4 2 8" />
+			<Setter Property="Background" Value="{DynamicResource CardBackBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="ClipToBounds" Value="True" />
+		</Style>
+		<Style Selector="Border.DayHeader">
+			<Setter Property="MinHeight" Value="34" />
+			<Setter Property="Padding" Value="10 4" />
 			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
 		</Style>
-		<Style Selector="Border.Total Grid">
-			<Setter Property="Margin" Value="10 5 5 5" />
+		<Style Selector="Border.DayHeader Grid">
+			<Setter Property="Margin" Value="0" />
 		</Style>
-		<Style Selector="Border.Total TextBlock">
+		<Style Selector="Border.DayHeader TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
-		<Style Selector="Border.Trsansaction">
-			<Setter Property="Height" Value="30" />
-			<Setter Property="Margin" Value="10 -1 10 0" />
-			<Setter Property="CornerRadius" Value="1" />
+		<Style Selector="Border.DayTransaction">
+			<Setter Property="MinHeight" Value="30" />
+			<Setter Property="Margin" Value="0" />
 			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
 		</Style>
-		<Style Selector="Border.Trsansaction:pointerover">
+		<Style Selector="Border.DayTransaction:pointerover">
 			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
 		</Style>
-		<Style Selector="Border.Trsansaction.Selected">
+		<Style Selector="Border.DayTransaction.Selected">
 			<Setter Property="Background" Value="{DynamicResource SelectedBackBrush}" />
 		</Style>
-		<Style Selector="Border.Trsansaction > Grid">
+		<Style Selector="Border.DayTransaction > Grid">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Margin" Value="5 0" />
 		</Style>
-		<Style Selector="Border.Trsansaction.TransactionRow">
+		<Style Selector="Border.DayTransaction.TransactionRow">
 			<Setter Property="MinHeight" Value="30" />
 		</Style>
 		<Style Selector="Border.TransactionTag">
@@ -68,8 +74,10 @@
 			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
 		</Style>
 		<Style Selector="TextBlock.Title">
-			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
 			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="FontSize" Value="13" />
 			<Setter Property="TextTrimming" Value="CharacterEllipsis" />
 		</Style>
 		<Style Selector="SelectableTextBlock.Sum">
@@ -95,16 +103,35 @@
 			<Setter Property="Foreground" Value="Gray" />
 		</Style>
 		<Style Selector="Button.Expander">
-			<Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
 			<Setter Property="Height" Value="24" />
 			<Setter Property="Width" Value="24" />
-			<Setter Property="Margin" Value="15 0 0 0" />
+			<Setter Property="Margin" Value="0" />
 			<Setter Property="Padding" Value="0" />
-			<Setter Property="ZIndex" Value="10" />
+			<Setter Property="CornerRadius" Value="0" />
 			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
 			<Setter Property="ToolTip.Placement" Value="Top" />
 			<Setter Property="ToolTip.VerticalOffset" Value="-5" />
+		</Style>
+		<Style Selector="Button.Expander /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pointerover">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.Expander mi|MaterialIcon">
+			<Setter Property="Foreground" Value="Gray" />
 		</Style>
 	</UserControl.Styles>
 
@@ -118,13 +145,23 @@
 
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
+					<Border Classes="DayCard">
 					<StackPanel>
-						<Border Classes="Total">
-							<Grid ColumnDefinitions="* Auto">
-								<TextBlock Classes="Title"
+						<Border Classes="DayHeader">
+							<Grid ColumnDefinitions="Auto,* Auto">
+								<mi:MaterialIcon Kind="Calendar"
+												 Width="16" Height="16"
+												 Margin="0 0 8 0"
+												 VerticalAlignment="Center" />
+								<TextBlock Grid.Column="1"
+										   Classes="Title"
 										   MinWidth="70"
 										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-								<StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
+								<StackPanel Grid.Column="2"
+											Orientation="Horizontal"
+											Spacing="12"
+											HorizontalAlignment="Right"
+											VerticalAlignment="Center">
 									<SelectableTextBlock Classes="Sum Debet"
 											   IsVisible="{Binding HasDebet}"
 											   Text="{Binding DebetSum, StringFormat='#,##0.00'}" />
@@ -150,82 +187,76 @@
 
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<StackPanel>
-										<Grid>
-											<Button Classes="Expander"
+									<Border Classes="DayTransaction TransactionRow" Classes.Selected="{Binding IsSelected}">
+										<Interaction.Behaviors>
+											<EventTriggerBehavior EventName="Tapped">
+												<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
+											</EventTriggerBehavior>
+											<EventTriggerBehavior EventName="DoubleTapped">
+												<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
+											</EventTriggerBehavior>
+										</Interaction.Behaviors>
+
+										<Grid ColumnDefinitions="30 30 24 130 200 * 100">
+											<Button Grid.Column="0"
+													Classes="Expander"
 													Command="{Binding Parent.CopyCommand}"
 													CommandParameter="{Binding}"
 													ToolTip.Tip="Копировать">
 												<mi:MaterialIcon Kind="ContentCopy" />
 											</Button>
 
-											<Button Margin="40 0 0 0" Classes="Expander" ToolTip.Tip="Удалить">
+											<Button Grid.Column="1" Classes="Expander" ToolTip.Tip="Удалить">
 												<Button.Flyout>
 													<MenuFlyout>
 														<MenuItem Width="200" Header="Удалить"
 																  Command="{Binding Parent.DeleteCommand}"
-																  CommandParameter="{Binding}"
-																	  />
+																  CommandParameter="{Binding}" />
 													</MenuFlyout>
 												</Button.Flyout>
 
 												<mi:MaterialIcon Kind="Delete" />
 											</Button>
 
-											<Border Classes="Trsansaction TransactionRow" Classes.Selected="{Binding IsSelected}">
-												<Interaction.Behaviors>
-													<EventTriggerBehavior EventName="Tapped">
-														<InvokeCommandAction Command="{Binding Parent.SelectCommand}" CommandParameter="{Binding}" />
-													</EventTriggerBehavior>
-													<EventTriggerBehavior EventName="DoubleTapped">
-														<InvokeCommandAction Command="{Binding Parent.EditCommand}" CommandParameter="{Binding}" />
-													</EventTriggerBehavior>
-												</Interaction.Behaviors>
-
-												<Grid ColumnDefinitions="25 25 20 130 200 * 100">
-
-													<Image Stretch="Uniform" Grid.Column="2"
-															Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-															IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
-														/>
-													<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
-													<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
-													<Grid Grid.Column="5" Margin="10 4 0 4" ColumnDefinitions="* auto">
-														<TextBlock Classes="Name"
-																   Margin="0"
-																   DockPanel.Dock="Left"
-																   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
-																   TextTrimming="CharacterEllipsis" />
-														<ItemsControl ItemsSource="{Binding Tags}"
-																		IsVisible="{Binding HasTags}"
-																		Grid.Column="1"
-																		>
-															<ItemsControl.ItemsPanel>
-																<ItemsPanelTemplate>
-																	<StackPanel Orientation="Horizontal" />
-																</ItemsPanelTemplate>
-															</ItemsControl.ItemsPanel>
-															<ItemsControl.ItemTemplate>
-																<DataTemplate>
-																	<Border Classes="TransactionTag">
-																		<TextBlock Text="{Binding}" />
-																	</Border>
-																</DataTemplate>
-															</ItemsControl.ItemTemplate>
-														</ItemsControl>
-													</Grid>
-													<SelectableTextBlock Grid.Column="6"
-															   Classes="Sum"
-															   Classes.Debet="{Binding IsDebet}"
-															   Text="{Binding Sum, StringFormat='#,##0.00'}" />
-												</Grid>
-											</Border>
+											<Image Stretch="Uniform" Grid.Column="2"
+													Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
+													IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+											<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
+											<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
+											<Grid Grid.Column="5" Margin="10 4 0 4" ColumnDefinitions="* auto">
+												<TextBlock Classes="Name"
+														   Margin="0"
+														   DockPanel.Dock="Left"
+														   Text="{Binding Comment, Converter={StaticResource noNewLinesConverter}}"
+														   TextTrimming="CharacterEllipsis" />
+												<ItemsControl ItemsSource="{Binding Tags}"
+																IsVisible="{Binding HasTags}"
+																Grid.Column="1">
+													<ItemsControl.ItemsPanel>
+														<ItemsPanelTemplate>
+															<StackPanel Orientation="Horizontal" />
+														</ItemsPanelTemplate>
+													</ItemsControl.ItemsPanel>
+													<ItemsControl.ItemTemplate>
+														<DataTemplate>
+															<Border Classes="TransactionTag">
+																<TextBlock Text="{Binding}" />
+															</Border>
+														</DataTemplate>
+													</ItemsControl.ItemTemplate>
+												</ItemsControl>
+											</Grid>
+											<SelectableTextBlock Grid.Column="6"
+																 Classes="Sum"
+																 Classes.Debet="{Binding IsDebet}"
+																 Text="{Binding Sum, StringFormat='#,##0.00'}" />
 										</Grid>
-									</StackPanel>
+									</Border>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
 					</StackPanel>
+					</Border>
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
