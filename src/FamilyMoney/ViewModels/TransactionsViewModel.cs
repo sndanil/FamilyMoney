@@ -666,6 +666,30 @@ public partial class TransactionsViewModel : ViewModelBase
         _repository.UpdateTransaction(transaction);
         await SendTransactionChanged(before, transaction);
         await RefreshTransactions(_stateManager.GetMainState());
+
+        // Новая транзакция: если она попала в текущий период, переносим на неё выделение.
+        if (before == null)
+        {
+            await SelectTransactionAsync(transaction.Id);
+        }
+    }
+
+    private async Task SelectTransactionAsync(Guid id)
+    {
+        var row = TransactionsDyDates
+            .SelectMany(group => group.Transactions)
+            .FirstOrDefault(transaction => transaction.Id == id);
+
+        if (row == null)
+        {
+            return;
+        }
+
+        await ClearSelectionAsync();
+
+        row.IsSelected = true;
+        SelectedTransactionGroup = row;
+        SelectedTransactionGroups.Add(row);
     }
 
     [RelayCommand]
