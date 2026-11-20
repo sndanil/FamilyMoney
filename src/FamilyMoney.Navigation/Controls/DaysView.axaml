@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              x:Class="FamilyMoney.Navigation.Controls.DaysView"
@@ -43,6 +44,9 @@
     </Style>
     <Style Selector="Button.DayHeaderButton:pointerover">
       <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="Button.DayHeaderButton:pressed">
+      <Setter Property="RenderTransform" Value="none" />
     </Style>
     <Style Selector="TextBlock.DayTitle">
       <Setter Property="FontSize" Value="14" />
@@ -113,6 +117,7 @@
               <Button Classes="DayHeaderButton"
                       Command="{Binding ToggleExpandCommand}"
                       ToolTip.Tip="Свернуть / развернуть день">
+                <Panel>
                 <Grid>
                   <Grid ColumnDefinitions="Auto,*,Auto" Margin="12 0">
                     <mi:MaterialIcon Grid.Column="0"
@@ -155,6 +160,8 @@
                                Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
                   </StackPanel>
                 </Grid>
+                <controls:RippleLayer RippleBrush="{DynamicResource TextPrimaryBrush}" />
+                </Panel>
               </Button>
 
               <ItemsControl ItemsSource="{Binding Transactions}"

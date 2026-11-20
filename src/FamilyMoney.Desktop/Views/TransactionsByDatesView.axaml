@@ -7,6 +7,7 @@
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:cv="using:FamilyMoney.Converters"
+			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsViewModel"
 			 x:Class="FamilyMoney.Views.TransactionsByDatesView">
@@ -186,6 +187,9 @@
 		<Style Selector="Button.DayHeaderButton:pointerover">
 			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
 		</Style>
+		<Style Selector="Button.DayHeaderButton:pressed">
+			<Setter Property="RenderTransform" Value="none" />
+		</Style>
 	</UserControl.Styles>
 
 	<ScrollViewer>
@@ -203,6 +207,7 @@
 						<Button Classes="DayHeaderButton"
 								Command="{Binding ToggleExpandCommand}"
 								ToolTip.Tip="Свернуть / развернуть день">
+							<Panel>
 							<Grid>
 								<Grid ColumnDefinitions="Auto,*,Auto" Margin="10 0">
 									<mi:MaterialIcon Grid.Column="0"
@@ -256,6 +261,8 @@
 											   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
 								</StackPanel>
 							</Grid>
+							<controls:RippleLayer RippleBrush="{DynamicResource TextPrimaryBrush}" />
+							</Panel>
 						</Button>
 
 						<ItemsControl ItemsSource="{Binding Transactions}"
