@@ -35,7 +35,7 @@ public sealed class TransactionsTreeTests : IDisposable
     }
 
     [Fact]
-    public void MissingSubCategory_DoesNotThrow_AndFallsBackToNoSubCategory()
+    public async Task MissingSubCategory_DoesNotThrow_AndFallsBackToNoSubCategory()
     {
         var (repository, configuration) = CreateRepository();
         var category = new CreditCategory { Id = Guid.NewGuid(), Name = "Продукты" };
@@ -51,7 +51,7 @@ public sealed class TransactionsTreeTests : IDisposable
             LastChange = DateTime.UtcNow,
         });
 
-        var viewModel = Build(repository, configuration);
+        var viewModel = await BuildAsync(repository, configuration);
 
         var categoryGroup = Assert.Single(viewModel.CreditTransactions.Categories);
         Assert.Equal("Продукты", categoryGroup.DisplayName);
@@ -64,7 +64,7 @@ public sealed class TransactionsTreeTests : IDisposable
     }
 
     [Fact]
-    public void MissingCategory_DoesNotThrow_AndFallsBackToNoCategory()
+    public async Task MissingCategory_DoesNotThrow_AndFallsBackToNoCategory()
     {
         var (repository, configuration) = CreateRepository();
 
@@ -78,7 +78,7 @@ public sealed class TransactionsTreeTests : IDisposable
             LastChange = DateTime.UtcNow,
         });
 
-        var viewModel = Build(repository, configuration);
+        var viewModel = await BuildAsync(repository, configuration);
 
         var categoryGroup = Assert.Single(viewModel.CreditTransactions.Categories);
         Assert.Equal("Без категории", categoryGroup.DisplayName);
@@ -87,11 +87,11 @@ public sealed class TransactionsTreeTests : IDisposable
         WeakReferenceMessenger.Default.UnregisterAll(viewModel);
     }
 
-    private TransactionsViewModel Build(IRepository repository, IGlobalConfiguration configuration)
+    private async Task<TransactionsViewModel> BuildAsync(IRepository repository, IGlobalConfiguration configuration)
     {
         var state = new MainState([], null, DateTime.Today, DateTime.Today);
         var viewModel = new TransactionsViewModel(repository, new FakeStateManager(state), configuration);
-        WeakReferenceMessenger.Default.Send(new MainStateChangedMessage(state));
+        await viewModel.RefreshAsync(state);
         return viewModel;
     }
 

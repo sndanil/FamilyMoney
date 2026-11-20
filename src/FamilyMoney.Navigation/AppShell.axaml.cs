@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
 using FamilyMoney.Navigation.Pages;
@@ -15,6 +17,7 @@ public partial class AppShell : UserControl
     private TopLevel? _topLevel;
     private bool? _lastWide;
     private bool _warmUpStarted;
+    private readonly HashSet<Control> _contextRefreshed = [];
 
     public AppShell()
     {
@@ -62,6 +65,7 @@ public partial class AppShell : UserControl
         ShellMenu.AttachedToVisualTree += (_, _) => RefreshDataContext(ShellMenu);
         DataContextChanged += (_, _) =>
         {
+            _contextRefreshed.Clear();
             RefreshDataContext(ShellHome);
             RefreshDataContext(ShellMenu);
             StartWarmUp();
@@ -238,10 +242,21 @@ public partial class AppShell : UserControl
 
     private void RefreshDataContext(Control page)
     {
+        if (_contextRefreshed.Contains(page))
+        {
+            return;
+        }
+
         Dispatcher.UIThread.Post(() =>
         {
+            if (_contextRefreshed.Contains(page) || TopLevel.GetTopLevel(page) == null)
+            {
+                return;
+            }
+
             page.DataContext = null;
             page.DataContext = DataContext;
+            _contextRefreshed.Add(page);
         }, DispatcherPriority.Loaded);
     }
 }
