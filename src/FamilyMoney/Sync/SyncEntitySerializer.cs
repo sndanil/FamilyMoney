@@ -1,4 +1,4 @@
-﻿using FamilyMoney.Models;
+using FamilyMoney.Models;
 using FamilyMoney.Models.Sync;
 using FamilyMoney.Utils;
 using System.Text.Json;
@@ -97,6 +97,8 @@ public static class SyncEntitySerializer
         IsNotSummable = account.IsNotSummable,
         EndsOn = account.EndsOn,
         AnnualRate = account.AnnualRate,
+        Icon = account.Icon,
+        IconColor = account.IconColor,
     };
 
     private static Account FromAccountSyncModel(AccountSyncModel model) => new()
@@ -111,6 +113,8 @@ public static class SyncEntitySerializer
         IsNotSummable = model.IsNotSummable,
         EndsOn = model.EndsOn,
         AnnualRate = model.AnnualRate,
+        Icon = model.Icon,
+        IconColor = model.IconColor,
         Sum = 0,
     };
 }

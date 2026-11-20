@@ -1,6 +1,7 @@
 <ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:icons="using:Material.Icons"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
@@ -187,18 +188,14 @@
               <TextBlock Classes="Label" Text="Счёт" />
               <Button Classes="Field" Click="SelectAccountClick">
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                  <Border Classes="FieldIcon">
-                    <Panel>
-                      <Image Width="24" Height="24"
-                             Stretch="Uniform"
-                             Source="{Binding Account.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                             IsVisible="{Binding Account.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                      <mi:MaterialIcon Kind="Wallet"
-                                       Width="17" Height="17"
-                                       Foreground="{DynamicResource AccentBrush}"
-                                       IsVisible="{Binding Account.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
-                    </Panel>
-                  </Border>
+                  <controls:IconBadge ImageData="{Binding Account.ImageData}"
+                                      Icon="{Binding Account.Icon}"
+                                      IconColor="{Binding Account.IconColor}"
+                                      EntityName="{Binding Account.Name}"
+                                      Fallback="{x:Static icons:MaterialIconKind.WalletOutline}"
+                                      BadgeSize="32"
+                                      ShowFallback="False"
+                                      CollapseWhenEmpty="True" />
                   <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
                     <TextBlock Text="Выберите счёт"
                                Classes="FieldPlaceholder"
@@ -220,18 +217,12 @@
               <TextBlock Classes="Label" Text="Категория" />
               <Button Classes="Field" Click="SelectCategoryClick">
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                  <Border Classes="FieldIcon">
-                    <Panel>
-                      <Image Width="24" Height="24"
-                             Stretch="Uniform"
-                             Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                             IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                      <mi:MaterialIcon Kind="TagOutline"
-                                       Width="17" Height="17"
-                                       Foreground="{DynamicResource AccentBrush}"
-                                       IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
-                    </Panel>
-                  </Border>
+                  <controls:IconBadge ImageData="{Binding Category.ImageData}"
+                                      Icon="{Binding Category.Icon}"
+                                      IconColor="{Binding Category.IconColor}"
+                                      EntityName="{Binding Category.Name}"
+                                      Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+                                      BadgeSize="32" />
                   <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
                     <TextBlock Text="Выберите категорию"
                                Classes="FieldPlaceholder"
@@ -291,18 +282,14 @@
               <TextBlock Classes="Label" Text="Счёт зачисления" />
               <Button Classes="Field" Click="SelectToAccountClick">
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                  <Border Classes="FieldIcon">
-                    <Panel>
-                      <Image Width="24" Height="24"
-                             Stretch="Uniform"
-                             Source="{Binding ToAccount.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                             IsVisible="{Binding ToAccount.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                      <mi:MaterialIcon Kind="Wallet"
-                                       Width="17" Height="17"
-                                       Foreground="{DynamicResource AccentBrush}"
-                                       IsVisible="{Binding ToAccount.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
-                    </Panel>
-                  </Border>
+                  <controls:IconBadge ImageData="{Binding ToAccount.ImageData}"
+                                      Icon="{Binding ToAccount.Icon}"
+                                      IconColor="{Binding ToAccount.IconColor}"
+                                      EntityName="{Binding ToAccount.Name}"
+                                      Fallback="{x:Static icons:MaterialIconKind.WalletOutline}"
+                                      BadgeSize="32"
+                                      ShowFallback="False"
+                                      CollapseWhenEmpty="True" />
                   <StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center">
                     <TextBlock Text="Выберите счёт"
                                Classes="FieldPlaceholder"

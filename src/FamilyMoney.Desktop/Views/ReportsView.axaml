@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:c="using:FamilyMoney.Controls"
+             xmlns:icons="using:Material.Icons"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -66,12 +68,15 @@
 						<DataTemplate x:DataType="vm:TimelineScope">
 							<StackPanel Orientation="Horizontal" Spacing="8">
 								<Border Width="{Binding IndentWidth}" />
-								<Image Width="18"
-									   Height="18"
-									   Stretch="Uniform"
-									   VerticalAlignment="Center"
-									   Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-									   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+								<controls:IconBadge BadgeSize="18"
+											ShowFallback="False"
+											CollapseWhenEmpty="True"
+											ImageData="{Binding ImageData}"
+											Icon="{Binding Icon}"
+											IconColor="{Binding IconColor}"
+											EntityName="{Binding Name}"
+											Fallback="{x:Static icons:MaterialIconKind.FolderOutline}"
+											VerticalAlignment="Center" />
 								<TextBlock Text="{Binding Name}"
 										   VerticalAlignment="Center"
 										   FontWeight="{Binding IsGroup, Converter={StaticResource boolToFontWeightConverter}}" />

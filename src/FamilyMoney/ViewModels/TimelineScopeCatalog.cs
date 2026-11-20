@@ -27,7 +27,7 @@ public static class TimelineScopeCatalog
                 continue;
             }
 
-            result.Add(new TimelineScope(account.Id, account.Name, 0, account.IsGroup, account.ImageData));
+            result.Add(new TimelineScope(account.Id, account.Name, 0, account.IsGroup, account.ImageData, account.Icon, account.IconColor));
 
             foreach (var child in account.Children)
             {
@@ -36,7 +36,7 @@ public static class TimelineScopeCatalog
                     continue;
                 }
 
-                result.Add(new TimelineScope(child.Id, child.Name, 1, child.IsGroup, child.ImageData));
+                result.Add(new TimelineScope(child.Id, child.Name, 1, child.IsGroup, child.ImageData, child.Icon, child.IconColor));
             }
         }
 

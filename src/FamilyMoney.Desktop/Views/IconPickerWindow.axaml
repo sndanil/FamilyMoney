@@ -1,0 +1,240 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:FamilyMoney.Navigation.Controls"
+        xmlns:conv="using:FamilyMoney.Navigation.Converters"
+        xmlns:services="using:FamilyMoney.Navigation.Services"
+        xmlns:utils="using:FamilyMoney.Utils"
+        xmlns:vm="using:FamilyMoney.Navigation.ViewModels"
+        x:Class="FamilyMoney.Views.IconPickerWindow"
+        x:DataType="vm:IconPickerViewModel"
+        Width="760" Height="760"
+        MinWidth="680" MinHeight="700"
+        WindowStartupLocation="CenterOwner"
+        Title="Иконка"
+        Classes="Dialog">
+  <Window.Resources>
+    <conv:HexToBrushConverter x:Key="hexToBrush" />
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="TextBlock.Hint">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="Button.IconTile">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="4" />
+      <Setter Property="Margin" Value="2" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Width" Value="96" />
+      <Setter Property="Height" Value="88" />
+    </Style>
+    <Style Selector="Button.IconTile:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+    </Style>
+    <Style Selector="ListBox.IconGrid">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ListBox.IconGrid ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="16">
+    <TextBlock Text="Иконка счёта или категории"
+               FontSize="20"
+               FontWeight="SemiBold"
+               Margin="4 0 0 10" />
+
+    <TabControl Grid.Row="1" x:Name="Tabs" SelectedIndex="0" SelectionChanged="OnTabChanged">
+      <TabItem Header="Иконки">
+        <Grid RowDefinitions="Auto,*" Margin="0 6 0 0">
+          <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Поиск: продукты, бензин, дом"
+                   Margin="0 0 0 8" />
+          <ListBox Grid.Row="1"
+                   Classes="IconGrid"
+                   ItemsSource="{Binding Icons}"
+                   SelectionChanged="OnIconSelected"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="utils:IconChoice">
+                <StackPanel Width="88" Spacing="2">
+                  <controls:IconBadge Icon="{Binding Spec}"
+                                      BadgeSize="52"
+                                      HorizontalAlignment="Center" />
+                  <TextBlock Text="{Binding Label}"
+                             FontSize="11"
+                             HorizontalAlignment="Center"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Готовые">
+        <Grid RowDefinitions="Auto,*" Margin="0 6 0 0">
+          <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Поиск: сбер, альфа, карта"
+                   Margin="0 0 0 8" />
+          <ListBox Grid.Row="1"
+                   Classes="IconGrid"
+                   ItemsSource="{Binding ReadyAssets}"
+                   SelectionChanged="OnPackSelected"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="services:PackAssetView">
+                <StackPanel Width="118" Spacing="2" Margin="2">
+                  <controls:IconBadge Icon="{Binding Spec}"
+                                      BadgeSize="60"
+                                      HorizontalAlignment="Center" />
+                  <TextBlock Text="{Binding Name}"
+                             FontSize="11"
+                             TextAlignment="Center"
+                             TextWrapping="Wrap"
+                             MaxWidth="112" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Буква">
+        <StackPanel Margin="8 12 8 0" Spacing="10">
+          <TextBlock Text="Буква или две" FontWeight="SemiBold" />
+          <TextBox Text="{Binding LetterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Например, ПП"
+                   MaxLength="2"
+                   Width="160"
+                   HorizontalAlignment="Left" />
+          <TextBlock Classes="Hint"
+                     Text="По умолчанию — по первой букве каждого слова, не более двух." />
+          <Border Background="{DynamicResource CardBackBrush}"
+                  BorderBrush="{DynamicResource LikeGridLinesBrush}"
+                  BorderThickness="1"
+                  CornerRadius="12"
+                  Padding="16"
+                  HorizontalAlignment="Left">
+            <controls:IconBadge Icon="{Binding PreviewIcon}"
+                                IconColor="{Binding PreviewColor}"
+                                BadgeSize="72"
+                                EntityName="{Binding EntityName}" />
+          </Border>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Свой файл">
+        <StackPanel Margin="8 12 8 0" Spacing="10">
+          <Button Content="Выбрать файл"
+                  Click="OnChooseFile"
+                  HorizontalAlignment="Left"
+                  Width="150"
+                  Classes="DialogButton" />
+          <TextBlock Classes="Hint"
+                     Text="PNG, JPEG или WebP. Прозрачный фон не обязателен: картинка показывается в плитке." />
+          <TextBlock x:Name="FileStatus"
+                     Classes="Hint"
+                     Foreground="{DynamicResource NegativeBrush}"
+                     IsVisible="False" />
+          <Border Background="{DynamicResource CardBackBrush}"
+                  BorderBrush="{DynamicResource LikeGridLinesBrush}"
+                  BorderThickness="1"
+                  CornerRadius="12"
+                  Padding="16"
+                  HorizontalAlignment="Left">
+            <controls:IconBadge ImageData="{Binding PreviewImage}"
+                                IconColor="{Binding PreviewColor}"
+                                BadgeSize="72"
+                                EntityName="{Binding EntityName}" />
+          </Border>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+
+    <Grid x:Name="ColorPanel" Grid.Row="2" ColumnDefinitions="Auto,*" Margin="4 10 4 6">
+      <TextBlock Text="Цвет:"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource TextSecondaryBrush}" />
+      <ListBox Grid.Column="1"
+               x:Name="ColorList"
+               ItemsSource="{Binding Colors}"
+               Background="Transparent"
+               BorderThickness="0"
+               SelectionChanged="OnColorSelected"
+               Margin="8 0 0 0">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="6" />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Border Width="24" Height="24" CornerRadius="12"
+                    Background="{Binding Converter={StaticResource hexToBrush}}" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="4 4 4 0">
+      <Button Content="Без иконки"
+              Click="OnClear"
+              Classes="DialogButton"
+              Width="130"
+              HorizontalAlignment="Left" />
+
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
+                  Spacing="14"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center">
+        <TextBlock Text="Так будет в списке:"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource TextSecondaryBrush}" />
+        <controls:IconBadge Icon="{Binding PreviewIcon}"
+                            IconColor="{Binding PreviewColor}"
+                            ImageData="{Binding PreviewImage}"
+                            EntityName="{Binding EntityName}"
+                            BadgeSize="24" />
+        <controls:IconBadge Icon="{Binding PreviewIcon}"
+                            IconColor="{Binding PreviewColor}"
+                            ImageData="{Binding PreviewImage}"
+                            EntityName="{Binding EntityName}"
+                            BadgeSize="36" />
+        <controls:IconBadge Icon="{Binding PreviewIcon}"
+                            IconColor="{Binding PreviewColor}"
+                            ImageData="{Binding PreviewImage}"
+                            EntityName="{Binding EntityName}"
+                            BadgeSize="56" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="2" Orientation="Horizontal">
+        <Button Content="OK"
+                IsDefault="True"
+                Click="OnOk"
+                Classes="DialogButton" />
+        <Button Content="Отмена"
+                IsCancel="True"
+                Click="OnCancel"
+                Classes="DialogButton" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>
+

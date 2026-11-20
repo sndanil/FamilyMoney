@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,6 +6,8 @@
              xmlns:views="clr-namespace:FamilyMoney.Views"
              xmlns:vm="using:FamilyMoney.ViewModels"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:icons="using:Material.Icons"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
              mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
@@ -282,14 +284,12 @@
 								<DataTemplate x:DataType="vm:BaseCategoryViewModel">
 									<Border Padding="10" Background="Transparent">
 										<Grid ColumnDefinitions="Auto,*,Auto">
-											<Border Classes="CategoryIcon">
-												<Panel>
-													<Image Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-														   IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-													<mi:MaterialIcon Kind="TagOutline"
-																	 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
-												</Panel>
-											</Border>
+											<controls:IconBadge ImageData="{Binding ImageData}"
+																Icon="{Binding Icon}"
+																IconColor="{Binding IconColor}"
+																EntityName="{Binding Name}"
+																Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+																BadgeSize="36" />
 
 											<StackPanel Grid.Column="1" Margin="10 0" VerticalAlignment="Center" Spacing="2">
 												<TextBlock Text="{Binding Name}"
@@ -336,14 +336,12 @@
 					<Grid IsVisible="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
 						  RowDefinitions="Auto,Auto,*,Auto">
 						<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="24 20 24 0">
-							<Border Classes="CategoryIconLarge">
-								<Panel>
-									<Image Source="{Binding SelectedCategory.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-										   IsVisible="{Binding SelectedCategory.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
-									<mi:MaterialIcon Kind="TagOutline"
-													 IsVisible="{Binding SelectedCategory.ImageData, Converter={x:Static ObjectConverters.IsNull}}" />
-								</Panel>
-							</Border>
+							<controls:IconBadge ImageData="{Binding SelectedCategory.ImageData}"
+												Icon="{Binding SelectedCategory.Icon}"
+												IconColor="{Binding SelectedCategory.IconColor}"
+												EntityName="{Binding SelectedCategory.Name}"
+												Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+												BadgeSize="56" />
 
 							<StackPanel Grid.Column="1" Margin="14 0" VerticalAlignment="Center" Spacing="4">
 								<TextBlock Text="{Binding SelectedCategory.Name}"

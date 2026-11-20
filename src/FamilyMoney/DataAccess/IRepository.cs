@@ -36,6 +36,8 @@ public interface IRepository
     DatabaseBackupResult RestoreFromFile(DatabaseConfiguration configuration, string backupPath);
     void UpdateImage(Guid id, string fileName, Stream stream);
 
+    void RemoveImage(Guid id);
+
     Stream? TryGetImage(Guid id);
 
     Account GetAccount(Guid id);

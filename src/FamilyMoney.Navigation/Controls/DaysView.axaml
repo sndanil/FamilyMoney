@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:icons="using:Material.Icons"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
@@ -176,10 +177,14 @@
                   <DataTemplate>
                     <Border Classes="DayTransaction" Tapped="OnTransactionTapped">
                       <Grid ColumnDefinitions="Auto * Auto">
-                        <Image Classes="Category"
-                               Stretch="Uniform"
-                               Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-                               IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <controls:IconBadge BadgeSize="20"
+                                            Margin="0 0 8 0"
+                                            VerticalAlignment="Center"
+                                            ImageData="{Binding Category.ImageData}"
+                                            Icon="{Binding Category.Icon}"
+                                            IconColor="{Binding Category.IconColor}"
+                                            EntityName="{Binding Category.Name}"
+                                            Fallback="{x:Static icons:MaterialIconKind.TagOutline}" />
 
                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                           <WrapPanel Orientation="Horizontal" ItemSpacing="6">

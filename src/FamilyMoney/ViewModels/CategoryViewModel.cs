@@ -41,6 +41,12 @@ public abstract partial class BaseCategoryViewModel : ViewModelBase
     [ObservableProperty]
     public partial byte[]? ImageData { get; set; }
 
+    [ObservableProperty]
+    public partial string? Icon { get; set; }
+
+    [ObservableProperty]
+    public partial string? IconColor { get; set; }
+
     private bool CanOkCommand() => !string.IsNullOrEmpty(Name);
 
     [RelayCommand(CanExecute = nameof(CanOkCommand))]
@@ -70,6 +76,8 @@ public abstract partial class BaseCategoryViewModel : ViewModelBase
         Name = category.Name;
         IsHidden = category.IsHidden;
         ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(Id));
+        Icon = category.Icon;
+        IconColor = category.IconColor;
     }
 }
 

@@ -3,6 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:icons="using:Material.Icons"
+		xmlns:iconControls="using:FamilyMoney.Navigation.Controls"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="620"
 		Width="600"
 		SizeToContent="Height"
@@ -14,7 +16,7 @@
 		xmlns:cv="using:FamilyMoney.Converters"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="using:FamilyMoney.ViewModels"
-		x:DataType="vm:BaseTransactionViewModel"		
+		x:DataType="vm:BaseTransactionViewModel"
         x:Class="FamilyMoney.Views.TransactionWindow"
 		Classes="Dialog"
         Title="">
@@ -32,11 +34,6 @@
 		</Style>
 		<Style Selector="Border.Account">
 			<Setter Property="Height" Value="35" />
-		</Style>
-		<Style Selector="Border.Account Image">
-			<Setter Property="Width" Value="40" />
-			<Setter Property="Margin" Value="10 5 0 5" />
-			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Border.Account TextBlock#AccountName">
 			<Setter Property="Margin" Value="20 5 0 5" />
@@ -66,10 +63,16 @@
 			<Border Classes="Account" Classes.IsGroup="{Binding IsGroup}">
 				<Grid>
 					<Grid ColumnDefinitions="auto auto * auto">
-						<Image Grid.Column="1" Stretch="Uniform"
-								Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-								IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
-							/>
+						<iconControls:IconBadge Grid.Column="1"
+											BadgeSize="30"
+											ShowFallback="False"
+											CollapseWhenEmpty="True"
+											ImageData="{Binding ImageData}"
+											Icon="{Binding Icon}"
+											IconColor="{Binding IconColor}"
+											EntityName="{Binding Name}"
+											Fallback="{x:Static icons:MaterialIconKind.WalletOutline}"
+											VerticalAlignment="Center" />
 						<TextBlock Grid.Column="2" TextTrimming="CharacterEllipsis"
 								   Text="{Binding Name}"
 								   Name="AccountName"/>
@@ -84,25 +87,27 @@
 		</DataTemplate>
 		<DataTemplate DataType="vm:BaseCategoryViewModel">
 			<StackPanel Orientation="Horizontal" Height="30">
-				<Image Stretch="Uniform"
-						Width="40"
-						Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-						IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
-					/>
+				<iconControls:IconBadge BadgeSize="30"
+									ImageData="{Binding ImageData}"
+									Icon="{Binding Icon}"
+									IconColor="{Binding IconColor}"
+									EntityName="{Binding Name}"
+									Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+									VerticalAlignment="Center" />
 				<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15 0"/>
 			</StackPanel>
 		</DataTemplate>
 	</Window.DataTemplates>
-	
+
 	<Grid RowDefinitions="auto auto auto auto auto auto">
-		<TextBlock  Margin="0 10 0 20" HorizontalAlignment="Center" 
+		<TextBlock  Margin="0 10 0 20" HorizontalAlignment="Center"
 					Text="{Binding ., Converter={StaticResource transactionTypeConverter}}"
 					/>
 		<Grid Grid.Row="1" ColumnDefinitions="150 *"
 			  RowDefinitions="35 55 35 auto auto"
 			  Margin="15 0 15 10"
 			  >
-			
+
 			<TextBlock Text="Счёт" Classes="Label" />
 			<Border Grid.Column="1">
 				<Border.IsVisible>
@@ -111,9 +116,9 @@
 						<Binding Path="Account.IsHidden" />
 					</MultiBinding>
 				</Border.IsVisible>
-				
+
 				<ContentControl Content="{Binding Account}" />
-			</Border>						
+			</Border>
 			<ComboBox Grid.Column="1"
 					  Name="AccountComboBox"
 					  SelectedItem="{Binding Account}"
@@ -131,7 +136,7 @@
 						<Setter Property="IsEnabled" Value="{Binding, Converter={StaticResource accountConverter}}" />
 						<Setter Property="Padding" Value="0" />
 					</Style>
-				</ComboBox.Styles>			
+				</ComboBox.Styles>
 			</ComboBox>
 
 			<TextBlock Grid.Row="1" Text="Дата" Classes="Label" />
@@ -176,7 +181,7 @@
 						>
 					<mi:MaterialIcon Kind="Close" />
 				</Button>
-				<Button DockPanel.Dock="Right" 
+				<Button DockPanel.Dock="Right"
 						Margin="2"
 						Click="ShowDropDownButtonClick"
 						IsEnabled="{Binding !#SubCategoryCompleteBox.IsDropDownOpen}"
@@ -190,16 +195,16 @@
 							Name="SubCategoryCompleteBox"
 							FilterMode="Custom"
 							Margin="0 10"
-							ItemsSource="{Binding SubCategories}"								
+							ItemsSource="{Binding SubCategories}"
 							PlaceholderText="Стрелка вниз или F4 откроет список">
 					<Interaction.Behaviors>
 						<bh:AutoCompleteForceDropdownBehaviour/>
 					</Interaction.Behaviors>
-				
+
 					<AutoCompleteBox.ItemTemplate>
 						<DataTemplate x:DataType="vm:BaseSubCategoryViewModel">
 							<Grid ColumnDefinitions="200 auto">
-								<TextBlock Text="{Binding Name}" 
+								<TextBlock Text="{Binding Name}"
 										   VerticalAlignment="Center"
 										   TextTrimming="CharacterEllipsis"/>
 								<ContentControl Grid.Column="1" Content="{Binding Category}" />

@@ -892,6 +892,13 @@ public class LiteDbRepository : IRepository
         EnqueueImageUpload(db, id, fileName);
     }
 
+    public void RemoveImage(Guid id)
+    {
+        using var db = OpenDatabase();
+        db.FileStorage.Delete(id.ToString());
+        EnqueueImageDelete(db, id);
+    }
+
     public Stream? TryGetImage(Guid id)
     {
         var strId = id.ToString();
@@ -1287,7 +1294,29 @@ public class LiteDbRepository : IRepository
         }
     }
 
-    private LiteDatabase OpenDatabase() => new(DatabasePath);
+    // Direct-режим быстрее, но второй LiteDatabase в том же процессе может
+    // получить sharing violation, если фоновая задача (например, построение
+    // списка транзакций) ещё держит файл. Короткие повторы переживают такую
+    // гонку, не переводя весь репозиторий на медленный Shared-режим.
+    private LiteDatabase OpenDatabase()
+    {
+        const int maxAttempts = 10;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return new LiteDatabase(DatabasePath);
+            }
+            catch (IOException ex) when (attempt < maxAttempts && IsDatabaseBusy(ex))
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+    }
+
+    private static bool IsDatabaseBusy(IOException ex) =>
+        ex.HResult == unchecked((int)0x80070020)
+        || ex.HResult == unchecked((int)0x80070021);
 
     private void RecalculateAccountBalances(LiteDatabase db)
     {

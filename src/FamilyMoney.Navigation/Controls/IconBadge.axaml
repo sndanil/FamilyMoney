@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="FamilyMoney.Navigation.Controls.IconBadge"
+             IsHitTestVisible="False">
+  <Border x:Name="Root" ClipToBounds="True">
+    <Panel>
+      <Border x:Name="BaseLayer" Background="{DynamicResource GroupBackBrush}" />
+      <Border x:Name="ColorLayer" IsVisible="False" />
+      <Image x:Name="ImageLayer" Stretch="Uniform" IsVisible="False" />
+      <Image x:Name="PackLayer" Stretch="Uniform" IsVisible="False" />
+      <mi:MaterialIcon x:Name="GlyphLayer"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       IsVisible="False" />
+      <TextBlock x:Name="LetterLayer"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Foreground="White"
+                 FontWeight="Bold"
+                 TextAlignment="Center"
+                 IsVisible="False" />
+    </Panel>
+  </Border>
+</UserControl>

@@ -330,6 +330,8 @@ public partial class AccountsViewModel : ViewModelBase
             Sum = editAccount.Sum,
             IsGroup = editAccount.IsGroup,
             ImageData = editAccount.ImageData,
+            Icon = editAccount.Icon,
+            IconColor = editAccount.IconColor,
             IsNotSummable = editAccount.IsNotSummable,
             EndsOn = editAccount.EndsOn,
             AnnualRateText = DepositCaptionFormatter.FormatRateInput(editAccount.AnnualRate),
@@ -450,8 +452,15 @@ public partial class AccountsViewModel : ViewModelBase
 
         if (!ImageDataHelper.AreEqual(one?.ImageData, other.ImageData))
         {
-            using var stream = new MemoryStream(other.ImageData!);
-            _repository!.UpdateImage(other.Id.Value, other.Name, stream);
+            if (other.ImageData is { Length: > 0 })
+            {
+                using var stream = new MemoryStream(other.ImageData);
+                _repository!.UpdateImage(other.Id.Value, other.Name, stream);
+            }
+            else if (one?.ImageData != null)
+            {
+                _repository!.RemoveImage(other.Id.Value);
+            }
         }
 
         var endsOn = other.IsGroup ? null : other.EndsOn?.Date;
@@ -461,6 +470,8 @@ public partial class AccountsViewModel : ViewModelBase
         {
             one.Name = other.Name;
             one.ImageData = other.ImageData;
+            one.Icon = other.Icon;
+            one.IconColor = other.IconColor;
             one.IsNotSummable = other.IsNotSummable;
             one.EndsOn = endsOn;
             one.AnnualRate = annualRate;
@@ -479,6 +490,8 @@ public partial class AccountsViewModel : ViewModelBase
             IsNotSummable = other.IsNotSummable,
             EndsOn = endsOn,
             AnnualRate = annualRate,
+            Icon = other.Icon,
+            IconColor = other.IconColor,
             Sum = other.IsGroup ? 0 : (existingAccount?.Sum ?? 0),
             Order = (other.Parent ?? Total).Children
                         .Select((account, index) => (account, index))

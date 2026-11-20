@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:icons="using:Material.Icons"
              xmlns:controls="using:FamilyMoney.Navigation.Controls"
              xmlns:cv="using:FamilyMoney.Navigation.Converters"
              xmlns:pages="using:FamilyMoney.Navigation.Pages"
@@ -79,11 +80,13 @@
 
   <Grid RowDefinitions="Auto *" Background="{DynamicResource SidebarBackBrush}">
     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="12 6 8 6">
-      <Image Width="20" Height="20"
-             Stretch="Uniform"
-             VerticalAlignment="Center"
-             Source="{Binding Category.Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-             IsVisible="{Binding Category.Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <controls:IconBadge BadgeSize="20"
+                          VerticalAlignment="Center"
+                          ImageData="{Binding Category.Category.ImageData}"
+                          Icon="{Binding Category.Category.Icon}"
+                          IconColor="{Binding Category.Category.IconColor}"
+                          EntityName="{Binding Category.Category.Name}"
+                          Fallback="{x:Static icons:MaterialIconKind.TagOutline}" />
 
       <StackPanel Grid.Column="1"
                   Orientation="Horizontal"

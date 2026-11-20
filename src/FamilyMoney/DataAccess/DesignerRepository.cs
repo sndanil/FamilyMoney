@@ -137,6 +137,10 @@ public class DesignerRepository : IRepository
     {
     }
 
+    public void RemoveImage(Guid id)
+    {
+    }
+
     public void UpdateSubCategory(SubCategory subCategory)
     {
         throw new NotImplementedException();

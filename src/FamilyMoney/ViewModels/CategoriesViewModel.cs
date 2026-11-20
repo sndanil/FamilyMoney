@@ -302,6 +302,8 @@ public partial class CategoriesViewModel : ViewModelBase
         category.Id = editCategory.Id;
         category.Name = editCategory.Name;
         category.ImageData = editCategory.ImageData;
+        category.Icon = editCategory.Icon;
+        category.IconColor = editCategory.IconColor;
         category.IsHidden = editCategory.IsHidden;
 
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseCategoryViewModel>(category));
@@ -505,15 +507,23 @@ public partial class CategoriesViewModel : ViewModelBase
             };
         }
 
-        if (!ImageDataHelper.AreEqual(categoryForUpdate?.ImageData, categoryForSave.ImageData)
-            && categoryForSave.ImageData != null)
+        if (!ImageDataHelper.AreEqual(categoryForUpdate?.ImageData, categoryForSave.ImageData))
         {
-            using var stream = new MemoryStream(categoryForSave.ImageData);
-            _repository!.UpdateImage(categoryForSave.Id, categoryForSave.Name, stream);
+            if (categoryForSave.ImageData is { Length: > 0 })
+            {
+                using var stream = new MemoryStream(categoryForSave.ImageData);
+                _repository!.UpdateImage(categoryForSave.Id, categoryForSave.Name, stream);
+            }
+            else if (categoryForUpdate?.ImageData != null)
+            {
+                _repository!.RemoveImage(categoryForSave.Id);
+            }
         }
 
         var category = factory();
         category.IsHidden = categoryForSave.IsHidden;
+        category.Icon = categoryForSave.Icon;
+        category.IconColor = categoryForSave.IconColor;
         _repository.UpdateCategroty(category);
 
         WeakReferenceMessenger.Default.Send(new CategoryUpdateMessage(category.Id));
@@ -522,6 +532,8 @@ public partial class CategoriesViewModel : ViewModelBase
         {
             categoryForUpdate.Name = categoryForSave.Name;
             categoryForUpdate.ImageData = categoryForSave.ImageData;
+            categoryForUpdate.Icon = categoryForSave.Icon;
+            categoryForUpdate.IconColor = categoryForSave.IconColor;
             categoryForUpdate.IsHidden = categoryForSave.IsHidden;
         }
     }

@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
+using FamilyMoney.Navigation.ViewModels;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using System.IO;
@@ -38,39 +39,33 @@ public partial class AccountWindow : Window
 
         using var stream = File.OpenRead(path);
         account.ImageData = ImageConverter.ToImageData(stream);
+        account.Icon = null;
+        account.IconColor = null;
     }
 
     private async void ChangeImage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var provider = GetTopLevel(this)?.StorageProvider;
-        if (provider is not { CanOpen: true })
+        if (DataContext is not AccountViewModel account)
         {
             return;
         }
 
-        try
-        {
-            var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = "Выбор изображения",
-                AllowMultiple = false,
-                FileTypeFilter =
-                [
-                    new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
-                    FilePickerFileTypes.All
-                ]
-            });
+        var viewModel = new IconPickerViewModel(
+            account.Name,
+            true,
+            account.Icon,
+            account.IconColor,
+            account.ImageData);
 
-            if (files.Any() && DataContext is AccountViewModel account)
-            {
-                var file = files.Single();
-                await using var stream = await file.OpenReadAsync();
-                account.ImageData = ImageConverter.ToImageData(stream);
-            }
-        }
-        catch (System.Exception)
+        var dialog = new IconPickerWindow { DataContext = viewModel };
+        var result = await dialog.ShowDialog<IconSelection?>(this);
+        if (result == null)
         {
-            // Диалог недоступен (например, нет xdg-desktop-portal) — просто не меняем картинку.
+            return;
         }
+
+        account.Icon = result.Icon;
+        account.IconColor = result.IconColor;
+        account.ImageData = result.ImageData;
     }
 }

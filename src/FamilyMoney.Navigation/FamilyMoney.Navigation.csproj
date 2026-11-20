@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Themes\**" />
+    <AvaloniaResource Include="Assets\Packs\**" />
   </ItemGroup>
 
   <ItemGroup>

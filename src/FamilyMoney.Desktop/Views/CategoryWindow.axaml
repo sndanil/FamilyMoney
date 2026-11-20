@@ -4,13 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:icons="using:Material.Icons"
+		xmlns:controls="using:FamilyMoney.Navigation.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		Width="600" Height="400"
 		WindowStartupLocation="CenterOwner"
 		ExtendClientAreaToDecorationsHint="True"
 		xmlns:views="clr-namespace:FamilyMoney.Views"
 		xmlns:vm="using:FamilyMoney.ViewModels"
-		x:DataType="vm:BaseCategoryViewModel"		
+		x:DataType="vm:BaseCategoryViewModel"
         x:Class="FamilyMoney.Views.CategoryWindow"
 		Classes="Dialog"
         Title="Параметры категории">
@@ -27,25 +29,24 @@
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
 			<CheckBox IsChecked="{Binding IsHidden}">Скрытая для выбора</CheckBox>
 		</StackPanel>
-		<Image Grid.Row="2"
-			Name="ImageControl"
-			DragDrop.AllowDrop="True"
-			Stretch="Uniform"
-			Source="{Binding ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-			VerticalAlignment="Center"
-			/>
-		<mi:MaterialIcon Kind="Image"
-			Grid.Row="2"
-			Width="100" Height="100"
-			 VerticalAlignment="Stretch"
-			 HorizontalAlignment="Stretch"
-			 IsVisible="{Binding ImageData, Converter={x:Static ObjectConverters.IsNull}}"
-		/>
+		<Border Grid.Row="2"
+				Name="ImageControl"
+				DragDrop.AllowDrop="True"
+				Background="Transparent"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center">
+			<controls:IconBadge ImageData="{Binding ImageData}"
+								Icon="{Binding Icon}"
+								IconColor="{Binding IconColor}"
+								EntityName="{Binding Name}"
+								Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+								BadgeSize="112" />
+		</Border>
 
 		<Button Grid.Row="3"
 				Classes="DialogButton"
 				Width="250"
-				Content="Загрузить картинку из файла"
+				Content="Выбрать иконку"
 				HorizontalAlignment="Center"
 				x:Name="ChangeImageButton"
 				Click="ChangeImage"

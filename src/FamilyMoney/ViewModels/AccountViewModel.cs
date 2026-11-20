@@ -29,7 +29,17 @@ public partial class AccountViewModel : ViewModelBase
     public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasIconContent))]
     public partial byte[]? ImageData { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasIconContent))]
+    public partial string? Icon { get; set; }
+
+    [ObservableProperty]
+    public partial string? IconColor { get; set; }
+
+    public bool HasIconContent => ImageData is { Length: > 0 } || !string.IsNullOrWhiteSpace(Icon);
 
     [ObservableProperty]
     public partial bool IsGroup { get; set; }
@@ -180,6 +190,8 @@ public partial class AccountViewModel : ViewModelBase
         EndsOn = account.EndsOn?.Date;
         AnnualRateText = DepositCaptionFormatter.FormatRateInput(account.AnnualRate);
         ImageData = ImageDataHelper.ToByteArray(repository.TryGetImage(account.Id));
+        Icon = account.Icon;
+        IconColor = account.IconColor;
     }
 
     partial void OnEndsOnChanged(DateTime? value)

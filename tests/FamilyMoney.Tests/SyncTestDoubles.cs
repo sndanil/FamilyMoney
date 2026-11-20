@@ -393,6 +393,10 @@ internal sealed class FakeSyncRepository : IRepository
         {
         }
 
+        public void RemoveImage(Guid id)
+        {
+        }
+
         public Stream? TryGetImage(Guid id) => null;
 
         public Account GetAccount(Guid id) => throw new NotImplementedException();

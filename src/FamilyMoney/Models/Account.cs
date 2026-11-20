@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace FamilyMoney.Models;
 
@@ -35,5 +35,11 @@ public sealed class Account : ISyncable
     /// Пусто, если ставка не задана; 0 — настоящая нулевая ставка.
     /// </summary>
     public decimal? AnnualRate { get; set; }
+
+    /// <summary>material:CartOutline, letter:П или pack:banks/sber. null — картинка или fallback.</summary>
+    public string? Icon { get; set; }
+
+    /// <summary>#RRGGBB; null — акцентный цвет.</summary>
+    public string? IconColor { get; set; }
 }
 

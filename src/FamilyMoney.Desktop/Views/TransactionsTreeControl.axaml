@@ -5,6 +5,7 @@
 			 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:cv="using:FamilyMoney.Converters"
+			 xmlns:icons="using:Material.Icons"
 			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
 			 xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:SummaryTransactionsGroup"
@@ -84,12 +85,6 @@
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="Foreground" Value="Gray"/>
 		</Style>
-		<Style Selector="Image">
-			<Setter Property="Height" Value="20" />
-			<Setter Property="Width" Value="20" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
-		</Style>
 		<Style Selector="Border.Category">
 			<Setter Property="Height" Value="30" />
 			<Setter Property="Margin" Value="10 -1 10 0" />
@@ -149,8 +144,8 @@
 			<DataTemplate>
 				<StackPanel>
 					<Grid>
-						<Button Classes="TreeChevron" 
-								Command="{Binding Parent.ToggleExpandCommand}" 
+						<Button Classes="TreeChevron"
+								Command="{Binding Parent.ToggleExpandCommand}"
 								CommandParameter="{Binding}">
 							<mi:MaterialIcon Kind="ChevronRight"
 											 RenderTransformOrigin="50%,50%">
@@ -178,10 +173,13 @@
 
 							<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
 								<StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-									<Image Stretch="Uniform"
-											Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-											IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}"
-									/>
+									<controls:IconBadge BadgeSize="24"
+														ImageData="{Binding Category.ImageData}"
+														Icon="{Binding Category.Icon}"
+														IconColor="{Binding Category.IconColor}"
+														EntityName="{Binding Category.Name}"
+														Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+														VerticalAlignment="Center" />
 									<TextBlock Classes="Name" Text="{Binding Category.Name}" />
 								</StackPanel>
 								<SelectableTextBlock Grid.Column="3" Classes="Sum"
@@ -207,7 +205,7 @@
 							<DataTemplate>
 								<StackPanel>
 									<Grid>
-										<Button Classes="TreeChevron" 
+										<Button Classes="TreeChevron"
 												Command="{Binding Parent.ToggleExpandCommand}"
 												CommandParameter="{Binding}">
 											<mi:MaterialIcon Kind="ChevronRight"
@@ -234,8 +232,8 @@
 											</Interaction.Behaviors>
 
 											<Grid RowDefinitions="auto" ColumnDefinitions="30 * 100 150 100">
-												<TextBlock Grid.Column="1" Grid.ColumnSpan="2" 
-														   Classes="Name" 
+												<TextBlock Grid.Column="1" Grid.ColumnSpan="2"
+														   Classes="Name"
 														   Text="{Binding SubCategory.Name}">
 												</TextBlock>
 												<SelectableTextBlock Grid.Column="3" Classes="Sum"

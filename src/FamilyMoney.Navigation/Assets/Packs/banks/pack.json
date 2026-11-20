@@ -1,0 +1,554 @@
+{
+  "id": "banks",
+  "title": "Банки",
+  "version": 1,
+  "notice": "NOTICE-banks.md",
+  "assets": [
+    {
+      "id": "sber",
+      "name": "Сбербанк",
+      "aliases": [
+        "сбер",
+        "sber",
+        "сбербанк"
+      ],
+      "file": "sber.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "sber-card",
+      "name": "Сбербанк — карта",
+      "aliases": [
+        "сбер",
+        "sber",
+        "сбербанк",
+        "сбер карта",
+        "sber card"
+      ],
+      "file": "sber-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "vtb",
+      "name": "ВТБ",
+      "aliases": [
+        "втб",
+        "vtb"
+      ],
+      "file": "vtb.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "vtb-card",
+      "name": "ВТБ — карта",
+      "aliases": [
+        "втб",
+        "vtb",
+        "втб карта",
+        "vtb card"
+      ],
+      "file": "vtb-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "gazprombank",
+      "name": "Газпромбанк",
+      "aliases": [
+        "газпромбанк",
+        "гпб",
+        "gazprombank"
+      ],
+      "file": "gazprombank.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "gazprombank-card",
+      "name": "Газпромбанк — карта",
+      "aliases": [
+        "газпромбанк",
+        "гпб",
+        "gazprombank",
+        "газпромбанк карта",
+        "gazprombank card"
+      ],
+      "file": "gazprombank-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "alfa",
+      "name": "Альфа-Банк",
+      "aliases": [
+        "альфа",
+        "альфа-банк",
+        "alfa"
+      ],
+      "file": "alfa.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "alfa-card",
+      "name": "Альфа-Банк — карта",
+      "aliases": [
+        "альфа",
+        "альфа-банк",
+        "alfa",
+        "альфа карта",
+        "alfa card"
+      ],
+      "file": "alfa-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "rshb",
+      "name": "Россельхозбанк",
+      "aliases": [
+        "россельхозбанк",
+        "рсхб",
+        "rshb"
+      ],
+      "file": "rshb.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "rshb-card",
+      "name": "Россельхозбанк — карта",
+      "aliases": [
+        "россельхозбанк",
+        "рсхб",
+        "rshb",
+        "россельхозбанк карта",
+        "rshb card"
+      ],
+      "file": "rshb-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "psb",
+      "name": "Промсвязьбанк",
+      "aliases": [
+        "промсвязьбанк",
+        "псб",
+        "psb"
+      ],
+      "file": "psb.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "psb-card",
+      "name": "Промсвязьбанк — карта",
+      "aliases": [
+        "промсвязьбанк",
+        "псб",
+        "psb",
+        "промсвязьбанк карта",
+        "psb card"
+      ],
+      "file": "psb-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "tbank",
+      "name": "Т-Банк",
+      "aliases": [
+        "тинькофф",
+        "т-банк",
+        "tbank",
+        "tinkoff"
+      ],
+      "file": "tbank.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "tbank-card",
+      "name": "Т-Банк — карта",
+      "aliases": [
+        "тинькофф",
+        "т-банк",
+        "tbank",
+        "tinkoff",
+        "тинькофф карта",
+        "tbank card"
+      ],
+      "file": "tbank-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "mkb",
+      "name": "МКБ",
+      "aliases": [
+        "мкб",
+        "московский кредитный банк",
+        "mkb"
+      ],
+      "file": "mkb.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "mkb-card",
+      "name": "МКБ — карта",
+      "aliases": [
+        "мкб",
+        "московский кредитный банк",
+        "mkb",
+        "мкб карта",
+        "mkb card"
+      ],
+      "file": "mkb-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "domrf",
+      "name": "Банк ДОМ.РФ",
+      "aliases": [
+        "дом.рф",
+        "дом рф",
+        "domrf"
+      ],
+      "file": "domrf.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "domrf-card",
+      "name": "Банк ДОМ.РФ — карта",
+      "aliases": [
+        "дом.рф",
+        "дом рф",
+        "domrf",
+        "дом.рф карта",
+        "domrf card"
+      ],
+      "file": "domrf-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "sovcombank",
+      "name": "Совкомбанк",
+      "aliases": [
+        "совкомбанк",
+        "sovcombank"
+      ],
+      "file": "sovcombank.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "sovcombank-card",
+      "name": "Совкомбанк — карта",
+      "aliases": [
+        "совкомбанк",
+        "sovcombank",
+        "совкомбанк карта",
+        "sovcombank card"
+      ],
+      "file": "sovcombank-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "raiffeisen",
+      "name": "Райффайзен Банк",
+      "aliases": [
+        "райффайзен",
+        "райф",
+        "raiffeisen"
+      ],
+      "file": "raiffeisen.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "raiffeisen-card",
+      "name": "Райффайзен Банк — карта",
+      "aliases": [
+        "райффайзен",
+        "райф",
+        "raiffeisen",
+        "райффайзен карта",
+        "raiffeisen card"
+      ],
+      "file": "raiffeisen-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "novikom",
+      "name": "НОВИКОМ",
+      "aliases": [
+        "новиком",
+        "новикомбанк",
+        "novikom"
+      ],
+      "file": "novikom.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "novikom-card",
+      "name": "НОВИКОМ — карта",
+      "aliases": [
+        "новиком",
+        "новикомбанк",
+        "novikom",
+        "новиком карта",
+        "novikom card"
+      ],
+      "file": "novikom-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "bspb",
+      "name": "Банк Санкт-Петербург",
+      "aliases": [
+        "санкт-петербург",
+        "бспб",
+        "bspb"
+      ],
+      "file": "bspb.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "bspb-card",
+      "name": "Банк Санкт-Петербург — карта",
+      "aliases": [
+        "санкт-петербург",
+        "бспб",
+        "bspb",
+        "санкт-петербург карта",
+        "bspb card"
+      ],
+      "file": "bspb-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "akbars",
+      "name": "Ак Барс Банк",
+      "aliases": [
+        "ак барс",
+        "акбарс",
+        "akbars"
+      ],
+      "file": "akbars.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "akbars-card",
+      "name": "Ак Барс Банк — карта",
+      "aliases": [
+        "ак барс",
+        "акбарс",
+        "akbars",
+        "ак барс карта",
+        "akbars card"
+      ],
+      "file": "akbars-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "uralsib",
+      "name": "Уралсиб",
+      "aliases": [
+        "уралсиб",
+        "uralsib"
+      ],
+      "file": "uralsib.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "uralsib-card",
+      "name": "Уралсиб — карта",
+      "aliases": [
+        "уралсиб",
+        "uralsib",
+        "уралсиб карта",
+        "uralsib card"
+      ],
+      "file": "uralsib-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "otp",
+      "name": "ОТП Банк",
+      "aliases": [
+        "отп",
+        "otp"
+      ],
+      "file": "otp.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "otp-card",
+      "name": "ОТП Банк — карта",
+      "aliases": [
+        "отп",
+        "otp",
+        "отп карта",
+        "otp card"
+      ],
+      "file": "otp-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "mts",
+      "name": "МТС Банк",
+      "aliases": [
+        "мтс",
+        "mts"
+      ],
+      "file": "mts.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "mts-card",
+      "name": "МТС Банк — карта",
+      "aliases": [
+        "мтс",
+        "mts",
+        "мтс карта",
+        "mts card"
+      ],
+      "file": "mts-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "ozon",
+      "name": "Ozon Банк",
+      "aliases": [
+        "озон",
+        "ozon"
+      ],
+      "file": "ozon.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "ozon-card",
+      "name": "Ozon Банк — карта",
+      "aliases": [
+        "озон",
+        "ozon",
+        "озон карта",
+        "ozon card"
+      ],
+      "file": "ozon-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "yandex",
+      "name": "Яндекс Банк",
+      "aliases": [
+        "яндекс",
+        "yandex"
+      ],
+      "file": "yandex.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "yandex-card",
+      "name": "Яндекс Банк — карта",
+      "aliases": [
+        "яндекс",
+        "yandex",
+        "яндекс карта",
+        "yandex card"
+      ],
+      "file": "yandex-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "absolut",
+      "name": "Абсолют Банк",
+      "aliases": [
+        "абсолют",
+        "absolut"
+      ],
+      "file": "absolut.png",
+      "background": "#FFFFFF",
+      "kind": "logo",
+      "addedIn": "1.0.0"
+    },
+    {
+      "id": "absolut-card",
+      "name": "Абсолют Банк — карта",
+      "aliases": [
+        "абсолют",
+        "absolut",
+        "абсолют карта",
+        "absolut card"
+      ],
+      "file": "absolut-card.png",
+      "background": "#FFFFFF",
+      "kind": "card",
+      "addedIn": "1.0.0"
+    }
+  ]
+}

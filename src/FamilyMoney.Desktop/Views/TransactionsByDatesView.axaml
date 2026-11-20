@@ -6,8 +6,9 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-			 xmlns:cv="using:FamilyMoney.Converters"
+			 xmlns:icons="using:Material.Icons"
 			 xmlns:controls="using:FamilyMoney.Navigation.Controls"
+			 xmlns:cv="using:FamilyMoney.Converters"
              xmlns:vm="using:FamilyMoney.ViewModels"
 			 x:DataType="vm:TransactionsViewModel"
 			 x:Class="FamilyMoney.Views.TransactionsByDatesView">
@@ -117,13 +118,6 @@
 		</Style>
 		<Style Selector="SelectableTextBlock.Debet">
 			<Setter Property="Foreground" Value="{DynamicResource PositiveBrush}" />
-		</Style>
-		<Style Selector="Image">
-			<Setter Property="Margin" Value="5 0" />
-			<Setter Property="Height" Value="20" />
-			<Setter Property="Width" Value="20" />
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="HorizontalAlignment" Value="Center" />
 		</Style>
 		<Style Selector="mi|MaterialIcon">
 			<Setter Property="Height" Value="14" />
@@ -306,9 +300,14 @@
 												<mi:MaterialIcon Kind="Delete" />
 											</Button>
 
-											<Image Stretch="Uniform" Grid.Column="2"
-													Source="{Binding Category.ImageData, Converter={StaticResource byteArrayToBitmapConverter}}"
-													IsVisible="{Binding Category.ImageData, Converter={x:Static ObjectConverters.IsNotNull}}" />
+											<controls:IconBadge Grid.Column="2"
+															BadgeSize="24"
+															ImageData="{Binding Category.ImageData}"
+															Icon="{Binding Category.Icon}"
+															IconColor="{Binding Category.IconColor}"
+															EntityName="{Binding Category.Name}"
+															Fallback="{x:Static icons:MaterialIconKind.TagOutline}"
+															VerticalAlignment="Center" />
 											<TextBlock Grid.Column="3" Classes="Name" Text="{Binding Category.Name}" />
 											<TextBlock Grid.Column="4" Classes="Name" Text="{Binding SubCategory.Name}" />
 											<Grid Grid.Column="5" Margin="10 4 0 4" ColumnDefinitions="* auto">

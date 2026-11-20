@@ -25,4 +25,8 @@ internal sealed class AccountSyncModel
     public DateTime? EndsOn { get; set; }
 
     public decimal? AnnualRate { get; set; }
+
+    public string? Icon { get; set; }
+
+    public string? IconColor { get; set; }
 }

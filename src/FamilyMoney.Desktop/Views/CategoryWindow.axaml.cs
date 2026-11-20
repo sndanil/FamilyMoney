@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Messaging;
 using FamilyMoney.Messages;
+using FamilyMoney.Navigation.ViewModels;
 using FamilyMoney.Utils;
 using FamilyMoney.ViewModels;
 using System.IO;
@@ -38,39 +39,33 @@ public partial class CategoryWindow : Window
 
         using var stream = File.OpenRead(path);
         category.ImageData = ImageConverter.ToImageData(stream);
+        category.Icon = null;
+        category.IconColor = null;
     }
 
     private async void ChangeImage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var provider = GetTopLevel(this)?.StorageProvider;
-        if (provider is not { CanOpen: true })
+        if (DataContext is not BaseCategoryViewModel category)
         {
             return;
         }
 
-        try
-        {
-            var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                Title = "Выбор изображения",
-                AllowMultiple = false,
-                FileTypeFilter =
-                [
-                    new ("Изображения") { Patterns = [ "*.png", "*.jpg" ], MimeTypes = [ "*/*" ] },
-                    FilePickerFileTypes.All
-                ]
-            });
+        var viewModel = new IconPickerViewModel(
+            category.Name,
+            false,
+            category.Icon,
+            category.IconColor,
+            category.ImageData);
 
-            if (files.Any() && DataContext is BaseCategoryViewModel category)
-            {
-                var file = files.Single();
-                await using var stream = await file.OpenReadAsync();
-                category.ImageData = ImageConverter.ToImageData(stream);
-            }
-        }
-        catch (System.Exception)
+        var dialog = new IconPickerWindow { DataContext = viewModel };
+        var result = await dialog.ShowDialog<IconSelection?>(this);
+        if (result == null)
         {
-            // Диалог недоступен (например, нет xdg-desktop-portal) — просто не меняем картинку.
+            return;
         }
+
+        category.Icon = result.Icon;
+        category.IconColor = result.IconColor;
+        category.ImageData = result.ImageData;
     }
 }
