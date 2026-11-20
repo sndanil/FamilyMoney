@@ -208,7 +208,7 @@
             </Grid>
 
             <!-- Широкий экран: сводка слева, дни или выбранная категория справа. -->
-            <Grid IsVisible="{Binding IsWideLayout}" ColumnDefinitions="340 *">
+            <Grid x:Name="WideLayoutGrid" IsVisible="{Binding IsWideLayout}" ColumnDefinitions="340 *">
                 <controls:TransactionsSummaryView x:Name="WideSummary"
                                                   Grid.Column="0"
                                                   Margin="0 0 6 0" />

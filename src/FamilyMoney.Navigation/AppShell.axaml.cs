@@ -84,17 +84,30 @@ public partial class AppShell : UserControl
 
     private void OnShellSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        var wide = e.NewSize.Width >= ShellDrawer.DrawerBreakpointLength;
-        if (_lastWide == wide)
+        const double threePaneThreshold = 1000;
+
+        var width = e.NewSize.Width;
+        if (width <= 0)
         {
             return;
         }
 
-        _lastWide = wide;
+        var split = width >= ShellDrawer.DrawerBreakpointLength;
+        var threePanes = width >= threePaneThreshold;
 
-        // При запуске в портретном режиме ящик должен быть скрыт, в альбомном —
-        // открыт, если позволяет ширина.
-        ShellDrawer.IsOpen = wide;
+        // Три панели: счета 30%, категории 30%, дни/подкатегории 40%.
+        // Две панели (счета + один раздел): 40% и 60%.
+        ShellDrawer.DrawerLength = split
+            ? width * (threePanes ? 0.30 : 0.40)
+            : 300;
+
+        if (_lastWide != split)
+        {
+            _lastWide = split;
+            // При запуске в портретном режиме ящик должен быть скрыт,
+            // в альбомном — открыт, если позволяет ширина.
+            ShellDrawer.IsOpen = split;
+        }
     }
 
     private void OnBackRequested(object? sender, RoutedEventArgs e)

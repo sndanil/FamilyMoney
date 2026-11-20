@@ -40,6 +40,8 @@ public partial class HomePage : ContentPage
         }
 
         var wide = width >= WideLayoutThreshold;
+        UpdateWideColumns(width, wide);
+
         if (main.IsWideLayout == wide)
         {
             return;
@@ -52,6 +54,19 @@ public partial class HomePage : ContentPage
             // В узкой раскладке панели категории нет: не оставляем висящий контекст.
             ClearSelectedCategory();
         }
+    }
+
+    private void UpdateWideColumns(double width, bool wide)
+    {
+        if (!wide || width <= 0)
+        {
+            return;
+        }
+
+        // В трёхпанельной раскладке счета занимают 30%, категории — 30%,
+        // дни/подкатегории — 40%. HomePage получает оставшиеся 70% ширины,
+        // поэтому категория внутри неё занимает 3/7.
+        WideLayoutGrid.ColumnDefinitions[0].Width = new GridLength(width * 3d / 7d);
     }
 
     private void OnCategoryActivated(object? sender, CategoryActivatedEventArgs e)
