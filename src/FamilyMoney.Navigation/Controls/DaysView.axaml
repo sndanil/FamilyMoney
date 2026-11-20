@@ -8,6 +8,7 @@
   <UserControl.Resources>
     <cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
     <cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+    <cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -19,12 +20,29 @@
       <Setter Property="CornerRadius" Value="10" />
       <Setter Property="ClipToBounds" Value="True" />
     </Style>
-    <Style Selector="Border.DayHeader">
+    <Style Selector="Button.DayHeaderButton">
       <Setter Property="MinHeight" Value="40" />
-      <Setter Property="Padding" Value="12 0" />
+      <Setter Property="Padding" Value="0" />
       <Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
       <Setter Property="BorderThickness" Value="0 0 0 1" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.DayHeaderButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
     </Style>
     <Style Selector="TextBlock.DayTitle">
       <Setter Property="FontSize" Value="14" />
@@ -92,26 +110,55 @@
         <DataTemplate>
           <Border Classes="DayCard">
             <StackPanel>
-              <Border Classes="DayHeader">
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                  <mi:MaterialIcon Kind="Calendar"
-                                   Width="18"
-                                   Height="18"
-                                   Margin="0 0 8 0"
-                                   VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" />
-                  <TextBlock Grid.Column="1"
-                             Classes="DayTitle"
-                             Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-                  <SelectableTextBlock Grid.Column="2"
-                                       Classes="Sum"
-                                       Classes.Debet="{Binding IsDebet}"
-                                       Classes.Negative="{Binding !IsDebet}"
-                                       Text="{Binding Sum, StringFormat='#,##0.00'}" />
-                </Grid>
-              </Border>
+              <Button Classes="DayHeaderButton"
+                      Command="{Binding ToggleExpandCommand}"
+                      ToolTip.Tip="Свернуть / развернуть день">
+                <Grid>
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="12 0">
+                    <mi:MaterialIcon Grid.Column="0"
+                                     Kind="ChevronRight"
+                                     Width="18"
+                                     Height="18"
+                                     VerticalAlignment="Center"
+                                     Foreground="{DynamicResource TextSecondaryBrush}"
+                                     RenderTransformOrigin="50%,50%">
+                      <mi:MaterialIcon.RenderTransform>
+                        <RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+                          <RotateTransform.Transitions>
+                            <Transitions>
+                              <DoubleTransition Property="Angle" Duration="0:0:0.18" />
+                            </Transitions>
+                          </RotateTransform.Transitions>
+                        </RotateTransform>
+                      </mi:MaterialIcon.RenderTransform>
+                    </mi:MaterialIcon>
 
-              <ItemsControl ItemsSource="{Binding Transactions}">
+                    <SelectableTextBlock Grid.Column="2"
+                                         Classes="Sum"
+                                         Classes.Debet="{Binding IsDebet}"
+                                         Classes.Negative="{Binding !IsDebet}"
+                                         Text="{Binding Sum, StringFormat='#,##0.00'}" />
+                  </Grid>
+
+                  <StackPanel Orientation="Horizontal"
+                              Spacing="8"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">
+                    <StackPanel.RenderTransform>
+                      <TranslateTransform X="-13" />
+                    </StackPanel.RenderTransform>
+                    <mi:MaterialIcon Kind="Calendar"
+                                     Width="18"
+                                     Height="18"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <TextBlock Classes="DayTitle"
+                               Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
+                  </StackPanel>
+                </Grid>
+              </Button>
+
+              <ItemsControl ItemsSource="{Binding Transactions}"
+                            IsVisible="{Binding IsExpanded}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" />

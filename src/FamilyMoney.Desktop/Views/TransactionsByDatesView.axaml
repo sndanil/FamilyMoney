@@ -14,6 +14,7 @@
 		<cv:ByteArrayToBitmapConverter x:Key="byteArrayToBitmapConverter" />
 		<cv:IsNegativeConverter x:Key="isNegativeConverter" />
 		<cv:NoNewLinesConverter x:Key="noNewLinesConverter" />
+		<cv:BoolToAngleConverter x:Key="boolToAngleConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
 		<Style Selector="Border.DayCard">
@@ -36,6 +37,34 @@
 		</Style>
 		<Style Selector="Border.DayHeader TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.DayExpander">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Width" Value="24" />
+			<Setter Property="Height" Value="24" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Margin" Value="0 0 4 0" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.DayExpander /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.DayExpander:pointerover">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.DayExpander:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.DayExpander:pressed /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.DayExpander mi|MaterialIcon">
+			<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
 		</Style>
 		<Style Selector="Border.DayTransaction">
 			<Setter Property="MinHeight" Value="30" />
@@ -133,6 +162,30 @@
 		<Style Selector="Button.Expander mi|MaterialIcon">
 			<Setter Property="Foreground" Value="Gray" />
 		</Style>
+		<Style Selector="Button.DayHeaderButton">
+			<Setter Property="MinHeight" Value="34" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource LikeGridLinesBrush}" />
+			<Setter Property="BorderThickness" Value="0 0 0 1" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="VerticalContentAlignment" Value="Stretch" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}">
+						<ContentPresenter Content="{TemplateBinding Content}"
+										  HorizontalContentAlignment="Stretch"
+										  VerticalContentAlignment="Stretch" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.DayHeaderButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
 	</UserControl.Styles>
 
 	<ScrollViewer>
@@ -147,38 +200,66 @@
 				<DataTemplate>
 					<Border Classes="DayCard">
 					<StackPanel>
-						<Border Classes="DayHeader">
-							<Grid ColumnDefinitions="Auto,* Auto">
-								<mi:MaterialIcon Kind="Calendar"
-												 Width="16" Height="16"
-												 Margin="0 0 8 0"
-												 VerticalAlignment="Center" />
-								<TextBlock Grid.Column="1"
-										   Classes="Title"
-										   MinWidth="70"
-										   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
-								<StackPanel Grid.Column="2"
-											Orientation="Horizontal"
-											Spacing="12"
-											HorizontalAlignment="Right"
+						<Button Classes="DayHeaderButton"
+								Command="{Binding ToggleExpandCommand}"
+								ToolTip.Tip="Свернуть / развернуть день">
+							<Grid>
+								<Grid ColumnDefinitions="Auto,*,Auto" Margin="10 0">
+									<mi:MaterialIcon Grid.Column="0"
+													 Kind="ChevronRight"
+													 Width="16" Height="16"
+													 VerticalAlignment="Center"
+													 RenderTransformOrigin="50%,50%">
+										<mi:MaterialIcon.RenderTransform>
+											<RotateTransform Angle="{Binding IsExpanded, Converter={StaticResource boolToAngleConverter}}">
+												<RotateTransform.Transitions>
+													<Transitions>
+														<DoubleTransition Property="Angle" Duration="0:0:0.18" />
+													</Transitions>
+												</RotateTransform.Transitions>
+											</RotateTransform>
+										</mi:MaterialIcon.RenderTransform>
+									</mi:MaterialIcon>
+
+									<StackPanel Grid.Column="2"
+												Orientation="Horizontal"
+												Spacing="12"
+												HorizontalAlignment="Right"
+												VerticalAlignment="Center">
+										<SelectableTextBlock Classes="Sum Debet"
+												   IsVisible="{Binding HasDebet}"
+												   Text="{Binding DebetSum, StringFormat='#,##0.00'}" />
+										<SelectableTextBlock Classes="Sum"
+												   Classes.Negative="True"
+												   IsVisible="{Binding HasCredit}"
+												   Text="{Binding CreditSum, StringFormat='#,##0.00'}" />
+										<SelectableTextBlock Classes="Sum"
+												   Classes.Debet="{Binding IsDebet}"
+												   Classes.Negative="{Binding !IsDebet}"
+												   IsVisible="{Binding ShowTotal}"
+												   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+									</StackPanel>
+								</Grid>
+
+								<StackPanel Orientation="Horizontal"
+											Spacing="8"
+											HorizontalAlignment="Center"
 											VerticalAlignment="Center">
-									<SelectableTextBlock Classes="Sum Debet"
-											   IsVisible="{Binding HasDebet}"
-											   Text="{Binding DebetSum, StringFormat='#,##0.00'}" />
-									<SelectableTextBlock Classes="Sum"
-											   Classes.Negative="True"
-											   IsVisible="{Binding HasCredit}"
-											   Text="{Binding CreditSum, StringFormat='#,##0.00'}" />
-									<SelectableTextBlock Classes="Sum"
-											   Classes.Debet="{Binding IsDebet}"
-											   Classes.Negative="{Binding !IsDebet}"
-											   IsVisible="{Binding ShowTotal}"
-											   Text="{Binding Sum, StringFormat='#,##0.00'}" />
+									<StackPanel.RenderTransform>
+										<TranslateTransform X="-12" />
+									</StackPanel.RenderTransform>
+									<mi:MaterialIcon Kind="Calendar"
+													 Width="16" Height="16"
+													 VerticalAlignment="Center" />
+									<TextBlock Classes="Title"
+											   MinWidth="70"
+											   Text="{Binding Date, StringFormat=dd MMMM yyyy}" />
 								</StackPanel>
 							</Grid>
-						</Border>
+						</Button>
 
-						<ItemsControl ItemsSource="{Binding Transactions}">
+						<ItemsControl ItemsSource="{Binding Transactions}"
+									  IsVisible="{Binding IsExpanded}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Vertical" />

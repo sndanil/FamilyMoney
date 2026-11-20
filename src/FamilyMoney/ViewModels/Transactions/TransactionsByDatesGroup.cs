@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,9 @@ public partial class TransactionsByDatesGroup : ViewModelBase
     [ObservableProperty]
     public partial decimal Sum { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsExpanded { get; set; } = true;
+
     public decimal DebetSum { get; set; }
 
     public decimal CreditSum { get; set; }
@@ -37,6 +41,12 @@ public partial class TransactionsByDatesGroup : ViewModelBase
 
     [ObservableProperty]
     public partial TransactionsViewModel? Parent { get; set; }
+
+    [RelayCommand]
+    public void ToggleExpand()
+    {
+        IsExpanded = !IsExpanded;
+    }
 
     public void SortByLastChange()
     {
