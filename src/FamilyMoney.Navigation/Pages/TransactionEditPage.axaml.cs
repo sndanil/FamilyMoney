@@ -26,7 +26,7 @@ namespace FamilyMoney.Navigation.Pages;
 
 public partial class TransactionEditPage : ContentPage
 {
-    private readonly BaseTransactionViewModel _viewModel = null!;
+    private BaseTransactionViewModel _viewModel = null!;
     private readonly TransactionRowViewModel? _row;
     private readonly TaskCompletionSource<BaseTransactionViewModel?> _result = new();
     private readonly ISpeechToTextService? _speechToText;
@@ -40,35 +40,40 @@ public partial class TransactionEditPage : ContentPage
     public TransactionEditPage()
     {
         InitializeComponent();
+
+        _speechToText = AppInit.GlobalHost?.Services.GetService<ISpeechToTextService>();
+        TextInputOptions.SetReturnKeyType(TagInputTextBox, TextInputReturnKeyType.Done);
     }
 
     public TransactionEditPage(BaseTransactionViewModel viewModel, TransactionRowViewModel? row)
         : this()
     {
-        _viewModel = viewModel;
         _row = row;
-        DataContext = viewModel;
+        InitializePage();
+        AttachViewModel(viewModel);
+        SetLoading(false);
+    }
 
-        TextInputOptions.SetReturnKeyType(TagInputTextBox, TextInputReturnKeyType.Done);
+    /// <summary>
+    /// Открывает страницу сразу, с пустой формой. Поля заблокированы,
+    /// пока AppShell не загрузит целевую транзакцию и не вызовет <see cref="Load"/>.
+    /// </summary>
+    public TransactionEditPage(TransactionRowViewModel row)
+        : this(row, loading: true)
+    {
+    }
 
-        var typeTitle = viewModel switch
-        {
-            TransferTransactionViewModel => "Перевод",
-            DebetTransactionViewModel => "Доход",
-            CreditTransactionViewModel => "Расход",
-            _ => "Транзакция",
-        };
+    public TransactionEditPage(TransactionRowViewModel? row, bool loading)
+        : this()
+    {
+        _row = row;
+        InitializePage();
+        AttachViewModel(new CreditTransactionViewModel { Date = DateTime.Today });
+        SetLoading(loading);
+    }
 
-        Header = viewModel.IsCopy ? $"Копия · {typeTitle}" : typeTitle;
-
-        var hasRow = row != null;
-        DeleteButton.IsVisible = hasRow;
-        CopyButton.IsVisible = hasRow;
-
-        _speechToText = AppInit.GlobalHost?.Services.GetService<ISpeechToTextService>();
-        VoiceTopBar.IsVisible = _speechToText?.IsAvailable == true;
-
-        _viewModel.PropertyChanged += ViewModelPropertyChanged;
+    private void InitializePage()
+    {
         WeakReferenceMessenger.Default.Register<TransactionEditPage, ModelCloseMessage<BaseTransactionViewModel>>(
             this,
             static (page, m) => page.Close(m.Result));
@@ -82,6 +87,56 @@ public partial class TransactionEditPage : ContentPage
     }
 
     public Task<BaseTransactionViewModel?> Result => _result.Task;
+
+    public bool IsClosed => _closing;
+
+    public void Load(BaseTransactionViewModel viewModel)
+    {
+        if (_closing)
+        {
+            return;
+        }
+
+        AttachViewModel(viewModel);
+        SetLoading(false);
+    }
+
+    private void AttachViewModel(BaseTransactionViewModel viewModel)
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.PropertyChanged -= ViewModelPropertyChanged;
+        }
+
+        _viewModel = viewModel;
+        DataContext = viewModel;
+
+        var typeTitle = viewModel switch
+        {
+            TransferTransactionViewModel => "Перевод",
+            DebetTransactionViewModel => "Доход",
+            CreditTransactionViewModel => "Расход",
+            _ => "Транзакция",
+        };
+
+        Header = viewModel.IsCopy ? $"Копия · {typeTitle}" : typeTitle;
+        DeleteButton.IsVisible = _row != null;
+        CopyButton.IsVisible = _row != null;
+        VoiceTopBar.IsVisible = _speechToText?.IsAvailable == true;
+
+        _viewModel.PropertyChanged += ViewModelPropertyChanged;
+    }
+
+    private void SetLoading(bool loading)
+    {
+        FormRoot.IsEnabled = !loading;
+        VoiceButton.IsEnabled = !loading;
+
+        if (loading)
+        {
+            Header = "Транзакция";
+        }
+    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

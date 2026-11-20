@@ -25,7 +25,6 @@ public partial class DaysView : UserControl
             return;
         }
 
-        shell.PendingTransactionRow = row;
-        await row.Parent.EditCommand.ExecuteAsync(row);
+        await shell.OpenTransactionAsync(row);
     }
 }

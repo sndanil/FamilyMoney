@@ -15,6 +15,13 @@ using System.Threading.Tasks;
 
 namespace FamilyMoney.ViewModels;
 
+public enum NewTransactionKind
+{
+    Debet,
+    Credit,
+    Transfer,
+}
+
 public partial class TransactionsViewModel : ViewModelBase
 {
     private readonly IRepository _repository;
@@ -39,6 +46,7 @@ public partial class TransactionsViewModel : ViewModelBase
     private readonly object _listsCacheLock = new();
     private readonly Dictionary<Type, List<BaseCategoryViewModel>> _categoryListsCache = [];
     private readonly Dictionary<Type, List<BaseSubCategoryViewModel>> _subCategoryListsCache = [];
+    private Task? _warmUpTask;
 
     private readonly ObservableCollection<BaseTransactionsGroupViewModel> _selectedTransactionGroups = [];
 
@@ -263,60 +271,70 @@ public partial class TransactionsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task AddTransferAsync()
+    public Task AddTransferAsync() => AddPreparedAsync(NewTransactionKind.Transfer);
+
+    [RelayCommand]
+    public Task AddCreditAsync() => AddPreparedAsync(NewTransactionKind.Credit);
+
+    [RelayCommand]
+    public Task AddDebetAsync() => AddPreparedAsync(NewTransactionKind.Debet);
+
+    private async Task AddPreparedAsync(NewTransactionKind kind)
     {
-        // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
-        var byGroup = GetAddContext<TransferCategoryViewModel>();
-        var transactionViewModel = await Task.Run(() =>
+        var (transaction, transactionViewModel) = await PrepareNewAsync(kind);
+        if (transaction == null || transactionViewModel == null)
         {
-            var viewModel = CreateNewTransaction<TransferTransactionViewModel>(
-                GetCategories<TransferCategory, TransferCategoryViewModel>(),
-                GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
-                byGroup
-                );
-            viewModel.IsTransfer = true;
-            return viewModel;
+            return;
+        }
+
+        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
+        if (result != null)
+        {
+            await SaveTransaction(transaction, result);
+        }
+    }
+
+    /// <summary>
+    /// Готовит новую транзакцию для формы после того, как страница уже открыта
+    /// с заблокированной заглушкой.
+    /// </summary>
+    public Task<(Transaction? Transaction, BaseTransactionViewModel? ViewModel)> PrepareNewAsync(NewTransactionKind kind)
+    {
+        return Task.Run<(Transaction?, BaseTransactionViewModel?)>(() =>
+        {
+            switch (kind)
+            {
+                case NewTransactionKind.Transfer:
+                {
+                    var byGroup = GetAddContext<TransferCategoryViewModel>();
+                    var viewModel = CreateNewTransaction<TransferTransactionViewModel>(
+                        GetCategories<TransferCategory, TransferCategoryViewModel>(),
+                        GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>(),
+                        byGroup);
+                    viewModel.IsTransfer = true;
+                    return (new TransferTransaction { Id = Guid.NewGuid() }, viewModel);
+                }
+                case NewTransactionKind.Debet:
+                {
+                    var byGroup = GetAddContext<DebetCategoryViewModel>();
+                    var viewModel = CreateNewTransaction<DebetTransactionViewModel>(
+                        GetCategories<DebetCategory, DebetCategoryViewModel>(),
+                        GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
+                        byGroup);
+                    return (new DebetTransaction { Id = Guid.NewGuid() }, viewModel);
+                }
+                case NewTransactionKind.Credit:
+                default:
+                {
+                    var byGroup = GetAddContext<CreditCategoryViewModel>();
+                    var viewModel = CreateNewTransaction<CreditTransactionViewModel>(
+                        GetCategories<CreditCategory, CreditCategoryViewModel>(),
+                        GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
+                        byGroup);
+                    return (new CreditTransaction { Id = Guid.NewGuid() }, viewModel);
+                }
+            }
         });
-
-        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
-        if (result != null)
-        {
-            await SaveTransaction(new TransferTransaction { Id = Guid.NewGuid() }, result);
-        }
-    }
-
-    [RelayCommand]
-    public async Task AddCreditAsync()
-    {
-        var byGroup = GetAddContext<CreditCategoryViewModel>();
-        var transactionViewModel = await Task.Run(() => CreateNewTransaction<CreditTransactionViewModel>(
-            GetCategories<CreditCategory, CreditCategoryViewModel>(),
-            GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>(),
-            byGroup
-            ));
-
-        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
-        if (result != null)
-        {
-            await SaveTransaction(new CreditTransaction { Id = Guid.NewGuid() }, result);
-        }
-    }
-
-    [RelayCommand]
-    public async Task AddDebetAsync()
-    {
-        var byGroup = GetAddContext<DebetCategoryViewModel>();
-        var transactionViewModel = await Task.Run(() => CreateNewTransaction<DebetTransactionViewModel>(
-            GetCategories<DebetCategory, DebetCategoryViewModel>(),
-            GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>(),
-            byGroup
-            ));
-
-        var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<BaseTransactionViewModel>(transactionViewModel));
-        if (result != null)
-        {
-            await SaveTransaction(new DebetTransaction { Id = Guid.NewGuid() }, result);
-        }
     }
 
     [RelayCommand]
@@ -477,17 +495,47 @@ public partial class TransactionsViewModel : ViewModelBase
         return transactionViewModel;
     }
 
-    private async Task EditTransaction(TransactionRowViewModel row)
+    /// <summary>
+    /// Прогревает тяжёлые списки категорий и подкатегорий, чтобы первое открытие
+    /// формы транзакции после запуска приложения не упиралось в запросы к базе.
+    /// Выполняется в фоне и безопасен для повторного вызова.
+    /// </summary>
+    public Task WarmUpAsync()
     {
-        if ((SelectedTransactionGroup ?? row) is not TransactionRowViewModel transactionGroupViewModel)
+        lock (_listsCacheLock)
         {
-            return;
+            return _warmUpTask ??= Task.Run(WarmUpCaches);
         }
+    }
 
-        // Сбор данных для формы — тяжёлая работа с базой, выполняем вне UI-потока.
-        var (transaction, transactionViewModel) = await Task.Run<(Transaction?, BaseTransactionViewModel?)>(() =>
+    private void WarmUpCaches()
+    {
+        try
         {
-            var entity = _repository.GetTransaction(transactionGroupViewModel.Id);
+            GetCategories<DebetCategory, DebetCategoryViewModel>();
+            GetCategories<CreditCategory, CreditCategoryViewModel>();
+            GetCategories<TransferCategory, TransferCategoryViewModel>();
+
+            GetSubCategories<DebetSubCategory, DebetSubCategoryViewModel, DebetCategoryViewModel>();
+            GetSubCategories<CreditSubCategory, CreditSubCategoryViewModel, CreditCategoryViewModel>();
+            GetSubCategories<TransferSubCategory, TransferSubCategoryViewModel, TransferCategoryViewModel>();
+        }
+        catch
+        {
+            // Прогрев не должен ломать открытие формы: при ошибке данные
+            // будут загружены обычным путём при первом редактировании.
+        }
+    }
+
+    /// <summary>
+    /// Загружает данные транзакции для формы. Вызывается после того, как страница
+    /// уже открыта с заглушкой, поэтому UI не ждёт чтения базы.
+    /// </summary>
+    public Task<(Transaction? Transaction, BaseTransactionViewModel? ViewModel)> PrepareEditAsync(TransactionRowViewModel row)
+    {
+        return Task.Run<(Transaction?, BaseTransactionViewModel?)>(() =>
+        {
+            var entity = _repository.GetTransaction(row.Id);
             if (entity == null)
             {
                 return (null, null);
@@ -539,6 +587,16 @@ public partial class TransactionsViewModel : ViewModelBase
 
             return (entity, viewModel);
         });
+    }
+
+    public Task SavePreparedAsync(Transaction transaction, BaseTransactionViewModel transactionViewModel)
+    {
+        return SaveTransaction(transaction, transactionViewModel);
+    }
+
+    private async Task EditTransaction(TransactionRowViewModel row)
+    {
+        var (transaction, transactionViewModel) = await PrepareEditAsync(row);
 
         if (transaction == null || transactionViewModel == null)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -13,6 +14,7 @@ public partial class AppShell : UserControl
 {
     private TopLevel? _topLevel;
     private bool? _lastWide;
+    private bool _warmUpStarted;
 
     public AppShell()
     {
@@ -27,6 +29,8 @@ public partial class AppShell : UserControl
             {
                 _topLevel.BackRequested += OnBackRequested;
             }
+
+            StartWarmUp();
         };
 
         DetachedFromVisualTree += (_, _) =>
@@ -60,6 +64,7 @@ public partial class AppShell : UserControl
         {
             RefreshDataContext(ShellHome);
             RefreshDataContext(ShellMenu);
+            StartWarmUp();
         };
     }
 
@@ -107,7 +112,92 @@ public partial class AppShell : UserControl
         }
     }
 
-    private async System.Threading.Tasks.Task<BaseTransactionViewModel?> EditTransactionAsync(BaseTransactionViewModel viewModel)
+    /// <summary>
+    /// Мгновенно открывает форму транзакции с пустой заблокированной формой,
+    /// затем подгружает данные и заменяет заглушку реальной транзакцией.
+    /// </summary>
+    public async Task OpenTransactionAsync(TransactionRowViewModel row)
+    {
+        if (row.Parent == null)
+        {
+            return;
+        }
+
+        var page = new TransactionEditPage(row);
+        await ShellNavigation.PushAsync(page);
+
+        if (page.IsClosed)
+        {
+            return;
+        }
+
+        try
+        {
+            var (transaction, viewModel) = await row.Parent.PrepareEditAsync(row);
+            if (viewModel == null || page.IsClosed)
+            {
+                return;
+            }
+
+            page.Load(viewModel);
+            var result = await page.Result;
+            if (result != null && transaction != null)
+            {
+                await row.Parent.SavePreparedAsync(transaction, result);
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(ShellNavigation.CurrentPage, page))
+            {
+                await ShellNavigation.PopAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// То же мгновенное открытие, но для новой транзакции из панели действий.
+    /// </summary>
+    public async Task OpenNewTransactionAsync(NewTransactionKind kind)
+    {
+        if (DataContext is not MainViewModel main)
+        {
+            return;
+        }
+
+        var page = new TransactionEditPage(null, loading: true);
+        await ShellNavigation.PushAsync(page);
+
+        if (page.IsClosed)
+        {
+            return;
+        }
+
+        try
+        {
+            var (transaction, viewModel) = await main.Transactions.PrepareNewAsync(kind);
+            if (viewModel == null || page.IsClosed)
+            {
+                return;
+            }
+
+            page.Load(viewModel);
+            var result = await page.Result;
+            if (result != null && transaction != null)
+            {
+                await main.Transactions.SavePreparedAsync(transaction, result);
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(ShellNavigation.CurrentPage, page))
+            {
+                await ShellNavigation.PopAsync();
+            }
+        }
+    }
+
+    private async Task<BaseTransactionViewModel?> EditTransactionAsync(BaseTransactionViewModel viewModel)
     {
         var row = PendingTransactionRow;
         PendingTransactionRow = null;
@@ -115,6 +205,35 @@ public partial class AppShell : UserControl
         var page = new TransactionEditPage(viewModel, row);
         await ShellNavigation.PushAsync(page);
         return await page.Result;
+    }
+
+    private void StartWarmUp()
+    {
+        if (_warmUpStarted || DataContext is not MainViewModel)
+        {
+            return;
+        }
+
+        _warmUpStarted = true;
+
+        // Не мешаем первому кадру главного экрана: прогреваемся после короткой паузы.
+        Dispatcher.UIThread.Post(async () =>
+        {
+            await Task.Delay(300);
+
+            if (DataContext is not MainViewModel main)
+            {
+                return;
+            }
+
+            // Тяжёлые списки категорий/подкатегорий строятся один раз в фоне,
+            // чтобы первый тап не ждал несколько проходов по базе.
+            _ = main.Transactions.WarmUpAsync();
+
+            // Прогреваем и саму страницу (XAML/шаблоны), чтобы при первом тапе
+            // она открывалась без задержки на инициализацию контролов.
+            _ = new TransactionEditPage();
+        }, DispatcherPriority.Background);
     }
 
     private void RefreshDataContext(Control page)

@@ -176,7 +176,7 @@
       </Grid>
     </Border>
 
-    <Grid Grid.Row="3">
+    <Grid x:Name="FormRoot" Grid.Row="3">
       <ScrollViewer x:Name="DetailsScroll">
         <StackPanel x:Name="ContentStack" Margin="12 8 12 88" Spacing="12">
           <!-- Основное -->

@@ -16,17 +16,17 @@
     </Border.Background>
     <CommandBar Background="Transparent" OverflowButtonVisibility="Collapsed">
       <CommandBar.PrimaryCommands>
-        <CommandBarButton Label="Расход" CornerRadius="20" Command="{Binding Transactions.AddCreditCommand}">
+        <CommandBarButton Label="Расход" CornerRadius="20" Click="AddCreditClick">
           <CommandBarButton.Icon>
             <mi:MaterialIcon Kind="CashMinus" Foreground="{DynamicResource NegativeBrush}" Width="20" Height="20" />
           </CommandBarButton.Icon>
         </CommandBarButton>
-        <CommandBarButton Label="Доход" CornerRadius="20" Command="{Binding Transactions.AddDebetCommand}">
+        <CommandBarButton Label="Доход" CornerRadius="20" Click="AddDebetClick">
           <CommandBarButton.Icon>
             <mi:MaterialIcon Kind="CashPlus" Foreground="{DynamicResource PositiveBrush}" Width="20" Height="20" />
           </CommandBarButton.Icon>
         </CommandBarButton>
-        <CommandBarButton Label="Перевод" CornerRadius="20" Command="{Binding Transactions.AddTransferCommand}">
+        <CommandBarButton Label="Перевод" CornerRadius="20" Click="AddTransferClick">
           <CommandBarButton.Icon>
             <mi:MaterialIcon Kind="SwapHorizontal" Width="20" Height="20" />
           </CommandBarButton.Icon>
