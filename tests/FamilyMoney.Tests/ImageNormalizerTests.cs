@@ -134,6 +134,125 @@ public class ImageNormalizerTests
         Assert.False(ImageNormalizer.NeedsNormalization(normalized));
     }
 
+    [Fact]
+    public void Normalize_RemovesUniformBackground()
+    {
+        var png = CreateLogoOnWhite(400);
+
+        var result = ImageNormalizer.Normalize(
+            png,
+            "logo.png",
+            ImageFitMode.Fill,
+            removeBackground: true);
+
+        Assert.True(result.WasNormalized, result.Error);
+        Assert.True(result.BackgroundRemoved);
+        Assert.True(result.HasAlpha);
+        Assert.Equal(256, result.Width);
+        Assert.NotNull(result.Data);
+    }
+
+    [Fact]
+    public void Normalize_DoesNotRemoveBusyBackground()
+    {
+        using var bitmap = new SKBitmap(400, 400, SKColorType.Bgra8888, SKAlphaType.Opaque);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            for (var x = 0; x < 400; x += 8)
+            {
+                canvas.DrawRect(
+                    SKRect.Create(x, 0, 8, 400),
+                    new SKPaint { Color = new SKColor((byte)(x % 255), 40, (byte)(x % 180)) });
+            }
+        }
+
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        var result = ImageNormalizer.Normalize(
+            data.ToArray(),
+            "busy.png",
+            removeBackground: true);
+
+        Assert.True(result.WasNormalized, result.Error);
+        Assert.False(result.BackgroundRemoved);
+        Assert.NotNull(result.Warning);
+    }
+
+    [Fact]
+    public void Normalize_AppliesCropZoomAndOffset()
+    {
+        var png = CreateTwoTone(800, 400);
+
+        var defaultResult = ImageNormalizer.Normalize(png, "photo.png");
+        var zoomed = ImageNormalizer.Normalize(
+            png,
+            "photo.png",
+            crop: new ImageCropSettings(Zoom: 2f, OffsetX: 0.5f, OffsetY: 0.5f));
+
+        Assert.True(defaultResult.WasNormalized, defaultResult.Error);
+        Assert.True(zoomed.WasNormalized, zoomed.Error);
+        Assert.Equal(256, zoomed.Width);
+        Assert.NotEqual(defaultResult.Data, zoomed.Data);
+    }
+
+    [Fact]
+    public void Normalize_InvalidCropValues_FallBackToCenter()
+    {
+        var png = CreateTwoTone(800, 400);
+
+        var result = ImageNormalizer.Normalize(
+            png,
+            "photo.png",
+            crop: new ImageCropSettings(float.NaN, float.NaN, float.NaN));
+
+        Assert.True(result.WasNormalized, result.Error);
+        Assert.Equal(256, result.Width);
+        Assert.NotNull(result.Data);
+    }
+
+    [Fact]
+    public void Normalize_CanceledToken_Aborts()
+    {
+        var png = CreateRaster(800, 400, SKColors.Orange, SKAlphaType.Opaque, SKEncodedImageFormat.Png);
+        using var cts = new System.Threading.CancellationTokenSource();
+        cts.Cancel();
+
+        Assert.Throws<System.OperationCanceledException>(
+            () => ImageNormalizer.Normalize(png, cancellationToken: cts.Token));
+    }
+
+    private static byte[] CreateTwoTone(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.Red);
+            using var paint = new SKPaint { Color = SKColors.Blue };
+            canvas.DrawRect(SKRect.Create(width / 2f, 0, width / 2f, height), paint);
+        }
+
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
+
+    private static byte[] CreateLogoOnWhite(int size)
+    {
+        using var bitmap = new SKBitmap(size, size, SKColorType.Bgra8888, SKAlphaType.Opaque);
+        using (var canvas = new SKCanvas(bitmap))
+        {
+            canvas.Clear(SKColors.White);
+            using var paint = new SKPaint { Color = SKColors.Crimson };
+            canvas.DrawRect(
+                SKRect.Create(size * 0.25f, size * 0.25f, size * 0.5f, size * 0.5f),
+                paint);
+        }
+
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
+
     private static byte[] CreateRaster(
         int width,
         int height,

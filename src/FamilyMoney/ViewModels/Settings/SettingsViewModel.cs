@@ -7,6 +7,7 @@ using FamilyMoney.Messages;
 using FamilyMoney.Services;
 using FamilyMoney.State;
 using FamilyMoney.Sync;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -63,6 +64,10 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string BackupStatus { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string IconSuggestionsStatus { get; set; } =
+        "Пустые счета и категории получат иконку по названию. Картинки и уже заданные иконки не меняются.";
 
     [ObservableProperty]
     public partial decimal DepositWarningDays { get; set; } = RootConfiguration.DefaultDepositWarningDays;
@@ -502,6 +507,81 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     private bool CanTestSync() => SelectedDatabase != null && !IsTestingSync;
+
+    [RelayCommand]
+    public void SuggestIcons()
+    {
+        var accounts = 0;
+        var categories = 0;
+        try
+        {
+            foreach (var account in _repository.GetAccounts().ToList())
+            {
+                if (account.DeletedAt != null || !string.IsNullOrWhiteSpace(account.Icon))
+                {
+                    continue;
+                }
+
+                using (var image = _repository.TryGetImage(account.Id))
+                {
+                    if (image != null)
+                    {
+                        continue;
+                    }
+                }
+
+                var suggestion = IconSuggester.Suggest(account.Name);
+                if (string.IsNullOrWhiteSpace(suggestion))
+                {
+                    continue;
+                }
+
+                account.Icon = suggestion;
+                account.IconColor = null;
+                _repository.UpdateAccount(account);
+                accounts++;
+            }
+
+            foreach (var category in _repository.GetCategories().ToList())
+            {
+                if (category.DeletedAt != null || !string.IsNullOrWhiteSpace(category.Icon))
+                {
+                    continue;
+                }
+
+                using (var image = _repository.TryGetImage(category.Id))
+                {
+                    if (image != null)
+                    {
+                        continue;
+                    }
+                }
+
+                var suggestion = IconSuggester.Suggest(category.Name);
+                if (string.IsNullOrWhiteSpace(suggestion))
+                {
+                    continue;
+                }
+
+                category.Icon = suggestion;
+                category.IconColor = null;
+                _repository.UpdateCategroty(category);
+                categories++;
+            }
+
+            IconSuggestionsStatus = accounts + categories == 0
+                ? "Подходящих пустых сущностей не нашлось."
+                : $"Готово: счета — {accounts}, категории — {categories}.";
+            if (accounts + categories > 0)
+            {
+                WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+            }
+        }
+        catch (Exception)
+        {
+            IconSuggestionsStatus = "Не удалось подставить иконки. Проверьте, что база не занята.";
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(CanBackupNow))]
     public async Task BackupNowAsync()

@@ -169,7 +169,16 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
 
     public void SelectColor(string? color)
     {
-        SelectedColor = string.IsNullOrWhiteSpace(color) ? null : color;
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            SelectedColor = null;
+            return;
+        }
+
+        if (IconColor.TryParse(color, out var normalized))
+        {
+            SelectedColor = normalized;
+        }
     }
 
     public void Clear()

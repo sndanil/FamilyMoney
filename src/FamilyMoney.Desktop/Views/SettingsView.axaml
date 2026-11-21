@@ -181,23 +181,40 @@
 		</Grid>
 
 		<Border Grid.Row="1" Classes="Card" Margin="0 18 0 0" Padding="18 12">
-			<Grid ColumnDefinitions="*,Auto">
-				<StackPanel Spacing="2" VerticalAlignment="Center">
-					<TextBlock Text="Вклады" FontWeight="SemiBold" />
-					<TextBlock Classes="PageSubtitle"
-							   TextWrapping="Wrap"
-							   Text="За сколько дней до даты окончания подсвечивать вклад в списке счетов" />
-				</StackPanel>
-				<NumericUpDown Grid.Column="1"
-							   Width="120"
-							   Margin="16 0 0 0"
-							   VerticalAlignment="Center"
-							   Minimum="0"
-							   Maximum="3650"
-							   Increment="1"
-							   FormatString="0"
-							   Value="{Binding DepositWarningDays}" />
-			</Grid>
+			<StackPanel Spacing="12">
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="2" VerticalAlignment="Center">
+						<TextBlock Text="Вклады" FontWeight="SemiBold" />
+						<TextBlock Classes="PageSubtitle"
+								   TextWrapping="Wrap"
+								   Text="За сколько дней до даты окончания подсвечивать вклад в списке счетов" />
+					</StackPanel>
+					<NumericUpDown Grid.Column="1"
+								   Width="120"
+								   Margin="16 0 0 0"
+								   VerticalAlignment="Center"
+								   Minimum="0"
+								   Maximum="3650"
+								   Increment="1"
+								   FormatString="0"
+								   Value="{Binding DepositWarningDays}" />
+				</Grid>
+				<Border Height="1" Background="{DynamicResource LikeGridLinesBrush}" />
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="2" VerticalAlignment="Center">
+						<TextBlock Text="Иконки по названиям" FontWeight="SemiBold" />
+						<TextBlock Classes="PageSubtitle"
+								   TextWrapping="Wrap"
+								   Text="{Binding IconSuggestionsStatus}" />
+					</StackPanel>
+					<Button Grid.Column="1"
+							Classes="Secondary"
+							Content="Подставить"
+							Margin="16 0 0 0"
+							Command="{Binding SuggestIconsCommand}"
+							VerticalAlignment="Center" />
+				</Grid>
+			</StackPanel>
 		</Border>
 
 		<Grid Grid.Row="2" ColumnDefinitions="340,16,*" Margin="0 12 0 0">

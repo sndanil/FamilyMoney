@@ -163,30 +163,84 @@
                          Content="Вписать целиком"
                          IsCheckedChanged="OnFileFitChanged" />
           </StackPanel>
+
+          <StackPanel x:Name="CropPanel" Spacing="2">
+            <Grid ColumnDefinitions="70,*">
+              <TextBlock Text="Масштаб"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource TextSecondaryBrush}" />
+              <Slider Grid.Column="1"
+                      x:Name="ZoomSlider"
+                      Minimum="1"
+                      Maximum="3"
+                      Value="1"
+                      ValueChanged="OnCropChanged" />
+            </Grid>
+            <Grid ColumnDefinitions="70,*">
+              <TextBlock Text="Сдвиг X"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource TextSecondaryBrush}" />
+              <Slider Grid.Column="1"
+                      x:Name="OffsetXSlider"
+                      Minimum="-1"
+                      Maximum="1"
+                      Value="0"
+                      ValueChanged="OnCropChanged" />
+            </Grid>
+            <Grid ColumnDefinitions="70,*">
+              <TextBlock Text="Сдвиг Y"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource TextSecondaryBrush}" />
+              <Slider Grid.Column="1"
+                      x:Name="OffsetYSlider"
+                      Minimum="-1"
+                      Maximum="1"
+                      Value="0"
+                      ValueChanged="OnCropChanged" />
+            </Grid>
+          </StackPanel>
+
+          <CheckBox x:Name="RemoveBackground"
+                    Content="Убрать однотонный фон"
+                    IsCheckedChanged="OnRemoveBackgroundChanged" />
+
           <TextBlock x:Name="FileInfo"
                      Classes="Hint"
                      Foreground="{DynamicResource TextSecondaryBrush}"
+                     MaxWidth="700"
+                     TextWrapping="Wrap"
                      IsVisible="False" />
           <TextBlock x:Name="FileStatus"
                      Classes="Hint"
                      Foreground="{DynamicResource NegativeBrush}"
                      IsVisible="False" />
-          <Border Background="{DynamicResource CardBackBrush}"
+          <Border x:Name="CropPreview"
+                  Width="180"
+                  Height="180"
+                  Background="{DynamicResource CardBackBrush}"
                   BorderBrush="{DynamicResource LikeGridLinesBrush}"
                   BorderThickness="1"
                   CornerRadius="12"
-                  Padding="16"
-                  HorizontalAlignment="Left">
+                  ClipToBounds="True"
+                  HorizontalAlignment="Left"
+                  Cursor="SizeAll"
+                  PointerPressed="OnCropPointerPressed"
+                  PointerMoved="OnCropPointerMoved"
+                  PointerReleased="OnCropPointerReleased"
+                  PointerWheelChanged="OnCropPointerWheel">
             <controls:IconBadge ImageData="{Binding PreviewImage}"
                                 IconColor="{Binding PreviewColor}"
-                                BadgeSize="72"
-                                EntityName="{Binding EntityName}" />
+                                BadgeSize="180"
+                                EntityName="{Binding EntityName}"
+                                ShowFallback="False"
+                                CollapseWhenEmpty="True"
+                                IsHitTestVisible="False" />
           </Border>
         </StackPanel>
       </TabItem>
     </TabControl>
 
-    <Grid x:Name="ColorPanel" Grid.Row="2" ColumnDefinitions="Auto,*" Margin="4 10 4 6">
+    <Grid x:Name="ColorPanel" Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="4 10 4 6">
       <TextBlock Text="Цвет:"
                  VerticalAlignment="Center"
                  Foreground="{DynamicResource TextSecondaryBrush}" />
@@ -209,6 +263,17 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
+      <TextBlock Grid.Column="2"
+                 Text="Свой:"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource TextSecondaryBrush}"
+                 Margin="16 0 6 0" />
+      <TextBox Grid.Column="3"
+               x:Name="CustomColorBox"
+               Width="86"
+               MaxLength="7"
+               PlaceholderText="#RRGGBB"
+               TextChanged="OnCustomColorChanged" />
     </Grid>
 
     <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="4 4 4 0">

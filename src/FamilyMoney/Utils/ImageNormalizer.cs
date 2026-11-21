@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,12 @@ public enum ImageFitMode
     /// <summary>Вписать целиком: сохранить пропорции, добавить поля.</summary>
     Fit,
 }
+
+/// <summary>
+/// Кадрирование вокруг центра: zoom 1 — весь центральный квадрат,
+/// больше 1 — ближе; offset -1..1 двигает окно к краю.
+/// </summary>
+public sealed record ImageCropSettings(float Zoom = 1f, float OffsetX = 0f, float OffsetY = 0f);
 
 public sealed class ImageNormalizationResult
 {
@@ -41,6 +48,8 @@ public sealed class ImageNormalizationResult
     public string? Warning { get; init; }
 
     public string? Error { get; init; }
+
+    public bool BackgroundRemoved { get; init; }
 
     public static ImageNormalizationResult Fail(string error, long originalBytes = 0) => new()
     {
@@ -67,8 +76,12 @@ public static class ImageNormalizer
         byte[]? input,
         string? fileName = null,
         ImageFitMode fit = ImageFitMode.Fill,
-        int targetSize = TargetSize)
+        int targetSize = TargetSize,
+        ImageCropSettings? crop = null,
+        bool removeBackground = false,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (input is not { Length: > 0 })
         {
             return ImageNormalizationResult.Fail("Пустой файл.");
@@ -86,7 +99,7 @@ public static class ImageNormalizer
         var svg = extension == ".svg" || LooksLikeSvg(input);
         if (svg)
         {
-            return NormalizeSvg(input, originalBytes, fit, targetSize);
+            return NormalizeSvg(input, originalBytes, fit, targetSize, crop, removeBackground, cancellationToken);
         }
 
         if (IsHeif(input) || extension is ".heic" or ".heif" or ".avif")
@@ -98,6 +111,7 @@ public static class ImageNormalizer
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             using var data = SKData.CreateCopy(input);
             using var codec = SKCodec.Create(data);
             if (codec is null)
@@ -123,9 +137,51 @@ public static class ImageNormalizer
                     originalBytes);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             using var oriented = ApplyOrientation(decoded, codec.EncodedOrigin);
             var hasAlpha = info.AlphaType != SKAlphaType.Opaque;
-            return EncodeResult(oriented, fit, targetSize, originalBytes, hasAlpha);
+            var source = oriented;
+            SKBitmap? backgroundRemoved = null;
+            var backgroundWasRemoved = false;
+            string? warning = null;
+            if (removeBackground)
+            {
+                if (BackgroundRemoval.TryRemove(
+                        oriented,
+                        cancellationToken,
+                        out var withoutBackground,
+                        out var backgroundWarning))
+                {
+                    backgroundRemoved = withoutBackground;
+                    source = withoutBackground!;
+                    hasAlpha = true;
+                    backgroundWasRemoved = true;
+                }
+                else
+                {
+                    warning = backgroundWarning;
+                }
+            }
+
+            using (backgroundRemoved)
+            {
+                return EncodeResult(
+                    source,
+                    fit,
+                    targetSize,
+                    originalBytes,
+                    hasAlpha,
+                    crop,
+                    backgroundWasRemoved,
+                    warning,
+                    info.Width,
+                    info.Height,
+                    cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -198,8 +254,12 @@ public static class ImageNormalizer
         byte[] input,
         long originalBytes,
         ImageFitMode fit,
-        int targetSize)
+        int targetSize,
+        ImageCropSettings? crop,
+        bool removeBackground,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (originalBytes > MaxSvgBytes)
         {
             return ImageNormalizationResult.Fail(
@@ -259,14 +319,47 @@ public static class ImageNormalizer
                 canvas.DrawPicture(picture);
             }
 
-            return EncodeResult(
-                rendered,
-                ImageFitMode.Fit,
-                targetSize,
-                originalBytes,
-                hasAlpha: true,
-                originalWidth: (int)Math.Ceiling(bounds.Width),
-                originalHeight: (int)Math.Ceiling(bounds.Height));
+            var source = rendered;
+            SKBitmap? backgroundRemoved = null;
+            var backgroundWasRemoved = false;
+            string? warning = null;
+            if (removeBackground)
+            {
+                if (BackgroundRemoval.TryRemove(
+                        rendered,
+                        cancellationToken,
+                        out var withoutBackground,
+                        out var backgroundWarning))
+                {
+                    backgroundRemoved = withoutBackground;
+                    source = withoutBackground!;
+                    backgroundWasRemoved = true;
+                }
+                else
+                {
+                    warning = backgroundWarning;
+                }
+            }
+
+            using (backgroundRemoved)
+            {
+                return EncodeResult(
+                    source,
+                    fit,
+                    targetSize,
+                    originalBytes,
+                    hasAlpha: true,
+                    crop: crop,
+                    backgroundRemoved: backgroundWasRemoved,
+                    warning: warning,
+                    originalWidth: (int)Math.Ceiling(bounds.Width),
+                    originalHeight: (int)Math.Ceiling(bounds.Height),
+                    cancellationToken: cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -280,16 +373,22 @@ public static class ImageNormalizer
         int targetSize,
         long originalBytes,
         bool hasAlpha,
+        ImageCropSettings? crop = null,
+        bool backgroundRemoved = false,
+        string? warning = null,
         int? originalWidth = null,
-        int? originalHeight = null)
+        int? originalHeight = null,
+        CancellationToken cancellationToken = default)
     {
-        using var square = ComposeSquare(source, fit, targetSize, hasAlpha);
+        cancellationToken.ThrowIfCancellationRequested();
+        using var square = ComposeSquare(source, fit, targetSize, hasAlpha, crop);
         var resultSize = targetSize;
         byte[]? best = null;
 
         foreach (var size in new[] { targetSize, Math.Min(192, targetSize), Math.Min(128, targetSize) }
                      .Distinct())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             using var candidate = size == targetSize ? null : ResizeSquare(square, size, hasAlpha);
             var bitmap = candidate ?? square;
             var qualities = hasAlpha ? new[] { 100 } : new[] { 85, 75 };
@@ -320,6 +419,8 @@ public static class ImageNormalizer
             OriginalWidth = originalWidth ?? source.Width,
             OriginalHeight = originalHeight ?? source.Height,
             OriginalBytes = originalBytes,
+            BackgroundRemoved = backgroundRemoved,
+            Warning = warning,
         };
     }
 
@@ -327,7 +428,8 @@ public static class ImageNormalizer
         SKBitmap source,
         ImageFitMode fit,
         int size,
-        bool hasAlpha)
+        bool hasAlpha,
+        ImageCropSettings? crop)
     {
         var result = new SKBitmap(size, size, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(result);
@@ -337,10 +439,20 @@ public static class ImageNormalizer
 
         if (fit == ImageFitMode.Fill)
         {
-            var side = Math.Min(source.Width, source.Height);
+            var baseSide = Math.Min(source.Width, source.Height);
+            var rawZoom = crop?.Zoom ?? 1f;
+            var zoom = float.IsFinite(rawZoom) ? Math.Clamp(rawZoom, 1f, 8f) : 1f;
+            var side = Math.Max(1f, baseSide / zoom);
+            var maxShift = (baseSide - side) / 2f;
+            var rawOffsetX = crop?.OffsetX ?? 0f;
+            var rawOffsetY = crop?.OffsetY ?? 0f;
+            var offsetX = float.IsFinite(rawOffsetX) ? Math.Clamp(rawOffsetX, -1f, 1f) : 0f;
+            var offsetY = float.IsFinite(rawOffsetY) ? Math.Clamp(rawOffsetY, -1f, 1f) : 0f;
+            var centerX = source.Width / 2f + offsetX * maxShift;
+            var centerY = source.Height / 2f + offsetY * maxShift;
             var sourceRect = SKRect.Create(
-                (source.Width - side) / 2f,
-                (source.Height - side) / 2f,
+                centerX - side / 2f,
+                centerY - side / 2f,
                 side,
                 side);
             var targetRect = SKRect.Create(0, 0, size, size);
@@ -479,5 +591,262 @@ public static class ImageNormalizer
             || lower.Contains("href='file", StringComparison.Ordinal)
             || lower.Contains("url(http", StringComparison.Ordinal)
             || lower.Contains("url(file", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Удаление однотонного фона без ML: доминирующий цвет рамки + flood fill
+    /// от краёв. Работает на уменьшенной копии, поэтому 12 Мп не блокируют UI.
+    /// </summary>
+    private static class BackgroundRemoval
+    {
+        private const int AnalysisSide = 512;
+        private const int Tolerance = 24;
+        private const float BorderCoverage = 0.60f;
+        private const float MinRemoved = 0.05f;
+        private const float MaxRemoved = 0.90f;
+
+        public static bool TryRemove(
+            SKBitmap source,
+            CancellationToken cancellationToken,
+            out SKBitmap? result,
+            out string? warning)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            result = null;
+            warning = null;
+            var working = CreateWorkingCopy(source);
+            var transferred = false;
+            try
+            {
+                var width = working.Width;
+                var height = working.Height;
+                var total = width * height;
+                if (total == 0)
+                {
+                    warning = "Фон не распознан: пустая картинка.";
+                    return false;
+                }
+
+                var samples = new List<SKColor>(2 * width + 2 * height);
+                for (var x = 0; x < width; x++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    samples.Add(working.GetPixel(x, 0));
+                    samples.Add(working.GetPixel(x, height - 1));
+                }
+
+                for (var y = 1; y < height - 1; y++)
+                {
+                    samples.Add(working.GetPixel(0, y));
+                    samples.Add(working.GetPixel(width - 1, y));
+                }
+
+                var opaque = samples.Where(c => c.Alpha > 32).ToList();
+                if (opaque.Count < samples.Count * BorderCoverage)
+                {
+                    warning = "Фон уже прозрачный или почти прозрачный.";
+                    return false;
+                }
+
+                var background = Average(opaque);
+                var matchingBorder = opaque.Count(c => Matches(c, background));
+                if (matchingBorder < opaque.Count * BorderCoverage)
+                {
+                    warning = "Фон не распознан: по краям больше одного цвета.";
+                    return false;
+                }
+
+                var removed = new bool[total];
+                var queue = new Queue<int>();
+
+                void TrySeed(int x, int y)
+                {
+                    var index = y * width + x;
+                    if (removed[index])
+                    {
+                        return;
+                    }
+
+                    var color = working.GetPixel(x, y);
+                    if (color.Alpha <= 32 || !Matches(color, background))
+                    {
+                        return;
+                    }
+
+                    removed[index] = true;
+                    queue.Enqueue(index);
+                }
+
+                for (var x = 0; x < width; x++)
+                {
+                    TrySeed(x, 0);
+                    TrySeed(x, height - 1);
+                }
+
+                for (var y = 1; y < height - 1; y++)
+                {
+                    TrySeed(0, y);
+                    TrySeed(width - 1, y);
+                }
+
+                var processed = 0;
+                while (queue.Count > 0)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    processed++;
+                    if ((processed & 0x3FF) == 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    var index = queue.Dequeue();
+                    var x = index % width;
+                    var y = index / width;
+
+                    if (x > 0)
+                    {
+                        TryVisit(x - 1, y);
+                    }
+
+                    if (x + 1 < width)
+                    {
+                        TryVisit(x + 1, y);
+                    }
+
+                    if (y > 0)
+                    {
+                        TryVisit(x, y - 1);
+                    }
+
+                    if (y + 1 < height)
+                    {
+                        TryVisit(x, y + 1);
+                    }
+
+                    continue;
+
+                    void TryVisit(int nx, int ny)
+                    {
+                        var next = ny * width + nx;
+                        if (removed[next])
+                        {
+                            return;
+                        }
+
+                        var color = working.GetPixel(nx, ny);
+                        if (color.Alpha <= 32 || !Matches(color, background))
+                        {
+                            return;
+                        }
+
+                        removed[next] = true;
+                        queue.Enqueue(next);
+                    }
+                }
+
+                var removedCount = removed.Count(value => value);
+                if (removedCount < total * MinRemoved)
+                {
+                    warning = "Фон не распознан: он занимает меньше 5% картинки.";
+                    return false;
+                }
+
+                if (removedCount > total * MaxRemoved)
+                {
+                    warning = "Фон не распознан: он занимает почти всю картинку.";
+                    return false;
+                }
+
+                for (var y = 0; y < height; y++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    for (var x = 0; x < width; x++)
+                    {
+                        var index = y * width + x;
+                        if (removed[index])
+                        {
+                            working.SetPixel(x, y, new SKColor(0, 0, 0, 0));
+                            continue;
+                        }
+
+                        if (HasRemovedNeighbour(x, y))
+                        {
+                            var color = working.GetPixel(x, y);
+                            working.SetPixel(x, y, color.WithAlpha(Math.Min(color.Alpha, (byte)150)));
+                        }
+                    }
+                }
+
+                result = working;
+                transferred = true;
+                return true;
+
+                bool HasRemovedNeighbour(int x, int y)
+                {
+                    return (x > 0 && removed[y * width + x - 1])
+                        || (x + 1 < width && removed[y * width + x + 1])
+                        || (y > 0 && removed[(y - 1) * width + x])
+                        || (y + 1 < height && removed[(y + 1) * width + x]);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                warning = "Не удалось удалить фон.";
+                return false;
+            }
+            finally
+            {
+                if (!transferred)
+                {
+                    working.Dispose();
+                }
+            }
+        }
+
+        private static SKBitmap CreateWorkingCopy(SKBitmap source)
+        {
+            var scale = Math.Min(1f, AnalysisSide / (float)Math.Max(source.Width, source.Height));
+            var width = Math.Max(1, (int)Math.Round(source.Width * scale));
+            var height = Math.Max(1, (int)Math.Round(source.Height * scale));
+            var result = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var canvas = new SKCanvas(result);
+            canvas.Clear(SKColors.Transparent);
+            using var image = SKImage.FromBitmap(source);
+            canvas.DrawImage(
+                image,
+                SKRect.Create(0, 0, width, height),
+                new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
+            return result;
+        }
+
+        private static SKColor Average(IReadOnlyList<SKColor> colors)
+        {
+            var red = 0;
+            var green = 0;
+            var blue = 0;
+            foreach (var color in colors)
+            {
+                red += color.Red;
+                green += color.Green;
+                blue += color.Blue;
+            }
+
+            return new SKColor(
+                (byte)(red / colors.Count),
+                (byte)(green / colors.Count),
+                (byte)(blue / colors.Count),
+                255);
+        }
+
+        private static bool Matches(SKColor left, SKColor right)
+        {
+            return Math.Abs(left.Red - right.Red) <= Tolerance
+                && Math.Abs(left.Green - right.Green) <= Tolerance
+                && Math.Abs(left.Blue - right.Blue) <= Tolerance;
+        }
     }
 }
