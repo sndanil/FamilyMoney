@@ -17,6 +17,12 @@ public sealed record PackAssetView(
     string Spec,
     Uri Uri);
 
+/// <summary>Группа готовых картинок — один поставляемый набор («Банки», «Бизнес»…).</summary>
+public sealed record PackGroupView(string Id, string Title, IReadOnlyList<PackAssetView> Assets)
+{
+    public int Count => Assets.Count;
+}
+
 /// <summary>
 /// Читает поставленные с приложением наборы картинок. Сейчас известен один
 /// набор — banks; новые добавляются в KnownPacks и в Assets/Packs.
@@ -29,10 +35,13 @@ public sealed class PackCatalog
 
     private readonly Dictionary<string, PackAssetView> _byKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<PackAssetView> _assets = [];
+    private readonly List<PackGroupView> _groups = [];
 
     public static PackCatalog Instance => LazyInstance.Value;
 
     public IReadOnlyList<PackAssetView> Assets => _assets;
+
+    public IReadOnlyList<PackGroupView> Groups => _groups;
 
     private PackCatalog()
     {
@@ -82,6 +91,15 @@ public sealed class PackCatalog
 
                 _assets.Add(view);
                 _byKey[$"{packId}/{asset.Id}"] = view;
+            }
+
+            var groupTitle = string.IsNullOrWhiteSpace(manifest.Title) ? packId : manifest.Title;
+            var groupAssets = _assets
+                .Where(asset => string.Equals(asset.PackId, packId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (groupAssets.Count > 0)
+            {
+                _groups.Add(new PackGroupView(packId, groupTitle, groupAssets));
             }
         }
         catch (Exception)

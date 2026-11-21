@@ -112,31 +112,54 @@
           <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                    PlaceholderText="Поиск: сбер, альфа, карта"
                    Margin="0 0 0 8" />
-          <ListBox Grid.Row="1"
-                   Classes="IconGrid"
-                   ItemsSource="{Binding ReadyAssets}"
-                   SelectionChanged="OnPackSelected"
-                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel />
-              </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="services:PackAssetView">
-                <StackPanel Width="118" Spacing="2" Margin="2">
-                  <controls:IconBadge Icon="{Binding Spec}"
-                                      BadgeSize="60"
-                                      HorizontalAlignment="Center" />
-                  <TextBlock Text="{Binding Name}"
-                             FontSize="11"
-                             TextAlignment="Center"
-                             TextWrapping="Wrap"
-                             MaxWidth="112" />
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+          <ScrollViewer Grid.Row="1"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding ReadyGroups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="services:PackGroupView">
+                  <StackPanel Spacing="4" Margin="0 0 0 14">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding Title}"
+                                 FontSize="14"
+                                 FontWeight="SemiBold"
+                                 VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1"
+                                 Text="{Binding Count}"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource TextSecondaryBrush}"
+                                 VerticalAlignment="Center" />
+                    </Grid>
+                    <ListBox Classes="IconGrid"
+                             ItemsSource="{Binding Assets}"
+                             SelectionChanged="OnPackSelected"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                      <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel />
+                        </ItemsPanelTemplate>
+                      </ListBox.ItemsPanel>
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="services:PackAssetView">
+                          <StackPanel Width="118" Spacing="2" Margin="2">
+                            <controls:IconBadge Icon="{Binding Spec}"
+                                                BadgeSize="60"
+                                                HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="11"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="112" />
+                          </StackPanel>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
         </Grid>
       </TabItem>
 

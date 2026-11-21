@@ -54,7 +54,7 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
 
     public ObservableCollection<IconChoice> Icons { get; } = [];
 
-    public ObservableCollection<PackAssetView> ReadyAssets { get; } = [];
+    public ObservableCollection<PackGroupView> ReadyGroups { get; } = [];
 
     public ObservableCollection<string> Colors { get; }
 
@@ -276,17 +276,23 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
             }
         }
 
-        ReadyAssets.Clear();
-        foreach (var asset in PackCatalog.Instance.Assets)
+        ReadyGroups.Clear();
+        foreach (var group in PackCatalog.Instance.Groups)
         {
-            if (query.Length == 0 || Matches(asset, query))
+            var groupMatches = query.Length == 0
+                || group.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
+                || group.Id.Contains(query, StringComparison.OrdinalIgnoreCase);
+            var assets = groupMatches
+                ? group.Assets.ToList()
+                : group.Assets.Where(asset => Matches(asset, query)).ToList();
+            if (assets.Count > 0)
             {
-                ReadyAssets.Add(asset);
+                ReadyGroups.Add(new PackGroupView(group.Id, group.Title, assets));
             }
         }
 
         OnPropertyChanged(nameof(Icons));
-        OnPropertyChanged(nameof(ReadyAssets));
+        OnPropertyChanged(nameof(ReadyGroups));
         OnPropertyChanged(nameof(SearchPlaceholder));
         OnPropertyChanged(nameof(AllIconsHint));
         OnPropertyChanged(nameof(HasMoreAllIcons));
