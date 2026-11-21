@@ -22,6 +22,11 @@
       <Setter Property="Padding" Value="14 8 14 12" />
       <Setter Property="MinHeight" Value="38" />
     </Style>
+    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="RenderTransform">
+        <TranslateTransform Y="10" />
+      </Setter>
+    </Style>
     <Style Selector="TextBlock.Hint">
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="FontSize" Value="12" />
