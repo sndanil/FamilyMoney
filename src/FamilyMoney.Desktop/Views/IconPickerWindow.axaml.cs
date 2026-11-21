@@ -32,7 +32,6 @@ public partial class IconPickerWindow : Window
     private Point? _cropDragStart;
     private double _cropDragOffsetX;
     private double _cropDragOffsetY;
-    private bool _syncingColorText;
     private readonly DispatcherTimer _normalizeTimer;
     private CancellationTokenSource? _normalizeCts;
     private bool _closing;
@@ -94,13 +93,6 @@ public partial class IconPickerWindow : Window
         {
             ColorList.SelectedIndex = index;
         }
-
-        if (CustomColorBox != null)
-        {
-            _syncingColorText = true;
-            CustomColorBox.Text = vm.SelectedColor ?? string.Empty;
-            _syncingColorText = false;
-        }
     }
 
     private IconPickerViewModel? ViewModel => DataContext as IconPickerViewModel;
@@ -128,30 +120,12 @@ public partial class IconPickerWindow : Window
         {
             // Первый цвет — акцент: храним null, чтобы работал цвет по умолчанию.
             vm.SelectColor(color.Equals(IconPalette.Colors[0], StringComparison.OrdinalIgnoreCase) ? null : color);
-            if (CustomColorBox != null)
-            {
-                _syncingColorText = true;
-                CustomColorBox.Text = color;
-                _syncingColorText = false;
-            }
         }
     }
 
-    private void OnCustomColorChanged(object? sender, TextChangedEventArgs e)
+    private void OnShowMoreAllIcons(object? sender, RoutedEventArgs e)
     {
-        if (_syncingColorText
-            || CustomColorBox is null
-            || ViewModel is not { } vm)
-        {
-            return;
-        }
-
-        var text = CustomColorBox.Text?.Trim() ?? string.Empty;
-        if (IconColor.TryParse(text, out var normalized))
-        {
-            vm.SelectColor(normalized);
-            ColorList.SelectedItem = null;
-        }
+        ViewModel?.LoadMoreAllIcons();
     }
 
     private void OnTabChanged(object? sender, SelectionChangedEventArgs e)
@@ -433,12 +407,6 @@ public partial class IconPickerWindow : Window
     {
         ViewModel?.Clear();
         ColorList.SelectedItem = null;
-        if (CustomColorBox != null)
-        {
-            _syncingColorText = true;
-            CustomColorBox.Text = string.Empty;
-            _syncingColorText = false;
-        }
     }
 
     private void OnOk(object? sender, RoutedEventArgs e)

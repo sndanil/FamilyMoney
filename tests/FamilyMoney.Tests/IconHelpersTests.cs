@@ -9,6 +9,19 @@ namespace FamilyMoney.Tests;
 
 public class IconHelpersTests
 {
+    [Fact]
+    public void MaterialCatalog_ExposesAllIconsAndFindsByEnglishName()
+    {
+        Assert.True(MaterialIconCatalog.All.Count >= 13_000, $"Material icons: {MaterialIconCatalog.All.Count}");
+        Assert.Contains(MaterialIconCatalog.All, item => item.Label == "CartOutline");
+
+        var results = MaterialIconCatalog.Search("cart", 300, out var total);
+
+        Assert.True(total > 0);
+        Assert.NotEmpty(results);
+        Assert.All(results, item => Assert.Contains("cart", item.Label, StringComparison.OrdinalIgnoreCase));
+    }
+
     [Theory]
     [InlineData("material:CartOutline", IconSpecKind.Material)]
     [InlineData("CartOutline", IconSpecKind.Material)]

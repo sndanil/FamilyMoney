@@ -17,6 +17,11 @@
   </Window.Resources>
 
   <Window.Styles>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Padding" Value="14 8 14 12" />
+      <Setter Property="MinHeight" Value="38" />
+    </Style>
     <Style Selector="TextBlock.Hint">
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="FontSize" Value="12" />
@@ -43,19 +48,26 @@
     </Style>
   </Window.Styles>
 
-  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="16">
-    <TextBlock Text="Иконка счёта или категории"
-               FontSize="20"
-               FontWeight="SemiBold"
-               Margin="4 0 0 10" />
-
-    <TabControl Grid.Row="1" x:Name="Tabs" SelectedIndex="0" SelectionChanged="OnTabChanged">
+  <Grid RowDefinitions="*,Auto,Auto" Margin="16">
+    <TabControl Grid.Row="0"
+                x:Name="Tabs"
+                SelectedIndex="0"
+                FontSize="14"
+                SelectionChanged="OnTabChanged">
       <TabItem Header="Иконки">
-        <Grid RowDefinitions="Auto,*" Margin="0 6 0 0">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="0 6 0 0">
           <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                   PlaceholderText="Поиск: продукты, бензин, дом"
+                   PlaceholderText="{Binding SearchPlaceholder}"
                    Margin="0 0 0 8" />
-          <ListBox Grid.Row="1"
+          <StackPanel Grid.Row="1" Spacing="2" Margin="0 0 0 8">
+            <CheckBox Content="Все иконки Material (13 645)"
+                      IsChecked="{Binding ShowAllIcons, Mode=TwoWay}" />
+            <TextBlock Classes="Hint"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Text="{Binding AllIconsHint}" />
+          </StackPanel>
+          <ListBox Grid.Row="2"
                    Classes="IconGrid"
                    ItemsSource="{Binding Icons}"
                    SelectionChanged="OnIconSelected"
@@ -67,7 +79,7 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="utils:IconChoice">
-                <StackPanel Width="88" Spacing="2">
+                <StackPanel Width="88" Spacing="2" ToolTip.Tip="{Binding Label}">
                   <controls:IconBadge Icon="{Binding Spec}"
                                       BadgeSize="52"
                                       HorizontalAlignment="Center" />
@@ -79,6 +91,14 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
+          <Button Grid.Row="3"
+                  Width="120"
+                  Content="Показать ещё"
+                  Classes="DialogButton"
+                  HorizontalAlignment="Left"
+                  Margin="0 8 0 0"
+                  IsVisible="{Binding HasMoreAllIcons}"
+                  Click="OnShowMoreAllIcons" />
         </Grid>
       </TabItem>
 
@@ -240,7 +260,7 @@
       </TabItem>
     </TabControl>
 
-    <Grid x:Name="ColorPanel" Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="4 10 4 6">
+    <Grid x:Name="ColorPanel" Grid.Row="1" ColumnDefinitions="Auto,*" Margin="4 10 4 6">
       <TextBlock Text="Цвет:"
                  VerticalAlignment="Center"
                  Foreground="{DynamicResource TextSecondaryBrush}" />
@@ -263,20 +283,9 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <TextBlock Grid.Column="2"
-                 Text="Свой:"
-                 VerticalAlignment="Center"
-                 Foreground="{DynamicResource TextSecondaryBrush}"
-                 Margin="16 0 6 0" />
-      <TextBox Grid.Column="3"
-               x:Name="CustomColorBox"
-               Width="86"
-               MaxLength="7"
-               PlaceholderText="#RRGGBB"
-               TextChanged="OnCustomColorChanged" />
     </Grid>
 
-    <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" Margin="4 4 4 0">
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="4 4 4 0">
       <Button Content="Без иконки"
               Click="OnClear"
               Classes="DialogButton"

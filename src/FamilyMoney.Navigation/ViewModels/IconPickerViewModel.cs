@@ -17,6 +17,9 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
     private string? _selectedColor;
     private byte[]? _imageData;
     private string _letterText;
+    private bool _showAllIcons;
+    private int _allIconsLimit = MaterialIconCatalog.PageSize;
+    private int _allIconsTotal;
 
     public IconPickerViewModel(
         string? entityName,
@@ -64,6 +67,40 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
             {
                 Refresh();
             }
+        }
+    }
+
+    public string SearchPlaceholder => _showAllIcons
+        ? "Поиск по имени: cart, home, bank"
+        : "Поиск: продукты, бензин, дом";
+
+    public bool ShowAllIcons
+    {
+        get => _showAllIcons;
+        set
+        {
+            if (SetField(ref _showAllIcons, value))
+            {
+                _allIconsLimit = MaterialIconCatalog.PageSize;
+                Refresh();
+            }
+        }
+    }
+
+    public bool HasMoreAllIcons => _showAllIcons && Icons.Count < _allIconsTotal;
+
+    public string AllIconsHint
+    {
+        get
+        {
+            if (!_showAllIcons)
+            {
+                return string.Empty;
+            }
+
+            return _allIconsTotal == 0
+                ? "Ничего не найдено. Попробуйте другое имя."
+                : $"Найдено {_allIconsTotal}, показано {Icons.Count}. Имена Material — на английском.";
         }
     }
 
@@ -190,6 +227,17 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(LetterText));
     }
 
+    public void LoadMoreAllIcons()
+    {
+        if (!HasMoreAllIcons)
+        {
+            return;
+        }
+
+        _allIconsLimit += MaterialIconCatalog.PageSize;
+        Refresh();
+    }
+
     public IconSelection BuildResult()
     {
         if (ImageData is { Length: > 0 })
@@ -212,9 +260,20 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
     {
         var query = _searchText.Trim();
         Icons.Clear();
-        foreach (var choice in IconCatalog.Search(query))
+        if (_showAllIcons)
         {
-            Icons.Add(choice);
+            foreach (var choice in MaterialIconCatalog.Search(query, _allIconsLimit, out _allIconsTotal))
+            {
+                Icons.Add(choice);
+            }
+        }
+        else
+        {
+            _allIconsTotal = 0;
+            foreach (var choice in IconCatalog.Search(query))
+            {
+                Icons.Add(choice);
+            }
         }
 
         ReadyAssets.Clear();
@@ -228,6 +287,9 @@ public sealed class IconPickerViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(Icons));
         OnPropertyChanged(nameof(ReadyAssets));
+        OnPropertyChanged(nameof(SearchPlaceholder));
+        OnPropertyChanged(nameof(AllIconsHint));
+        OnPropertyChanged(nameof(HasMoreAllIcons));
     }
 
     private static bool Matches(PackAssetView asset, string query)
