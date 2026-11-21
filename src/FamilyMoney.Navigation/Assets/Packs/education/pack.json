@@ -1,0 +1,212 @@
+{
+  "id": "education",
+  "title": "Образование",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "graduation",
+      "name": "Выпускной",
+      "aliases": [
+        "учёба",
+        "диплом",
+        "graduation cap",
+        "cap",
+        "celebration",
+        "clothing",
+        "education"
+      ],
+      "file": "graduation.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F393.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "books",
+      "name": "Книги",
+      "aliases": [
+        "учёба",
+        "библиотека",
+        "books",
+        "book",
+        "education",
+        "fantasy",
+        "knowledge"
+      ],
+      "file": "books.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4DA.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "pencil",
+      "name": "Карандаш",
+      "aliases": [
+        "учёба",
+        "письмо",
+        "pencil"
+      ],
+      "file": "pencil.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/270F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "school",
+      "name": "Школа",
+      "aliases": [
+        "учёба",
+        "здание",
+        "school",
+        "building"
+      ],
+      "file": "school.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3EB.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "notes",
+      "name": "Заметки",
+      "aliases": [
+        "письмо",
+        "учёба",
+        "memo",
+        "communication",
+        "media",
+        "notes",
+        "pencil"
+      ],
+      "file": "notes.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4DD.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "textbook",
+      "name": "Учебник",
+      "aliases": [
+        "книга",
+        "учёба",
+        "open book",
+        "book",
+        "education",
+        "fantasy",
+        "knowledge"
+      ],
+      "file": "textbook.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4D6.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "microscope",
+      "name": "Микроскоп",
+      "aliases": [
+        "наука",
+        "биология",
+        "microscope",
+        "experiment",
+        "lab",
+        "science",
+        "tool"
+      ],
+      "file": "microscope.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F52C.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chemistry",
+      "name": "Химия",
+      "aliases": [
+        "наука",
+        "опыт",
+        "test tube",
+        "chemist",
+        "chemistry",
+        "experiment",
+        "lab"
+      ],
+      "file": "chemistry.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9EA.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "geometry",
+      "name": "Геометрия",
+      "aliases": [
+        "учёба",
+        "математика",
+        "triangular ruler",
+        "angle",
+        "math",
+        "rule",
+        "ruler"
+      ],
+      "file": "geometry.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4D0.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "pen",
+      "name": "Ручка",
+      "aliases": [
+        "письмо",
+        "учёба",
+        "pen",
+        "ballpoint"
+      ],
+      "file": "pen.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F58A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "backpack",
+      "name": "Рюкзак",
+      "aliases": [
+        "школа",
+        "учёба",
+        "backpack",
+        "backpacking",
+        "bag",
+        "bookbag",
+        "education"
+      ],
+      "file": "backpack.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F392.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "abacus",
+      "name": "Счёт",
+      "aliases": [
+        "математика",
+        "учёба",
+        "abacus",
+        "calculation",
+        "calculator"
+      ],
+      "file": "abacus.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9EE.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "id": "leisure",
+  "title": "Отдых",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "beach",
+      "name": "Пляж",
+      "aliases": [
+        "отпуск",
+        "море",
+        "beach with umbrella",
+        "beach",
+        "umbrella"
+      ],
+      "file": "beach.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3D6.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "party",
+      "name": "Праздник",
+      "aliases": [
+        "вечеринка",
+        "событие",
+        "party popper",
+        "awesome",
+        "birthday",
+        "celebrate",
+        "celebration"
+      ],
+      "file": "party.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F389.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cinema",
+      "name": "Кино",
+      "aliases": [
+        "фильм",
+        "развлечение",
+        "clapper board",
+        "action",
+        "board",
+        "clapper",
+        "movie"
+      ],
+      "file": "cinema.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3AC.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "games",
+      "name": "Игры",
+      "aliases": [
+        "гейминг",
+        "досуг",
+        "video game",
+        "controller",
+        "entertainment",
+        "game",
+        "video"
+      ],
+      "file": "games.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3AE.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "music",
+      "name": "Музыка",
+      "aliases": [
+        "концерт",
+        "песня",
+        "musical note",
+        "music",
+        "musical",
+        "note",
+        "sound"
+      ],
+      "file": "music.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3B5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "camping",
+      "name": "Кемпинг",
+      "aliases": [
+        "поход",
+        "палатка",
+        "camping"
+      ],
+      "file": "camping.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3D5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "fishing",
+      "name": "Рыбалка",
+      "aliases": [
+        "хобби",
+        "отдых",
+        "fishing pole",
+        "entertainment",
+        "fish",
+        "fishing",
+        "pole"
+      ],
+      "file": "fishing.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3A3.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "sport",
+      "name": "Спорт",
+      "aliases": [
+        "футбол",
+        "игра",
+        "soccer ball",
+        "ball",
+        "football",
+        "futbol",
+        "soccer"
+      ],
+      "file": "sport.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/26BD.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "popcorn",
+      "name": "Кинотеатр",
+      "aliases": [
+        "фильм",
+        "снек",
+        "popcorn",
+        "corn",
+        "movie",
+        "pop"
+      ],
+      "file": "popcorn.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F37F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "tickets",
+      "name": "Билеты",
+      "aliases": [
+        "событие",
+        "театр",
+        "admission tickets",
+        "admission",
+        "ticket",
+        "tickets"
+      ],
+      "file": "tickets.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F39F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "trip",
+      "name": "Поездка",
+      "aliases": [
+        "путешествие",
+        "отпуск",
+        "airplane departure",
+        "aeroplane",
+        "airplane",
+        "check-in",
+        "departure"
+      ],
+      "file": "trip.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6EB.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "island",
+      "name": "Отпуск",
+      "aliases": [
+        "море",
+        "отдых",
+        "desert island",
+        "desert",
+        "island"
+      ],
+      "file": "island.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3DD.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "art",
+      "name": "Творчество",
+      "aliases": [
+        "хобби",
+        "рисование",
+        "artist palette",
+        "art",
+        "artist",
+        "artsy",
+        "arty"
+      ],
+      "file": "art.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3A8.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

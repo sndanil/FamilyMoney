@@ -1,0 +1,236 @@
+{
+  "id": "health",
+  "title": "Здоровье",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "hospital",
+      "name": "Больница",
+      "aliases": [
+        "медицина",
+        "врач",
+        "hospital",
+        "building",
+        "doctor",
+        "medicine"
+      ],
+      "file": "hospital.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3E5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "pill",
+      "name": "Таблетка",
+      "aliases": [
+        "лекарство",
+        "аптека",
+        "pill",
+        "doctor",
+        "drugs",
+        "medicated",
+        "medicine"
+      ],
+      "file": "pill.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F48A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "stethoscope",
+      "name": "Стетоскоп",
+      "aliases": [
+        "врач",
+        "осмотр",
+        "stethoscope",
+        "doctor",
+        "heart",
+        "medicine"
+      ],
+      "file": "stethoscope.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FA7A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "tooth",
+      "name": "Зуб",
+      "aliases": [
+        "стоматология",
+        "врач",
+        "tooth",
+        "dentist",
+        "pearly",
+        "teeth",
+        "white"
+      ],
+      "file": "tooth.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9B7.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "brain",
+      "name": "Мозг",
+      "aliases": [
+        "здоровье",
+        "мышление",
+        "brain",
+        "intelligent",
+        "smart"
+      ],
+      "file": "brain.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9E0.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "heart",
+      "name": "Сердце",
+      "aliases": [
+        "здоровье",
+        "любовь",
+        "red heart",
+        "emotion",
+        "heart",
+        "love",
+        "red"
+      ],
+      "file": "heart.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/2764.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bandage",
+      "name": "Пластырь",
+      "aliases": [
+        "травма",
+        "аптека",
+        "adhesive bandage",
+        "adhesive",
+        "bandage"
+      ],
+      "file": "bandage.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FA79.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "dna",
+      "name": "ДНК",
+      "aliases": [
+        "анализы",
+        "наука",
+        "dna",
+        "biologist",
+        "evolution",
+        "gene",
+        "genetics"
+      ],
+      "file": "dna.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9EC.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "syringe",
+      "name": "Укол",
+      "aliases": [
+        "прививка",
+        "медицина",
+        "syringe",
+        "doctor",
+        "flu",
+        "medicine",
+        "needle"
+      ],
+      "file": "syringe.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F489.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bone",
+      "name": "Кость",
+      "aliases": [
+        "скелет",
+        "здоровье",
+        "bone",
+        "bones",
+        "dog",
+        "skeleton",
+        "wishbone"
+      ],
+      "file": "bone.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9B4.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "glasses",
+      "name": "Очки",
+      "aliases": [
+        "зрение",
+        "аксессуар",
+        "glasses",
+        "clothing",
+        "eye",
+        "eyeglasses",
+        "eyewear"
+      ],
+      "file": "glasses.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F453.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "meditation",
+      "name": "Медитация",
+      "aliases": [
+        "спокойствие",
+        "йога",
+        "person in lotus position",
+        "cross",
+        "legged",
+        "legs",
+        "lotus"
+      ],
+      "file": "meditation.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9D8.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "run",
+      "name": "Бег",
+      "aliases": [
+        "спорт",
+        "здоровье",
+        "person running",
+        "fast",
+        "hurry",
+        "marathon",
+        "move"
+      ],
+      "file": "run.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3C3.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

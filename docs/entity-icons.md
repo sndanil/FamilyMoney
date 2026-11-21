@@ -767,6 +767,33 @@ src/FamilyMoney.Navigation/Assets/Packs/
 
 ![Карты банков](mockups/banks-cards.png)
 
+### 8.8 Категорийные наборы
+
+Добавлены 9 групп по 12–14 картинок (всего 120 PNG) из
+[OpenMoji](https://openmoji.org/) (CC BY-SA 4.0):
+
+| `id` | Группа | Картинок |
+|---|---|---:|
+| `business-finance` | Бизнес и финансы | 12 |
+| `products` | Продукты | 14 |
+| `home` | Дом и квартира | 14 |
+| `transport` | Машина и транспорт | 14 |
+| `leisure` | Отдых | 13 |
+| `animals` | Животные | 14 |
+| `education` | Образование | 12 |
+| `fashion` | Одежда и косметика | 14 |
+| `health` | Здоровье | 13 |
+
+- PNG 256×256, прозрачный фон, ≤ 32 КБ; на белой плитке `IconBadge`;
+- `pack.json` и `NOTICE-openmoji.md` в каждом каталоге, авторы указаны
+  построчно; корневой обзор — `Assets/Packs/README-openmoji.md`;
+- OpenMoji зафиксирован на коммите `3e01de5`, повторная сборка —
+  `resources/fetch_openmoji_packs.py` (Python + cairosvg + Pillow);
+- лицензия CC BY-SA 4.0: при распространении набора сохраняются атрибуция и
+  share-alike; это отдельно от пользовательских картинок.
+
+![Группы «Готовых»](mockups/icon-picker-ready-actual.png)
+
 ## 9. Android
 
 Мобильный пикер в текущий объём не входит. Что важно не сломать:
@@ -803,7 +830,8 @@ src/FamilyMoney.Navigation/Assets/Packs/
 - `Navigation/Controls/IconBadge` — картинка, `pack:`, буква, Material-иконка,
   цветной бейдж и fallback.
 - `Navigation/Services/PackCatalog` — чтение `pack.json`, ассетов и групп
-  по `title` набора.
+  по `title` набора; 10 групп, 160 картинок.
+- `Assets/Packs/README-openmoji.md` — атрибуция OpenMoji и состав групп.
 - `Navigation/ViewModels/IconPickerViewModel` и
   `Desktop/Views/IconPickerWindow` — вкладки, поиск, палитра, превью.
 - `Utils/ImageNormalizer` — EXIF-ориентация, квадрат 256×256, PNG/JPEG,
@@ -917,8 +945,9 @@ Raster остаётся для своих файлов.
 `deprecated`. Механизм `pack:` позволяет заменить/убрать ассеты, не ломая
 ссылки. Юридическую проверку можно добавить позже, не меняя формат данных.
 
-**Размер APK.** Первый набор — 40 PNG, около 0,5 МБ. Бюджет контролируем при
-добавлении; при росте — 128 px или отдельная поставка.
+**Размер APK.** Банки — 40 PNG, около 0,5 МБ; категорийные наборы — ещё
+120 PNG, около 1 МБ. Бюджет контролируем при добавлении; при росте — 128 px
+или отдельная поставка.
 
 **Поиск по 13k английских имён.** Не идеален для русскоязычного пользователя,
 поэтому курируемый слой и готовые картинки — основной, полный — бонус.

@@ -1,0 +1,228 @@
+{
+  "id": "business-finance",
+  "title": "Бизнес и финансы",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "briefcase",
+      "name": "Портфель",
+      "aliases": [
+        "работа",
+        "офис",
+        "бизнес",
+        "briefcase",
+        "office"
+      ],
+      "file": "briefcase.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4BC.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chart-up",
+      "name": "Рост",
+      "aliases": [
+        "график",
+        "инвестиции",
+        "прибыль",
+        "chart increasing",
+        "chart",
+        "data",
+        "graph",
+        "growth"
+      ],
+      "file": "chart-up.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4C8.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "analytics",
+      "name": "Аналитика",
+      "aliases": [
+        "график",
+        "отчёт",
+        "статистика",
+        "bar chart",
+        "bar",
+        "chart",
+        "data",
+        "graph"
+      ],
+      "file": "analytics.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4CA.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "money-bag",
+      "name": "Деньги",
+      "aliases": [
+        "доход",
+        "прибыль",
+        "наличные",
+        "money bag",
+        "bag",
+        "bank",
+        "bet",
+        "billion"
+      ],
+      "file": "money-bag.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4B0.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bank",
+      "name": "Банк",
+      "aliases": [
+        "счёт",
+        "банки",
+        "bank",
+        "building"
+      ],
+      "file": "bank.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3E6.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "office",
+      "name": "Офис",
+      "aliases": [
+        "здание",
+        "работа",
+        "компания",
+        "office building",
+        "building",
+        "city",
+        "cubical",
+        "job"
+      ],
+      "file": "office.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3E2.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "deal",
+      "name": "Сделка",
+      "aliases": [
+        "партнёры",
+        "договор",
+        "рукопожатие",
+        "handshake",
+        "agreement",
+        "deal",
+        "hand",
+        "meeting"
+      ],
+      "file": "deal.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F91D.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "receipt",
+      "name": "Чек",
+      "aliases": [
+        "квитанция",
+        "покупка",
+        "расход",
+        "receipt",
+        "accounting",
+        "bookkeeping",
+        "evidence",
+        "invoice"
+      ],
+      "file": "receipt.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9FE.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cash",
+      "name": "Валюта",
+      "aliases": [
+        "доллар",
+        "наличные",
+        "деньги",
+        "dollar banknote",
+        "bank",
+        "banknote",
+        "bill",
+        "currency"
+      ],
+      "file": "cash.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4B5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chart-down",
+      "name": "Расходы",
+      "aliases": [
+        "график",
+        "убыток",
+        "снижение",
+        "chart decreasing",
+        "chart",
+        "data",
+        "decreasing",
+        "down"
+      ],
+      "file": "chart-down.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4C9.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "computer",
+      "name": "Компьютер",
+      "aliases": [
+        "работа",
+        "техника",
+        "ноутбук",
+        "desktop computer",
+        "computer",
+        "desktop",
+        "monitor"
+      ],
+      "file": "computer.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F5A5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "idea",
+      "name": "Идея",
+      "aliases": [
+        "стартап",
+        "мысль",
+        "лампочка",
+        "light bulb",
+        "bulb",
+        "comic",
+        "electric",
+        "idea"
+      ],
+      "file": "idea.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F4A1.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

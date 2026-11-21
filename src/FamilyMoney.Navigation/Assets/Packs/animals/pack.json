@@ -1,0 +1,254 @@
+{
+  "id": "animals",
+  "title": "Животные",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "dog",
+      "name": "Собака",
+      "aliases": [
+        "питомец",
+        "пёс",
+        "dog face",
+        "adorbs",
+        "animal",
+        "dog",
+        "face"
+      ],
+      "file": "dog.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F436.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cat",
+      "name": "Кошка",
+      "aliases": [
+        "питомец",
+        "кот",
+        "cat face",
+        "animal",
+        "cat",
+        "face",
+        "kitten"
+      ],
+      "file": "cat.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F431.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "rabbit",
+      "name": "Кролик",
+      "aliases": [
+        "питомец",
+        "заяц",
+        "rabbit face",
+        "animal",
+        "bunny",
+        "face",
+        "pet"
+      ],
+      "file": "rabbit.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F430.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "fox",
+      "name": "Лиса",
+      "aliases": [
+        "животное",
+        "лес",
+        "fox",
+        "animal",
+        "face"
+      ],
+      "file": "fox.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F98A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bear",
+      "name": "Медведь",
+      "aliases": [
+        "животное",
+        "лес",
+        "bear",
+        "animal",
+        "face",
+        "grizzly",
+        "growl"
+      ],
+      "file": "bear.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F43B.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "panda",
+      "name": "Панда",
+      "aliases": [
+        "животное",
+        "зоопарк",
+        "panda",
+        "animal",
+        "bamboo",
+        "face"
+      ],
+      "file": "panda.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F43C.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "koala",
+      "name": "Коала",
+      "aliases": [
+        "животное",
+        "зоопарк",
+        "koala",
+        "animal",
+        "australia",
+        "bear",
+        "down"
+      ],
+      "file": "koala.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F428.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "tiger",
+      "name": "Тигр",
+      "aliases": [
+        "животное",
+        "зоопарк",
+        "tiger face",
+        "animal",
+        "big",
+        "cat",
+        "face"
+      ],
+      "file": "tiger.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F42F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "lion",
+      "name": "Лев",
+      "aliases": [
+        "животное",
+        "зоопарк",
+        "lion",
+        "alpha",
+        "animal",
+        "face",
+        "leo"
+      ],
+      "file": "lion.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F981.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cow",
+      "name": "Корова",
+      "aliases": [
+        "животное",
+        "ферма",
+        "cow face",
+        "animal",
+        "cow",
+        "face",
+        "farm"
+      ],
+      "file": "cow.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F42E.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "pig",
+      "name": "Свинья",
+      "aliases": [
+        "животное",
+        "ферма",
+        "pig face",
+        "animal",
+        "bacon",
+        "face",
+        "farm"
+      ],
+      "file": "pig.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F437.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "frog",
+      "name": "Лягушка",
+      "aliases": [
+        "животное",
+        "пруд",
+        "frog",
+        "animal",
+        "face"
+      ],
+      "file": "frog.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F438.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "monkey",
+      "name": "Обезьяна",
+      "aliases": [
+        "животное",
+        "зоопарк",
+        "monkey face",
+        "animal",
+        "banana",
+        "face",
+        "monkey"
+      ],
+      "file": "monkey.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F435.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chicken",
+      "name": "Курица",
+      "aliases": [
+        "птица",
+        "ферма",
+        "chicken",
+        "animal",
+        "bird",
+        "ornithology"
+      ],
+      "file": "chicken.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F414.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

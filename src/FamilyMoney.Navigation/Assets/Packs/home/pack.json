@@ -1,0 +1,243 @@
+{
+  "id": "home",
+  "title": "Дом и квартира",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "house",
+      "name": "Дом",
+      "aliases": [
+        "квартира",
+        "жильё",
+        "house",
+        "building",
+        "country",
+        "heart",
+        "home"
+      ],
+      "file": "house.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F3E0.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "sofa",
+      "name": "Диван",
+      "aliases": [
+        "мебель",
+        "гостиная",
+        "couch and lamp",
+        "couch",
+        "hotel",
+        "lamp"
+      ],
+      "file": "sofa.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6CB.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bed",
+      "name": "Кровать",
+      "aliases": [
+        "мебель",
+        "спальня",
+        "bed",
+        "hotel",
+        "sleep"
+      ],
+      "file": "bed.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6CF.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "shower",
+      "name": "Душ",
+      "aliases": [
+        "ванная",
+        "сантехника",
+        "shower",
+        "water"
+      ],
+      "file": "shower.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6BF.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "basket",
+      "name": "Корзина",
+      "aliases": [
+        "быт",
+        "покупки",
+        "basket",
+        "farming",
+        "laundry",
+        "picnic"
+      ],
+      "file": "basket.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9FA.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "plant",
+      "name": "Растение",
+      "aliases": [
+        "цветы",
+        "интерьер",
+        "potted plant",
+        "decor",
+        "grow",
+        "house",
+        "nurturing"
+      ],
+      "file": "plant.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FAB4.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "candle",
+      "name": "Свеча",
+      "aliases": [
+        "уют",
+        "декор",
+        "candle",
+        "light"
+      ],
+      "file": "candle.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F56F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "picture",
+      "name": "Картина",
+      "aliases": [
+        "декор",
+        "интерьер",
+        "framed picture",
+        "art",
+        "frame",
+        "framed",
+        "museum"
+      ],
+      "file": "picture.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F5BC.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "door",
+      "name": "Дверь",
+      "aliases": [
+        "вход",
+        "квартира",
+        "door",
+        "back",
+        "closet",
+        "front"
+      ],
+      "file": "door.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6AA.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "window",
+      "name": "Окно",
+      "aliases": [
+        "дом",
+        "интерьер",
+        "window",
+        "air",
+        "frame",
+        "fresh",
+        "opening"
+      ],
+      "file": "window.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FA9F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cleaning",
+      "name": "Уборка",
+      "aliases": [
+        "быт",
+        "чистота",
+        "broom",
+        "cleaning",
+        "sweeping",
+        "witch"
+      ],
+      "file": "cleaning.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9F9.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "sponge",
+      "name": "Губка",
+      "aliases": [
+        "уборка",
+        "быт",
+        "sponge",
+        "absorbing",
+        "cleaning",
+        "porous",
+        "soak"
+      ],
+      "file": "sponge.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9FD.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chair",
+      "name": "Стул",
+      "aliases": [
+        "мебель",
+        "интерьер",
+        "chair",
+        "seat",
+        "sit"
+      ],
+      "file": "chair.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FA91.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bath",
+      "name": "Ванна",
+      "aliases": [
+        "ванная",
+        "сантехника",
+        "bathtub",
+        "bath"
+      ],
+      "file": "bath.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6C1.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

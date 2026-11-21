@@ -29,7 +29,19 @@ public sealed record PackGroupView(string Id, string Title, IReadOnlyList<PackAs
 /// </summary>
 public sealed class PackCatalog
 {
-    private static readonly string[] KnownPacks = ["banks"];
+    private static readonly string[] KnownPacks =
+    [
+        "banks",
+        "business-finance",
+        "products",
+        "home",
+        "transport",
+        "leisure",
+        "animals",
+        "education",
+        "fashion",
+        "health",
+    ];
 
     private static readonly Lazy<PackCatalog> LazyInstance = new(() => new PackCatalog());
 

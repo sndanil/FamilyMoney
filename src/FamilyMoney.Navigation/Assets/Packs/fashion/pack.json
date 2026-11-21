@@ -1,0 +1,259 @@
+{
+  "id": "fashion",
+  "title": "Одежда и косметика",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "tshirt",
+      "name": "Футболка",
+      "aliases": [
+        "одежда",
+        "верх",
+        "t-shirt",
+        "blue",
+        "casual",
+        "clothes",
+        "clothing"
+      ],
+      "file": "tshirt.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F455.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "jeans",
+      "name": "Джинсы",
+      "aliases": [
+        "одежда",
+        "брюки",
+        "jeans",
+        "blue",
+        "casual",
+        "clothes",
+        "clothing"
+      ],
+      "file": "jeans.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F456.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "dress",
+      "name": "Платье",
+      "aliases": [
+        "одежда",
+        "женское",
+        "dress",
+        "clothes",
+        "clothing",
+        "dressed",
+        "fancy"
+      ],
+      "file": "dress.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F457.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "heels",
+      "name": "Туфли",
+      "aliases": [
+        "обувь",
+        "каблук",
+        "high-heeled shoe",
+        "clothes",
+        "clothing",
+        "dress",
+        "fashion"
+      ],
+      "file": "heels.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F460.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "sneakers",
+      "name": "Кроссовки",
+      "aliases": [
+        "обувь",
+        "спорт",
+        "running shoe",
+        "athletic",
+        "clothes",
+        "clothing",
+        "fast"
+      ],
+      "file": "sneakers.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F45F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "coat",
+      "name": "Пальто",
+      "aliases": [
+        "одежда",
+        "верхняя",
+        "coat",
+        "brr",
+        "bundle",
+        "cold",
+        "jacket"
+      ],
+      "file": "coat.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9E5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cap",
+      "name": "Кепка",
+      "aliases": [
+        "головной убор",
+        "аксессуар",
+        "billed cap",
+        "baseball",
+        "bent",
+        "billed",
+        "cap"
+      ],
+      "file": "cap.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9E2.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bag",
+      "name": "Сумка",
+      "aliases": [
+        "аксессуар",
+        "одежда",
+        "handbag",
+        "bag",
+        "clothes",
+        "clothing",
+        "dress"
+      ],
+      "file": "bag.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F45C.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "lipstick",
+      "name": "Помада",
+      "aliases": [
+        "косметика",
+        "макияж",
+        "lipstick",
+        "cosmetics",
+        "date",
+        "makeup"
+      ],
+      "file": "lipstick.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F484.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "nails",
+      "name": "Маникюр",
+      "aliases": [
+        "косметика",
+        "ногти",
+        "nail polish",
+        "bored",
+        "care",
+        "cosmetics",
+        "done"
+      ],
+      "file": "nails.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F485.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "lotion",
+      "name": "Крем",
+      "aliases": [
+        "косметика",
+        "уход",
+        "lotion bottle",
+        "bottle",
+        "lotion",
+        "moisturizer",
+        "shampoo"
+      ],
+      "file": "lotion.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9F4.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "mirror",
+      "name": "Зеркало",
+      "aliases": [
+        "уход",
+        "косметика",
+        "mirror",
+        "makeup",
+        "reflection",
+        "reflector",
+        "speculum"
+      ],
+      "file": "mirror.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1FA9E.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "sunglasses",
+      "name": "Очки",
+      "aliases": [
+        "аксессуар",
+        "лето",
+        "sunglasses",
+        "dark",
+        "eye",
+        "eyewear",
+        "glasses"
+      ],
+      "file": "sunglasses.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F576.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "soap",
+      "name": "Мыло",
+      "aliases": [
+        "гигиена",
+        "уход",
+        "soap",
+        "bar",
+        "bathing",
+        "clean",
+        "cleaning"
+      ],
+      "file": "soap.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9FC.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

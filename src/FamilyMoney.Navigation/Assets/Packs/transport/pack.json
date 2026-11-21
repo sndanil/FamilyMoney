@@ -1,0 +1,249 @@
+{
+  "id": "transport",
+  "title": "Машина и транспорт",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "car",
+      "name": "Машина",
+      "aliases": [
+        "авто",
+        "автомобиль",
+        "automobile",
+        "car",
+        "driving",
+        "vehicle"
+      ],
+      "file": "car.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F697.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "taxi",
+      "name": "Такси",
+      "aliases": [
+        "поездка",
+        "машина",
+        "taxi",
+        "cab",
+        "cabbie",
+        "car",
+        "drive"
+      ],
+      "file": "taxi.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F695.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bus",
+      "name": "Автобус",
+      "aliases": [
+        "транспорт",
+        "поездка",
+        "bus",
+        "school",
+        "vehicle"
+      ],
+      "file": "bus.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F68C.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "train",
+      "name": "Поезд",
+      "aliases": [
+        "жд",
+        "электричка",
+        "train",
+        "arrived",
+        "choo",
+        "railway"
+      ],
+      "file": "train.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F686.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "airplane",
+      "name": "Самолёт",
+      "aliases": [
+        "авиа",
+        "путешествие",
+        "airplane",
+        "aeroplane",
+        "fly",
+        "flying",
+        "jet"
+      ],
+      "file": "airplane.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/2708.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "fuel",
+      "name": "Заправка",
+      "aliases": [
+        "бензин",
+        "топливо",
+        "fuel pump",
+        "diesel",
+        "fuel",
+        "fuelpump",
+        "gas"
+      ],
+      "file": "fuel.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/26FD.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bicycle",
+      "name": "Велосипед",
+      "aliases": [
+        "велик",
+        "спорт",
+        "bicycle",
+        "bike",
+        "class",
+        "cycle",
+        "cycling"
+      ],
+      "file": "bicycle.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6B2.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "scooter",
+      "name": "Самокат",
+      "aliases": [
+        "транспорт",
+        "город",
+        "motor scooter",
+        "motor",
+        "scooter"
+      ],
+      "file": "scooter.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6F5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "truck",
+      "name": "Грузовик",
+      "aliases": [
+        "доставка",
+        "перевозка",
+        "delivery truck",
+        "car",
+        "delivery",
+        "drive",
+        "truck"
+      ],
+      "file": "truck.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F69A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "ship",
+      "name": "Корабль",
+      "aliases": [
+        "море",
+        "круиз",
+        "ship",
+        "boat",
+        "passenger",
+        "travel"
+      ],
+      "file": "ship.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6A2.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "metro",
+      "name": "Метро",
+      "aliases": [
+        "транспорт",
+        "город",
+        "metro",
+        "subway",
+        "travel"
+      ],
+      "file": "metro.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F687.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "wheel",
+      "name": "Колесо",
+      "aliases": [
+        "машина",
+        "шины",
+        "wheel",
+        "car",
+        "circle",
+        "tire",
+        "turn"
+      ],
+      "file": "wheel.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6DE.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "traffic-light",
+      "name": "Светофор",
+      "aliases": [
+        "дорога",
+        "город",
+        "vertical traffic light",
+        "drove",
+        "intersection",
+        "light",
+        "signal"
+      ],
+      "file": "traffic-light.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F6A6.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "map",
+      "name": "Карта",
+      "aliases": [
+        "навигация",
+        "путь",
+        "world map",
+        "map",
+        "world"
+      ],
+      "file": "map.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F5FA.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}

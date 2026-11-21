@@ -1,0 +1,244 @@
+{
+  "id": "products",
+  "title": "Продукты",
+  "version": 1,
+  "notice": "NOTICE-openmoji.md",
+  "assets": [
+    {
+      "id": "apple",
+      "name": "Яблоко",
+      "aliases": [
+        "фрукты",
+        "еда",
+        "red apple",
+        "apple",
+        "diet",
+        "food",
+        "fruit"
+      ],
+      "file": "apple.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F34E.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "bread",
+      "name": "Хлеб",
+      "aliases": [
+        "булочка",
+        "еда",
+        "выпечка",
+        "bread",
+        "carbs",
+        "food",
+        "grain",
+        "loaf"
+      ],
+      "file": "bread.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F35E.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "milk",
+      "name": "Молоко",
+      "aliases": [
+        "напитки",
+        "молочное",
+        "glass of milk",
+        "drink",
+        "glass",
+        "milk"
+      ],
+      "file": "milk.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F95B.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "cheese",
+      "name": "Сыр",
+      "aliases": [
+        "молочное",
+        "еда",
+        "cheese wedge",
+        "cheese",
+        "wedge"
+      ],
+      "file": "cheese.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9C0.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "egg",
+      "name": "Яйцо",
+      "aliases": [
+        "завтрак",
+        "еда",
+        "egg",
+        "breakfast",
+        "food"
+      ],
+      "file": "egg.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F95A.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "chicken",
+      "name": "Курица",
+      "aliases": [
+        "мясо",
+        "птица",
+        "еда",
+        "poultry leg",
+        "bone",
+        "chicken",
+        "drumstick",
+        "hungry"
+      ],
+      "file": "chicken.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F357.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "fish",
+      "name": "Рыба",
+      "aliases": [
+        "морепродукты",
+        "еда",
+        "fish",
+        "animal",
+        "dinner",
+        "fishes",
+        "fishing"
+      ],
+      "file": "fish.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F41F.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "broccoli",
+      "name": "Брокколи",
+      "aliases": [
+        "овощи",
+        "еда",
+        "broccoli",
+        "cabbage",
+        "wild"
+      ],
+      "file": "broccoli.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F966.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "carrot",
+      "name": "Морковь",
+      "aliases": [
+        "овощи",
+        "еда",
+        "carrot",
+        "food",
+        "vegetable"
+      ],
+      "file": "carrot.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F955.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "banana",
+      "name": "Банан",
+      "aliases": [
+        "фрукты",
+        "еда",
+        "banana",
+        "fruit",
+        "potassium"
+      ],
+      "file": "banana.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F34C.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "grapes",
+      "name": "Виноград",
+      "aliases": [
+        "фрукты",
+        "еда",
+        "grapes",
+        "dionysus",
+        "fruit",
+        "grape"
+      ],
+      "file": "grapes.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F347.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "potato",
+      "name": "Картофель",
+      "aliases": [
+        "овощи",
+        "еда",
+        "potato",
+        "food",
+        "vegetable"
+      ],
+      "file": "potato.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F954.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "onion",
+      "name": "Лук",
+      "aliases": [
+        "овощи",
+        "еда",
+        "onion",
+        "flavoring"
+      ],
+      "file": "onion.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F9C5.svg",
+      "addedIn": "1.1.0"
+    },
+    {
+      "id": "tomato",
+      "name": "Помидор",
+      "aliases": [
+        "овощи",
+        "еда",
+        "tomato",
+        "food",
+        "fruit",
+        "vegetable"
+      ],
+      "file": "tomato.png",
+      "background": "#FFFFFF",
+      "kind": "illustration",
+      "source": "https://github.com/hfg-gmuend/openmoji/blob/3e01de523ddefe9c5e46a7765b15efef04bf9002/color/svg/1F345.svg",
+      "addedIn": "1.1.0"
+    }
+  ]
+}
