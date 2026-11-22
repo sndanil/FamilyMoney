@@ -7,7 +7,7 @@ using Xunit;
 
 namespace FamilyMoney.Tests;
 
-public class TopExpensesBuilderTests
+public class TopOperationsBuilderTests
 {
     private static readonly DateTime From = new(2026, 1, 1);
     private static readonly DateTime To = new(2026, 12, 31);
@@ -16,6 +16,51 @@ public class TopExpensesBuilderTests
     private static readonly Guid Grocery = Guid.NewGuid();
     private static readonly Guid Transport = Guid.NewGuid();
     private static readonly Guid Fuel = Guid.NewGuid();
+
+    [Fact]
+    public void CountsOnlyIncomesForIncomeReport()
+    {
+        var account = Guid.NewGuid();
+
+        var result = Build(
+            new Transaction[]
+            {
+                TestData.Income(account, TestData.Day(2026, 3, 1), 1_000m),
+                TestData.Expense(account, TestData.Day(2026, 3, 2), 250m),
+                TestData.Transfer(account, Guid.NewGuid(), 300m, 300m, TestData.Day(2026, 3, 3)),
+            },
+            account,
+            kind: TopOperationKind.Income);
+
+        Assert.Equal(1_000m, result.Total);
+        Assert.Equal(1, result.Transactions);
+        Assert.Single(result.Items);
+        Assert.Equal(1_000m, result.Items[0].Sum);
+    }
+
+    [Fact]
+    public void IncomeReport_MergesByCategoryAndComment()
+    {
+        var account = Guid.NewGuid();
+        var salary = Guid.NewGuid();
+
+        var result = Build(
+            new Transaction[]
+            {
+                TestData.Income(account, TestData.Day(2026, 3, 1), 1_000m, "аванс", salary),
+                TestData.Income(account, TestData.Day(2026, 3, 15), 1_500m, "Аванс ", salary),
+                TestData.Income(account, TestData.Day(2026, 3, 20), 900m, "премия", salary),
+            },
+            account,
+            kind: TopOperationKind.Income);
+
+        Assert.Equal(3_400m, result.Total);
+        Assert.Equal(3, result.Transactions);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2_500m, result.Items[0].Sum);
+        Assert.Equal(2, result.Items[0].Count);
+        Assert.Equal(900m, result.Items[1].Sum);
+    }
 
     [Fact]
     public void CountsOnlyCreditTransactions()
@@ -237,12 +282,13 @@ public class TopExpensesBuilderTests
         Assert.Equal(0m, result.Total);
     }
 
-    private static TopExpensesResult Build(
+    private static TopOperationsResult Build(
         IEnumerable<Transaction> transactions,
         Guid account,
         int top = 10,
-        bool merge = true)
+        bool merge = true,
+        TopOperationKind kind = TopOperationKind.Expense)
     {
-        return TopExpensesBuilder.Build(transactions, new HashSet<Guid> { account }, From, To, top, merge);
+        return TopOperationsBuilder.Build(transactions, new HashSet<Guid> { account }, From, To, top, merge, kind);
     }
 }

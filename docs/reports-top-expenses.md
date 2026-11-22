@@ -187,17 +187,17 @@
 
 | Файл | Назначение |
 |---|---|
-| `src/FamilyMoney/Analytics/TopExpensesBuilder.cs` | чистая агрегация: фильтр по области и периоду, объединение, топ-N, итог |
-| `src/FamilyMoney/Analytics/TopExpenseGroup.cs` | `record(Guid? CategoryId, Guid? SubCategoryId, string? Comment, decimal Sum, int Count)` |
-| `src/FamilyMoney/Analytics/TopExpensesResult.cs` | `record(IReadOnlyList<TopExpenseGroup> Items, decimal Total, int Transactions, int Positions)` |
-| `src/FamilyMoney/ViewModels/TopExpensesViewModel.cs` | свои фильтры, пересчёт, карточки, сводка |
-| `src/FamilyMoney/ViewModels/TopExpenseCardViewModel.cs` | данные карточки: имя, иконка, сумма, доля, число операций |
-| `src/FamilyMoney.Desktop/Views/TopExpensesView.axaml` | сетка карточек и пустые состояния |
+| `src/FamilyMoney/Analytics/TopOperationsBuilder.cs` | чистая агрегация: фильтр по области и периоду, объединение, топ-N, итог |
+| `src/FamilyMoney/Analytics/TopOperationGroup.cs` | `record(Guid? CategoryId, Guid? SubCategoryId, string? Comment, decimal Sum, int Count)` |
+| `src/FamilyMoney/Analytics/TopOperationsResult.cs` | `record(IReadOnlyList<TopOperationGroup> Items, decimal Total, int Transactions, int Positions)` |
+| `src/FamilyMoney/ViewModels/TopOperationsViewModel.cs` | свои фильтры, пересчёт, карточки, сводка |
+| `src/FamilyMoney/ViewModels/TopOperationCardViewModel.cs` | данные карточки: имя, иконка, сумма, доля, число операций |
+| `src/FamilyMoney.Desktop/Views/TopOperationsView.axaml` | сетка карточек и пустые состояния |
 | `src/FamilyMoney.Desktop/Views/TimelineReportView.axaml` | текущее содержимое «Таймлайна», вынесенное из `ReportsView` |
 | `src/FamilyMoney.Desktop/Views/PeriodPickerView.axaml` | период отчёта: пилюля с поповером `PeriodPicker`, без хоткеев |
-| `tests/FamilyMoney.Tests/TopExpensesBuilderTests.cs` | тесты агрегации |
+| `tests/FamilyMoney.Tests/TopOperationsBuilderTests.cs` | тесты агрегации |
 
-`TopExpensesBuilder` не знает про UI: на вход операции, набор счетов, границы периода,
+`TopOperationsBuilder` не знает про UI: на вход операции, набор счетов, границы периода,
 размер топа и флаг объединения; на выход — группы с суммами. Имена и иконки подставляет VM.
 
 ### 5.3 Изменения в существующем
@@ -210,7 +210,7 @@
 | `TimelineViewModel.cs` | использует переименованные `ReportAccount*`; поведение не меняется |
 | `IRepository`, `LiteDbRepository`, `DesignerRepository` | метод, отдающий счета вместе с удалёнными (для области отчётов) |
 | `TimelineScope*.cs` → `ReportAccount*.cs` | переименование и общий справочник |
-| `AppInit.cs` | `+ TopExpensesViewModel`; `PeriodViewModel` остаётся transient (главному экрану — свой, отчёту — свой) |
+| `AppInit.cs` | `+ TopOperationsViewModel`; `PeriodViewModel` остаётся transient (главному экрану — свой, отчёту — свой) |
 | `README.md` | раздел про отчёты |
 
 Изолированный период создаётся как `new PeriodViewModel(stateManager, updateMainState: false)`
@@ -223,13 +223,13 @@
 Фильтр (счёт, период, топ, объединять)
         │  изменение
         ▼
-TopExpensesViewModel.Refresh()
+TopOperationsViewModel.Refresh()
         │  GetTransactions(period) → фильтр по счетам области
         ▼
-TopExpensesBuilder.Build(...)  →  группы (id категории/подкатегории, комментарий, сумма, N)
+TopOperationsBuilder.Build(...)  →  группы (id категории/подкатегории, комментарий, сумма, N)
         │  справочники: GetCategories/GetSubCategories/GetCategory/TryGetImage
         ▼
-ObservableCollection<TopExpenseCardViewModel>  →  WrapPanel карточек
+ObservableCollection<TopOperationCardViewModel>  →  WrapPanel карточек
 ```
 
 Пересчёт — на каждое изменение фильтра и на `TransactionChangedMessage`
@@ -253,8 +253,8 @@ ObservableCollection<TopExpenseCardViewModel>  →  WrapPanel карточек
 |---|---|---|---|
 | 1 | Переключатель режимов | две пилюли, разделение `ReportsView` на «Таймлайн» и «Топ расходов», `ReportAccount*`, счета с `DeletedAt` в области | 0,75 д |
 | 2 | Свой период | `PeriodViewModel` с отключённой записью в `MainState`, `PeriodPickerView`, старт на текущем году | 0,5 д |
-| 3 | Агрегация + тесты | `TopExpensesBuilder`, объединение, топ-N, доля, тесты | 1 д |
-| 4 | Карточки | `TopExpensesView`, шаблон карточки, `IconBadge`, обрезка текста, полоса | 1 д |
+| 3 | Агрегация + тесты | `TopOperationsBuilder`, объединение, топ-N, доля, тесты | 1 д |
+| 4 | Карточки | `TopOperationsView`, шаблон карточки, `IconBadge`, обрезка текста, полоса | 1 д |
 | 5 | Фильтры и состояния | свой счёт, топ 10/20/50/100, переключатель, сводка, пустые состояния | 0,5 д |
 | 6 | Полировка | проверка на демо-базе, README, прогон чек-листа | 0,5 д |
 
@@ -264,7 +264,7 @@ ObservableCollection<TopExpenseCardViewModel>  →  WrapPanel карточек
 
 ## 8. Тесты
 
-`TopExpensesBuilderTests` (чистая логика, без UI):
+`TopOperationsBuilderTests` (чистая логика, без UI):
 
 1. Только расходы: доходы и переводы не попадают в топ.
 2. Область: «Всего» включает скрытые счета; отдельный счёт — только его.
@@ -332,14 +332,16 @@ ObservableCollection<TopExpenseCardViewModel>  →  WrapPanel карточек
 
 ## 12. Статус реализации
 
-Готово целиком.
+Готово целиком; на том же коде сделан «Топ доходов» — см. [reports-top-incomes.md](reports-top-incomes.md).
 
 Новые файлы:
 
-- `Analytics/TopExpensesBuilder.cs`, `TopExpenseGroup.cs`, `TopExpensesResult.cs` — агрегация;
-- `ViewModels/TopExpensesViewModel.cs`, `TopExpenseCardViewModel.cs` — фильтры и карточки;
-- `Desktop/Views/TopExpensesView.axaml`, `TimelineReportView.axaml`, `PeriodPickerView.axaml`;
-- `tests/FamilyMoney.Tests/TopExpensesBuilderTests.cs`.
+- `Analytics/TopOperationsBuilder.cs`, `TopOperationGroup.cs`, `TopOperationsResult.cs` — агрегация;
+- `Analytics/TopOperations.cs` — операции карточки и группировка по дням;
+- `ViewModels/TopOperationsViewModel.cs`, `TopOperationCardViewModel.cs` — фильтры и карточки;
+  наследники `TopExpensesViewModel` и `TopIncomesViewModel` задают вид операций;
+- `Desktop/Views/TopOperationsView.axaml`, `TimelineReportView.axaml`, `PeriodPickerView.axaml`;
+- `tests/FamilyMoney.Tests/TopOperationsBuilderTests.cs`, `TopOperationsTests.cs`.
 
 Изменения по дороге:
 
@@ -350,13 +352,15 @@ ObservableCollection<TopExpenseCardViewModel>  →  WrapPanel карточек
   и в группу. Появился `IRepository.GetAccounts(bool includeDeleted)`.
 - `PeriodViewModel.UpdatesMainState` — изолированный период отчёта: пресеты и диалог те же,
   но `MainState` не трогается (проверено: смена года в отчёте не меняет главный экран).
-- `ReportsView` разделён на переключатель режимов и два независимых view.
+- `ReportsView` разделён на переключатель режимов и независимые view.
 - `MoneyFormat.CompactAxis` — попутное исправление «Таймлайна»: при узком диапазоне на большом
   остатке все деления подписывались одинаково («1,11 млн»), теперь «1,105 млн», «1,110 млн».
+- `TopExpenses*` → `TopOperations*`: расчёт общий для расходов и доходов, вид задаётся
+  `TopOperationKind`.
 
 Проверено вживую: смена счёта, периода (2025/2026), размера топа (10/20), объединения повторов,
 изоляция периода от главного экрана, иконки категорий, доли и полосы, перенос карточек по ширине.
-Тестов — 249, сборка без предупреждений.
+Тестов — 258, сборка без предупреждений.
 
 ### Клик по карточке
 

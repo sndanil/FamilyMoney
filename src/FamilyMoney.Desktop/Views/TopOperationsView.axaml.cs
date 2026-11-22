@@ -8,7 +8,7 @@ using System;
 
 namespace FamilyMoney.Views;
 
-public partial class TopExpensesView : UserControl
+public partial class TopOperationsView : UserControl
 {
     private const double DefaultPanelWidth = 460d;
 
@@ -18,11 +18,11 @@ public partial class TopExpensesView : UserControl
 
     private const double FrameMs = 16d;
 
-    private TopExpensesViewModel? _viewModel;
+    private TopOperationsViewModel? _viewModel;
     private DispatcherTimer? _timer;
     private double _panelWidth = DefaultPanelWidth;
 
-    public TopExpensesView()
+    public TopOperationsView()
     {
         InitializeComponent();
     }
@@ -36,7 +36,7 @@ public partial class TopExpensesView : UserControl
             _viewModel.DetailsVisibilityChanged -= OnDetailsVisibilityChanged;
         }
 
-        _viewModel = DataContext as TopExpensesViewModel;
+        _viewModel = DataContext as TopOperationsViewModel;
 
         if (_viewModel != null)
         {
@@ -47,7 +47,7 @@ public partial class TopExpensesView : UserControl
     /// <summary>Клик по карточке: выбрать её и открыть панель операций.</summary>
     private void OnCardTapped(object? sender, TappedEventArgs e)
     {
-        if (sender is Control { DataContext: TopExpenseCardViewModel card } && _viewModel != null)
+        if (sender is Control { DataContext: TopOperationCardViewModel card } && _viewModel != null)
         {
             _viewModel.SelectCard(card);
             e.Handled = true;

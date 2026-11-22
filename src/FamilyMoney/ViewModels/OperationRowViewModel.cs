@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace FamilyMoney.ViewModels;
 
 /// <summary>Одна операция в панели выбранной карточки.</summary>
-public sealed class ExpenseRowViewModel
+public sealed class OperationRowViewModel
 {
     public IReadOnlyList<string> Tags { get; init; } = [];
 

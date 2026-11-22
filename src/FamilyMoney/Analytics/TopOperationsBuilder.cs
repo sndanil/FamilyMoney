@@ -7,22 +7,24 @@ using System.Linq;
 namespace FamilyMoney.Analytics;
 
 /// <summary>
-/// Собирает топ расходов за период по выбранной области счетов.
+/// Собирает топ операций за период по выбранной области счетов — расходов
+/// (<see cref="CreditTransaction"/>) или доходов (<see cref="DebetTransaction"/>).
 /// <para>
-/// В расчёт идут только операции «расход» (<see cref="CreditTransaction"/>): переводы —
-/// не траты. Доля каждой позиции считается от <see cref="TopExpensesResult.Total"/>,
-/// то есть от всех расходов периода, а не от суммы топа.
+/// Переводы в расчёт не идут: это не трата и не доход. Доля каждой позиции считается
+/// от <see cref="TopOperationsResult.Total"/>, то есть от всех операций периода нужного
+/// вида, а не от суммы топа.
 /// </para>
 /// </summary>
-public static class TopExpensesBuilder
+public static class TopOperationsBuilder
 {
-    public static TopExpensesResult Build(
+    public static TopOperationsResult Build(
         IEnumerable<Transaction> transactions,
         ISet<Guid> accountIds,
         DateTime from,
         DateTime to,
         int top,
-        bool merge)
+        bool merge,
+        TopOperationKind kind)
     {
         ArgumentNullException.ThrowIfNull(transactions);
         ArgumentNullException.ThrowIfNull(accountIds);
@@ -35,14 +37,14 @@ public static class TopExpensesBuilder
         var operations = 0;
 
         var items = merge
-            ? BuildMerged(transactions, accountIds, fromDate, toDate, ref total, ref operations)
-            : BuildSeparate(transactions, accountIds, fromDate, toDate, ref total, ref operations);
+            ? BuildMerged(transactions, accountIds, fromDate, toDate, ref total, ref operations, kind)
+            : BuildSeparate(transactions, accountIds, fromDate, toDate, ref total, ref operations, kind);
 
         order(items);
 
-        return new TopExpensesResult(items.Take(take).ToList(), total, operations, items.Count);
+        return new TopOperationsResult(items.Take(take).ToList(), total, operations, items.Count);
 
-        static void order(List<TopExpenseGroup> list)
+        static void order(List<TopOperationGroup> list)
         {
             list.Sort(static (left, right) =>
             {
@@ -70,19 +72,20 @@ public static class TopExpensesBuilder
         }
     }
 
-    private static List<TopExpenseGroup> BuildMerged(
+    private static List<TopOperationGroup> BuildMerged(
         IEnumerable<Transaction> transactions,
         ISet<Guid> accountIds,
         DateTime from,
         DateTime to,
         ref decimal total,
-        ref int operations)
+        ref int operations,
+        TopOperationKind kind)
     {
         var groups = new Dictionary<GroupKey, Accumulator>();
 
         foreach (var transaction in transactions)
         {
-            if (!IsExpense(transaction, accountIds, from, to))
+            if (!Matches(transaction, accountIds, from, to, kind))
             {
                 continue;
             }
@@ -106,7 +109,7 @@ public static class TopExpensesBuilder
         }
 
         return groups
-            .Select(pair => new TopExpenseGroup(
+            .Select(pair => new TopOperationGroup(
                 pair.Key.CategoryId,
                 pair.Key.SubCategoryId,
                 pair.Value.Comment,
@@ -115,19 +118,20 @@ public static class TopExpensesBuilder
             .ToList();
     }
 
-    private static List<TopExpenseGroup> BuildSeparate(
+    private static List<TopOperationGroup> BuildSeparate(
         IEnumerable<Transaction> transactions,
         ISet<Guid> accountIds,
         DateTime from,
         DateTime to,
         ref decimal total,
-        ref int operations)
+        ref int operations,
+        TopOperationKind kind)
     {
-        var items = new List<TopExpenseGroup>();
+        var items = new List<TopOperationGroup>();
 
         foreach (var transaction in transactions)
         {
-            if (!IsExpense(transaction, accountIds, from, to))
+            if (!Matches(transaction, accountIds, from, to, kind))
             {
                 continue;
             }
@@ -135,7 +139,7 @@ public static class TopExpensesBuilder
             total += transaction.Sum;
             operations++;
 
-            items.Add(new TopExpenseGroup(
+            items.Add(new TopOperationGroup(
                 transaction.CategoryId,
                 transaction.SubCategoryId,
                 CleanComment(transaction.Comment),
@@ -146,9 +150,14 @@ public static class TopExpensesBuilder
         return items;
     }
 
-    private static bool IsExpense(Transaction transaction, ISet<Guid> accountIds, DateTime from, DateTime to)
+    private static bool Matches(
+        Transaction transaction,
+        ISet<Guid> accountIds,
+        DateTime from,
+        DateTime to,
+        TopOperationKind kind)
     {
-        if (transaction is not CreditTransaction || transaction.DeletedAt != null)
+        if (!TopOperations.Matches(transaction, kind))
         {
             return false;
         }

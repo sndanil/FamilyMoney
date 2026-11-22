@@ -9,8 +9,8 @@ namespace FamilyMoney.Analytics;
 /// <see cref="Positions"/> — сколько позиций было до отсечения по размеру топа.
 /// </para>
 /// </summary>
-public sealed record TopExpensesResult(
-    IReadOnlyList<TopExpenseGroup> Items,
+public sealed record TopOperationsResult(
+    IReadOnlyList<TopOperationGroup> Items,
     decimal Total,
     int Transactions,
     int Positions);

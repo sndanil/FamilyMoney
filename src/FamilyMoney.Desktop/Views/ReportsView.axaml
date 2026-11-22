@@ -44,6 +44,10 @@
 					Classes.Active="{Binding IsTopExpenses}"
 					Command="{Binding ShowTopExpensesCommand}"
 					Content="Топ расходов" />
+			<Button Classes="Mode"
+					Classes.Active="{Binding IsTopIncomes}"
+					Command="{Binding ShowTopIncomesCommand}"
+					Content="Топ доходов" />
 		</StackPanel>
 
 		<Panel Grid.Row="1">
@@ -52,7 +56,11 @@
 			</Panel>
 
 			<Panel IsVisible="{Binding IsTopExpenses}">
-				<views:TopExpensesView DataContext="{Binding TopExpenses}" />
+				<views:TopOperationsView DataContext="{Binding TopExpenses}" />
+			</Panel>
+
+			<Panel IsVisible="{Binding IsTopIncomes}">
+				<views:TopOperationsView DataContext="{Binding TopIncomes}" />
 			</Panel>
 		</Panel>
 	</Grid>

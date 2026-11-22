@@ -18,7 +18,13 @@ internal static class TestData
         };
     }
 
-    public static DebetTransaction Income(Guid accountId, DateTime date, decimal sum, string? comment = null)
+    public static DebetTransaction Income(
+        Guid accountId,
+        DateTime date,
+        decimal sum,
+        string? comment = null,
+        Guid? categoryId = null,
+        Guid? subCategoryId = null)
     {
         return new DebetTransaction
         {
@@ -27,6 +33,8 @@ internal static class TestData
             Date = date,
             Sum = sum,
             Comment = comment,
+            CategoryId = categoryId,
+            SubCategoryId = subCategoryId,
         };
     }
 

@@ -1,7 +1,8 @@
-# Топ расходов: панель операций карточки
+# Панель операций карточки (топ расходов и доходов)
 
-Развитие отчёта «Топ расходов»: клик по карточке выбирает её и открывает справа панель
+Клик по карточке в «Топе расходов» или «Топе доходов» выбирает её и открывает справа панель
 с операциями этой позиции, разбитыми по дням — в том же виде, что обычный дневной список.
+Ниже всё описано на примере расходов; для доходов панель та же, отличается только вид операций.
 
 ![Панель операций карточки](mockups/top-expenses-details.png)
 
@@ -81,7 +82,7 @@
 
 ## 3. Данные
 
-Источник — те же операции, что уже прочитаны для отчёта: `TopExpensesViewModel` при пересчёте
+Источник — те же операции, что уже прочитаны для отчёта: `TopOperationsViewModel` при пересчёте
 держит список операций в памяти (на демо-базе 812 штук за год), поэтому открытие панели
 не ходит в базу.
 
@@ -109,37 +110,37 @@ type == CreditTransaction
 
 ### 4.1 Модель представления
 
-`TopExpensesViewModel` получает:
+`TopOperationsViewModel` получает:
 
 ```csharp
-[ObservableProperty] TopExpenseCardViewModel? SelectedCard;
+[ObservableProperty] TopOperationCardViewModel? SelectedCard;
 [ObservableProperty] bool IsDetailsOpen;
-ObservableCollection<ExpenseDayGroupViewModel> Details;   // дни и строки
+ObservableCollection<OperationDayGroupViewModel> Details;   // дни и строки
 string DetailsTitle;        // «Продукты / Ашан»
 string? DetailsComment;     // комментарий позиции, если есть
 string DetailsTotalText;    // «217 350,22 · 8 %»
 string DetailsMetaText;     // «55 операций · 29 дней»
 
-void SelectCard(TopExpenseCardViewModel card);  // повторный клик закрывает
+void SelectCard(TopOperationCardViewModel card);  // повторный клик закрывает
 void CloseDetails();
 ```
 
-`ExpenseDayGroupViewModel`: `DateText` («20 ноября 2026»), `Sum`, `Items`, `IsExpanded`,
+`OperationDayGroupViewModel`: `DateText` («20 ноября 2026»), `Sum`, `Items`, `IsExpanded`,
 `ToggleCommand`.
 
-`ExpenseRowViewModel`: `AccountName`, `ShowAccount` (только для «Всего»), `Tags`, `HasTags`,
+`OperationRowViewModel`: `AccountName`, `ShowAccount` (только для «Всего»), `Tags`, `HasTags`,
 `Sum`.
 
 Открытие панели — построение `Details` из кэша операций; закрытие — очистка и снятие выделения.
 
 ### 4.2 Вид
 
-`TopExpensesView` превращается в `Grid` из двух колонок: карточки (`*`) и панель
+`TopOperationsView` превращается в `Grid` из двух колонок: карточки (`*`) и панель
 (фиксированная ширина, `IsVisible="{Binding IsDetailsOpen}"`). Внутри панели — `ScrollViewer`
 со списком дней.
 
 Стили дня (`DayCard`, заголовок, строка, чипы тегов) берём те же, что в
-`TransactionsByDatesView`, и переносим в общие ресурсы темы или в ресурсы `TopExpensesView`,
+`TransactionsByDatesView`, и переносим в общие ресурсы темы или в ресурсы `TopOperationsView`,
 чтобы вид совпадал. Готовый `TransactionsByDatesView` целиком переиспользовать не получится:
 он привязан к `TransactionsViewModel` и тянет команды копирования/удаления, выбор и проценты.
 
@@ -147,10 +148,10 @@ void CloseDetails();
 
 | Файл | Что |
 |---|---|
-| `TopExpensesViewModel.cs` | кэш операций, выбор карточки, панель |
-| `TopExpensesView.axaml` | две колонки, шаблон панели, стили дня |
-| `TopExpensesView.axaml.cs` | обработчик клика по карточке (выбор) |
-| `TopExpenseCardViewModel.cs` | без изменений: id категории уже есть |
+| `TopOperationsViewModel.cs` | кэш операций, выбор карточки, панель |
+| `TopOperationsView.axaml` | две колонки, шаблон панели, стили дня |
+| `TopOperationsView.axaml.cs` | обработчик клика по карточке (выбор) |
+| `TopOperationCardViewModel.cs` | без изменений: id категории уже есть |
 | `TransactionsViewModel.cs` | только защита от гонки (из отката) |
 
 ---
@@ -224,13 +225,13 @@ void CloseDetails();
 
 ## 9. Реализовано
 
-- `Analytics/TopExpenseTransactions.cs` — `Select` (отбор по ключу карточки) и `GroupByDay`
+- `Analytics/TopOperations.cs` — `Select` (отбор по ключу карточки) и `GroupByDay`
   (дни по убыванию, внутри дня по убыванию суммы).
-- `ViewModels/ExpenseDayGroupViewModel.cs`, `ExpenseRowViewModel.cs` — модель дней и строк.
-- `TopExpensesViewModel`: кэш операций последнего пересчёта и оформления счетов,
+- `ViewModels/OperationDayGroupViewModel.cs`, `OperationRowViewModel.cs` — модель дней и строк.
+- `TopOperationsViewModel`: кэш операций последнего пересчёта и оформления счетов,
   `SelectedCard`, `Details`, `SelectCard`/`CloseDetails`, восстановление выделения после
   пересчёта (если позиция осталась в топе — панель обновляется, если исчезла — закрывается).
-- `TopExpensesView`: две колонки (карточки и панель), `GridSplitter`, скруглённая панель,
+- `TopOperationsView`: две колонки (карточки и панель), `GridSplitter`, скруглённая панель,
   шапка с категорией/подкатегорией и комментарием, дни как в дневном списке
   (включая эффект нажатия «волны»), строки с иконкой счёта.
 - Ширина панели анимируется в code-behind: содержимое фиксируется в целевой ширине,

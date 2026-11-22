@@ -9,8 +9,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="800"
-             x:DataType="vm:TopExpensesViewModel"
-             x:Class="FamilyMoney.Views.TopExpensesView"
+             x:DataType="vm:TopOperationsViewModel"
+             x:Class="FamilyMoney.Views.TopOperationsView"
              Focusable="True">
 
 	<UserControl.Resources>
@@ -203,7 +203,7 @@
 							</ItemsPanelTemplate>
 						</ItemsControl.ItemsPanel>
 						<ItemsControl.ItemTemplate>
-							<DataTemplate x:DataType="vm:TopExpenseCardViewModel">
+							<DataTemplate x:DataType="vm:TopOperationCardViewModel">
 								<Border Classes="ExpenseCard"
 										Classes.Selected="{Binding IsSelected}"
 										Cursor="Hand"
@@ -349,7 +349,7 @@
 								</ItemsPanelTemplate>
 							</ItemsControl.ItemsPanel>
 							<ItemsControl.ItemTemplate>
-								<DataTemplate x:DataType="vm:ExpenseDayGroupViewModel">
+								<DataTemplate x:DataType="vm:OperationDayGroupViewModel">
 									<Border Classes="DayCard">
 										<StackPanel>
 											<Button Classes="DayHeaderButton"
@@ -396,7 +396,7 @@
 													</ItemsPanelTemplate>
 												</ItemsControl.ItemsPanel>
 												<ItemsControl.ItemTemplate>
-													<DataTemplate x:DataType="vm:ExpenseRowViewModel">
+													<DataTemplate x:DataType="vm:OperationRowViewModel">
 														<Border Classes="DayTransaction">
 															<Grid ColumnDefinitions="22,Auto,*,Auto,Auto" Margin="8 0">
 																<controls:IconBadge Grid.Column="0"

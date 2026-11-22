@@ -7,7 +7,7 @@ using Xunit;
 
 namespace FamilyMoney.Tests;
 
-public class TopExpenseTransactionsTests
+public class TopOperationsTests
 {
     private static readonly Guid Food = Guid.NewGuid();
     private static readonly Guid Grocery = Guid.NewGuid();
@@ -23,7 +23,7 @@ public class TopExpenseTransactionsTests
             TestData.Expense(account, TestData.Day(2026, 1, 3), 200m, Food, Grocery, "магнит"),
         };
 
-        var selected = TopExpenseTransactions.Select(transactions, Food, Grocery, "Пятёрочка");
+        var selected = TopOperations.Select(transactions, Food, Grocery, "Пятёрочка", TopOperationKind.Expense);
 
         Assert.Single(selected);
         Assert.Equal(100m, selected[0].Sum);
@@ -40,7 +40,7 @@ public class TopExpenseTransactionsTests
             TestData.Expense(account, TestData.Day(2026, 2, 3), 200m, Food, Grocery, "Пятёрочка центр"),
         };
 
-        var selected = TopExpenseTransactions.Select(transactions, Food, Grocery, "пятёрочка центр");
+        var selected = TopOperations.Select(transactions, Food, Grocery, "пятёрочка центр", TopOperationKind.Expense);
 
         Assert.Equal(2, selected.Count);
         Assert.Equal(300m, selected.Sum(item => item.Sum));
@@ -58,10 +58,10 @@ public class TopExpenseTransactionsTests
             TestData.Expense(account, TestData.Day(2026, 3, 3), 300m, Food, Grocery, null),
         };
 
-        var withoutCategory = TopExpenseTransactions.Select(transactions, null, null, null);
+        var withoutCategory = TopOperations.Select(transactions, null, null, null, TopOperationKind.Expense);
         Assert.Equal(2, withoutCategory.Count);
 
-        var withCategory = TopExpenseTransactions.Select(transactions, Food, Grocery, null);
+        var withCategory = TopOperations.Select(transactions, Food, Grocery, null, TopOperationKind.Expense);
         Assert.Single(withCategory);
         Assert.Equal(300m, withCategory[0].Sum);
     }
@@ -81,10 +81,29 @@ public class TopExpenseTransactionsTests
             TestData.Expense(account, TestData.Day(2026, 4, 5), 100m, Food, Grocery, "пятёрочка"),
         };
 
-        var selected = TopExpenseTransactions.Select(transactions, Food, Grocery, "пятёрочка");
+        var selected = TopOperations.Select(transactions, Food, Grocery, "пятёрочка", TopOperationKind.Expense);
 
         Assert.Single(selected);
         Assert.Equal(100m, selected[0].Sum);
+    }
+
+    [Fact]
+    public void Select_WithIncomeKind_KeepsOnlyIncomes()
+    {
+        var account = Guid.NewGuid();
+        var salary = Guid.NewGuid();
+
+        var transactions = new List<Transaction>
+        {
+            TestData.Income(account, TestData.Day(2026, 4, 1), 1_000m, "аванс", salary),
+            TestData.Income(account, TestData.Day(2026, 4, 2), 500m, "премия", salary),
+            TestData.Expense(account, TestData.Day(2026, 4, 3), 300m, salary, null, "аванс"),
+        };
+
+        var selected = TopOperations.Select(transactions, salary, null, "аванс", TopOperationKind.Income);
+
+        Assert.Single(selected);
+        Assert.Equal(1_000m, selected[0].Sum);
     }
 
     [Fact]
@@ -100,7 +119,7 @@ public class TopExpenseTransactionsTests
             TestData.Expense(account, TestData.Day(2026, 5, 1), 50m),
         };
 
-        var days = TopExpenseTransactions.GroupByDay(items);
+        var days = TopOperations.GroupByDay(items);
 
         Assert.Equal(2, days.Count);
         Assert.Equal(TestData.Day(2026, 5, 2), days[0].Date);
@@ -116,6 +135,6 @@ public class TopExpenseTransactionsTests
     [Fact]
     public void GroupByDay_Empty_ReturnsNothing()
     {
-        Assert.Empty(TopExpenseTransactions.GroupByDay([]));
+        Assert.Empty(TopOperations.GroupByDay([]));
     }
 }

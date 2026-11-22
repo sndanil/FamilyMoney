@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace FamilyMoney.ViewModels;
 
 /// <summary>День в панели операций выбранной карточки: заголовок с датой и операции.</summary>
-public partial class ExpenseDayGroupViewModel : ViewModelBase
+public partial class OperationDayGroupViewModel : ViewModelBase
 {
     public required DateTime Date { get; init; }
 
@@ -14,7 +14,7 @@ public partial class ExpenseDayGroupViewModel : ViewModelBase
 
     public decimal Sum { get; init; }
 
-    public IReadOnlyList<ExpenseRowViewModel> Items { get; init; } = [];
+    public IReadOnlyList<OperationRowViewModel> Items { get; init; } = [];
 
     [ObservableProperty]
     public partial bool IsExpanded { get; set; } = true;

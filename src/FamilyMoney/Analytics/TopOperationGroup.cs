@@ -8,7 +8,7 @@ namespace FamilyMoney.Analytics;
 /// <see cref="Count"/> — сколько операций попало в позицию (при объединении повторов).
 /// </para>
 /// </summary>
-public sealed record TopExpenseGroup(
+public sealed record TopOperationGroup(
     Guid? CategoryId,
     Guid? SubCategoryId,
     string? Comment,

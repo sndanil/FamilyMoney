@@ -6,7 +6,7 @@ namespace FamilyMoney.ViewModels;
 /// Данные одной карточки «Топ расходов». Список карточек заменяется целиком при пересчёте,
 /// отдельно наблюдаемым нужно только выделение.
 /// </summary>
-public partial class TopExpenseCardViewModel : ViewModelBase
+public partial class TopOperationCardViewModel : ViewModelBase
 {
     /// <summary>Категория позиции; null — операции без категории.</summary>
     public Guid? CategoryId { get; init; }
