@@ -32,6 +32,8 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private readonly HashSet<Guid> _openedNodes = [];
 
+    private int _refreshVersion;
+
     private readonly Dictionary<Guid, BaseCategoryViewModel> _categoriesCache = [];
     private readonly Dictionary<Guid, BaseSubCategoryViewModel> _subCategoriesCache = [];
 
@@ -796,11 +798,21 @@ public partial class TransactionsViewModel : ViewModelBase
 
     private async Task RefreshTransactions(MainState state)
     {
+        // Пересборок может быть несколько подряд (например, переход из отчёта меняет
+        // период, счёт и фильтр). Применяем только результат последней, иначе более
+        // ранняя сборка перетрёт свежую.
+        var version = ++_refreshVersion;
+
         var selected = SelectedTransactionGroup;
         await ClearSelectionAsync();
 
         var openedNodes = new HashSet<Guid>(_openedNodes);
         var snapshot = await Task.Run(() => BuildTransactions(state, selected, openedNodes));
+
+        if (version != _refreshVersion)
+        {
+            return;
+        }
 
         UpdateAvailableFilterTags(snapshot.AllTransactions);
 

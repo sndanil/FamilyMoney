@@ -33,6 +33,14 @@ public partial class TopExpensesViewModel : ViewModelBase
     private bool _suppressScopeChange;
     private int _loadVersion;
 
+    // Кэш последнего пересчёта: операции выбранной области и за период, и оформление счетов.
+    // Панель выбранной карточки строится по нему, без нового запроса в базу.
+    private List<Transaction> _transactions = [];
+    private Dictionary<Guid, AccountVisual> _accountVisuals = [];
+    private ExpenseKey? _selectedKey;
+
+    public event EventHandler? DetailsVisibilityChanged;
+
     public TopExpensesViewModel(
         IRepository repository,
         IStateManager stateManager,
@@ -82,10 +90,46 @@ public partial class TopExpensesViewModel : ViewModelBase
     public partial string SummaryText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial string ShownText { get; set; } = string.Empty;
+    public partial string? EmptyText { get; set; }
 
     [ObservableProperty]
-    public partial string? EmptyText { get; set; }
+    public partial TopExpenseCardViewModel? SelectedCard { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDetailsOpen { get; set; }
+
+    [ObservableProperty]
+    public partial string DetailsCategory { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string DetailsSubCategory { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasDetailsSubCategory { get; set; }
+
+    [ObservableProperty]
+    public partial string DetailsComment { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasDetailsComment { get; set; }
+
+    [ObservableProperty]
+    public partial string DetailsTotalText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string DetailsMetaText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial byte[]? DetailsImageData { get; set; }
+
+    [ObservableProperty]
+    public partial string? DetailsIcon { get; set; }
+
+    [ObservableProperty]
+    public partial string? DetailsIconColor { get; set; }
+
+    /// <summary>Дни и операции выбранной карточки.</summary>
+    public ObservableCollection<ExpenseDayGroupViewModel> Details { get; } = [];
 
     public bool IsTop10 => Top == 10;
 
@@ -117,6 +161,56 @@ public partial class TopExpensesViewModel : ViewModelBase
 
     [RelayCommand]
     private void SetTop100() => Top = 100;
+
+    /// <summary>
+    /// Клик по карточке: выбрать её и показать операции справа. Повторный клик по выбранной
+    /// карточке закрывает панель.
+    /// </summary>
+    public void SelectCard(TopExpenseCardViewModel card)
+    {
+        ArgumentNullException.ThrowIfNull(card);
+
+        if (ReferenceEquals(SelectedCard, card))
+        {
+            CloseDetails();
+            return;
+        }
+
+        if (SelectedCard != null)
+        {
+            SelectedCard.IsSelected = false;
+        }
+
+        SelectedCard = card;
+        card.IsSelected = true;
+        _selectedKey = KeyOf(card);
+
+        BuildDetails(card);
+        IsDetailsOpen = true;
+    }
+
+    public void CloseDetails()
+    {
+        if (SelectedCard != null)
+        {
+            SelectedCard.IsSelected = false;
+        }
+
+        SelectedCard = null;
+        _selectedKey = null;
+
+        // Содержимое панели не чистим: она ещё плавно сворачивается, и пустой список
+        // во время анимации выглядел бы как рывок. Новая карточка заменит данные.
+        IsDetailsOpen = false;
+    }
+
+    [RelayCommand]
+    private void ClosePanel() => CloseDetails();
+
+    partial void OnIsDetailsOpenChanged(bool value)
+    {
+        DetailsVisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     partial void OnSelectedScopeChanged(ReportAccount? value)
     {
@@ -200,24 +294,35 @@ public partial class TopExpensesViewModel : ViewModelBase
                     PeriodTo = to,
                 }).ToList();
 
+            var ids = accountIds.ToHashSet();
+            var scoped = accountIds.Count == 0
+                ? new List<Transaction>()
+                : transactions.Where(t => t.AccountId is { } accountId && ids.Contains(accountId)).ToList();
+
             var result = accountIds.Count == 0
                 ? new TopExpensesResult([], 0m, 0, 0)
-                : TopExpensesBuilder.Build(transactions, accountIds.ToHashSet(), from, to, Top, Merge);
+                : TopExpensesBuilder.Build(scoped, ids, from, to, Top, Merge);
 
             if (version != _loadVersion)
             {
                 return;
             }
 
+            _transactions = scoped;
+            _accountVisuals = accounts.ToDictionary(
+                account => account.Id,
+                account => new AccountVisual(
+                    account.Name,
+                    ImageDataHelper.ToByteArray(_repository.TryGetImage(account.Id)),
+                    account.Icon,
+                    account.IconColor));
+
             Items = new ObservableCollection<TopExpenseCardViewModel>(BuildCards(result));
+            RestoreSelection();
 
             SummaryText = result.Transactions == 0
                 ? "Расходов за период нет"
-                : $"Расходы {MoneyFormat.Full(result.Total)} · {result.Transactions} {Plural(result.Transactions, "операция", "операции", "операций")}";
-
-            ShownText = result.Positions == 0
-                ? string.Empty
-                : $"показано {result.Items.Count} из {result.Positions}";
+                : BuildSummary(result);
 
             EmptyText = result.Positions == 0 ? "За период нет расходов" : null;
         }
@@ -229,14 +334,103 @@ public partial class TopExpensesViewModel : ViewModelBase
             {
                 Items = [];
                 SummaryText = string.Empty;
-                ShownText = string.Empty;
                 EmptyText = "Не удалось построить отчёт";
             }
         }
     }
 
-    private List<TopExpenseCardViewModel> BuildCards(TopExpensesResult result)
+    /// <summary>После пересчёта возвращаем выделение на ту же позицию, если она осталась в топе.</summary>
+    private void RestoreSelection()
     {
+        if (_selectedKey is not { } key)
+        {
+            return;
+        }
+
+        var card = Items.FirstOrDefault(candidate => KeyOf(candidate) == key);
+        if (card == null)
+        {
+            CloseDetails();
+            return;
+        }
+
+        card.IsSelected = true;
+        SelectedCard = card;
+        BuildDetails(card);
+    }
+
+    private void BuildDetails(TopExpenseCardViewModel card)
+    {
+        var operations = TopExpenseTransactions.Select(_transactions, card.CategoryId, card.SubCategoryId, card.Comment);
+        var days = TopExpenseTransactions.GroupByDay(operations);
+
+        Details.Clear();
+        foreach (var day in days)
+        {
+            Details.Add(new ExpenseDayGroupViewModel
+            {
+                Date = day.Date,
+                Sum = day.Sum,
+                Items = day.Items.Select(ToRow).ToList(),
+            });
+        }
+
+        DetailsCategory = card.CategoryName;
+        DetailsSubCategory = card.SubCategoryName;
+        HasDetailsSubCategory = !string.IsNullOrEmpty(card.SubCategoryName);
+        DetailsComment = card.Comment;
+        HasDetailsComment = !string.IsNullOrEmpty(card.Comment);
+        DetailsImageData = card.ImageData;
+        DetailsIcon = card.Icon;
+        DetailsIconColor = card.IconColor;
+        DetailsTotalText = $"{MoneyFormat.Full(card.Sum)} · {card.Percent:P0}";
+        DetailsMetaText =
+            $"{operations.Count} {Plural(operations.Count, "операция", "операции", "операций")} · " +
+            $"{days.Count} {Plural(days.Count, "день", "дня", "дней")}";
+    }
+
+    private ExpenseRowViewModel ToRow(Transaction transaction)
+    {
+        var account = transaction.AccountId is { } accountId && _accountVisuals.TryGetValue(accountId, out var visual)
+            ? visual
+            : default;
+
+        return new ExpenseRowViewModel
+        {
+            Tags = (transaction.Tags ?? [])
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.Trim())
+                .ToList(),
+            Sum = transaction.Sum,
+            AccountName = account.Name ?? string.Empty,
+            ImageData = account.ImageData,
+            Icon = account.Icon,
+            IconColor = account.IconColor,
+        };
+    }
+
+    private static ExpenseKey KeyOf(TopExpenseCardViewModel card)
+    {
+        return new ExpenseKey(card.CategoryId, card.SubCategoryId, CommentNormalizer.Normalize(card.Comment));
+    }
+
+    private readonly record struct ExpenseKey(Guid? CategoryId, Guid? SubCategoryId, string Comment);
+
+    /// <summary>Имя и оформление счёта для строки панели.</summary>
+    private readonly record struct AccountVisual(string Name, byte[]? ImageData, string? Icon, string? IconColor);
+
+    /// <summary>Строка сводки: расходы, число операций и сколько позиций показано из всех.</summary>
+    private static string BuildSummary(TopExpensesResult result)
+    {
+        var text = $"Расходы {MoneyFormat.Full(result.Total)} · " +
+                   $"{result.Transactions} {Plural(result.Transactions, "операция", "операции", "операций")}";
+
+        return result.Positions == 0
+            ? text
+            : $"{text} · показано {result.Items.Count} из {result.Positions}";
+    }
+
+    private List<TopExpenseCardViewModel> BuildCards(TopExpensesResult result)    {
         var categoryIds = result.Items.Where(i => i.CategoryId != null).Select(i => i.CategoryId!.Value).Distinct().ToList();
         var subCategoryIds = result.Items.Where(i => i.SubCategoryId != null).Select(i => i.SubCategoryId!.Value).Distinct().ToList();
 
@@ -260,6 +454,8 @@ public partial class TopExpensesViewModel : ViewModelBase
 
             cards.Add(new TopExpenseCardViewModel
             {
+                CategoryId = group.CategoryId,
+                SubCategoryId = group.SubCategoryId,
                 CategoryName = category?.Name ?? "Без категории",
                 SubCategoryName = subCategory?.Name ?? string.Empty,
                 Comment = group.Comment ?? string.Empty,

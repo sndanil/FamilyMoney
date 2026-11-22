@@ -1,8 +1,8 @@
 using FamilyMoney.Models;
+using FamilyMoney.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FamilyMoney.Analytics;
 
@@ -93,7 +93,7 @@ public static class TopExpensesBuilder
             var key = new GroupKey(
                 transaction.CategoryId,
                 transaction.SubCategoryId,
-                NormalizeComment(transaction.Comment));
+                CommentNormalizer.Normalize(transaction.Comment));
 
             if (groups.TryGetValue(key, out var accumulator))
             {
@@ -160,40 +160,6 @@ public static class TopExpensesBuilder
 
         var date = transaction.Date.Date;
         return date >= from && date <= to;
-    }
-
-    /// <summary>
-    /// Ключ объединения: комментарий сравнивается без учёта регистра и лишних пробелов,
-    /// пустой и null — одно и то же.
-    /// </summary>
-    private static string NormalizeComment(string? comment)
-    {
-        if (string.IsNullOrWhiteSpace(comment))
-        {
-            return string.Empty;
-        }
-
-        var builder = new StringBuilder(comment.Length);
-        var pendingSpace = false;
-
-        foreach (var character in comment.Trim())
-        {
-            if (char.IsWhiteSpace(character))
-            {
-                pendingSpace = true;
-                continue;
-            }
-
-            if (pendingSpace)
-            {
-                builder.Append(' ');
-                pendingSpace = false;
-            }
-
-            builder.Append(char.ToLowerInvariant(character));
-        }
-
-        return builder.ToString();
     }
 
     private static string? CleanComment(string? comment)
