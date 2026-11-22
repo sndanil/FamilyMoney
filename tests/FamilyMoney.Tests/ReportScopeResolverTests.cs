@@ -6,7 +6,7 @@ using Xunit;
 
 namespace FamilyMoney.Tests;
 
-public class TimelineScopeResolverTests
+public class ReportScopeResolverTests
 {
     [Fact]
     public void TotalScope_SkipsNotSummableAccounts()
@@ -22,7 +22,7 @@ public class TimelineScopeResolverTests
             TestData.Account(excluded, "Не суммируется", parentId: group, isNotSummable: true),
         };
 
-        var ids = TimelineScopeResolver.Resolve(accounts, null);
+        var ids = ReportScopeResolver.Resolve(accounts, null);
 
         Assert.Equal(new[] { regular }, ids.OrderBy(id => id));
     }
@@ -41,9 +41,9 @@ public class TimelineScopeResolverTests
             TestData.Account(leaf, "Счёт", parentId: nested),
         };
 
-        Assert.Equal(new[] { leaf }, TimelineScopeResolver.Resolve(accounts, root));
-        Assert.Equal(new[] { leaf }, TimelineScopeResolver.Resolve(accounts, nested));
-        Assert.Equal(new[] { leaf }, TimelineScopeResolver.Resolve(accounts, null));
+        Assert.Equal(new[] { leaf }, ReportScopeResolver.Resolve(accounts, root));
+        Assert.Equal(new[] { leaf }, ReportScopeResolver.Resolve(accounts, nested));
+        Assert.Equal(new[] { leaf }, ReportScopeResolver.Resolve(accounts, null));
     }
 
     [Fact]
@@ -62,10 +62,10 @@ public class TimelineScopeResolverTests
             TestData.Account(regular, "Обычный", parentId: root),
         };
 
-        Assert.Equal(new[] { regular }, TimelineScopeResolver.Resolve(accounts, null));
+        Assert.Equal(new[] { regular }, ReportScopeResolver.Resolve(accounts, null));
 
         // Выбранная явно скрытая группа считается как обычно.
-        Assert.Equal(new[] { insideExcluded }, TimelineScopeResolver.Resolve(accounts, excludedGroup));
+        Assert.Equal(new[] { insideExcluded }, ReportScopeResolver.Resolve(accounts, excludedGroup));
     }
 
     [Fact]
@@ -80,11 +80,11 @@ public class TimelineScopeResolverTests
             TestData.Account(leaf, "Копилка", parentId: group, isNotSummable: true),
         };
 
-        Assert.Equal(new[] { leaf }, TimelineScopeResolver.Resolve(accounts, leaf));
+        Assert.Equal(new[] { leaf }, ReportScopeResolver.Resolve(accounts, leaf));
     }
 
     [Fact]
-    public void DeletedAccounts_AreSkipped()
+    public void DeletedAccount_IsIncludedInTotalAndGroup()
     {
         var group = Guid.NewGuid();
         var deleted = Guid.NewGuid();
@@ -100,7 +100,28 @@ public class TimelineScopeResolverTests
             TestData.Account(alive, "Живой", parentId: group),
         };
 
-        Assert.Equal(new[] { alive }, TimelineScopeResolver.Resolve(accounts, null));
+        // Операции удалённого счёта остались в базе — в отчётах это траты.
+        var expected = new[] { deleted, alive }.OrderBy(id => id).ToArray();
+        Assert.Equal(expected, ReportScopeResolver.Resolve(accounts, null).OrderBy(id => id));
+        Assert.Equal(expected, ReportScopeResolver.Resolve(accounts, group).OrderBy(id => id));
+    }
+
+    [Fact]
+    public void DeletedGroup_KeepsItsChildrenReachable()
+    {
+        var deletedGroup = Guid.NewGuid();
+        var child = Guid.NewGuid();
+
+        var group = TestData.Account(deletedGroup, "Удалённая группа", isGroup: true);
+        group.DeletedAt = TestData.Day(2025, 1, 1);
+
+        var accounts = new[]
+        {
+            group,
+            TestData.Account(child, "Счёт", parentId: deletedGroup),
+        };
+
+        Assert.Equal(new[] { child }, ReportScopeResolver.Resolve(accounts, null));
     }
 
     [Fact]
@@ -108,6 +129,6 @@ public class TimelineScopeResolverTests
     {
         var accounts = new[] { TestData.Account(Guid.NewGuid(), "Счёт") };
 
-        Assert.Empty(TimelineScopeResolver.Resolve(accounts, Guid.NewGuid()));
+        Assert.Empty(ReportScopeResolver.Resolve(accounts, Guid.NewGuid()));
     }
 }

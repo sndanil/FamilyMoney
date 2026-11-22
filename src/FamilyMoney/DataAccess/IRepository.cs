@@ -42,6 +42,12 @@ public interface IRepository
 
     Account GetAccount(Guid id);
     IEnumerable<Account> GetAccounts();
+
+    /// <summary>
+    /// Счета базы. <paramref name="includeDeleted"/> добавляет помеченные удалёнными —
+    /// они нужны отчётам, потому что операции такого счёта остаются в базе.
+    /// </summary>
+    IEnumerable<Account> GetAccounts(bool includeDeleted);
     void UpdateAccount(Account account);
     void DeleteAccount(Guid id);
 

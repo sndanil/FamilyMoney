@@ -5,7 +5,7 @@ using Xunit;
 
 namespace FamilyMoney.Tests;
 
-public class TimelineScopeCatalogTests
+public class ReportAccountCatalogTests
 {
     [Fact]
     public void Build_IncludesTotalGroupsAndAccountsWithIcons()
@@ -17,7 +17,7 @@ public class TimelineScopeCatalogTests
         group.Children.Add(account);
         total.Children.Add(group);
 
-        var scopes = TimelineScopeCatalog.Build(total);
+        var scopes = ReportAccountCatalog.Build(total);
 
         Assert.Equal(3, scopes.Count);
 
@@ -47,7 +47,7 @@ public class TimelineScopeCatalogTests
         group.Children.Add(hidden);
         total.Children.Add(group);
 
-        var scopes = TimelineScopeCatalog.Build(total);
+        var scopes = ReportAccountCatalog.Build(total);
 
         Assert.Equal(["Всего", "Карты", "Видимый"], scopes.Select(s => s.Name));
     }
@@ -64,7 +64,7 @@ public class TimelineScopeCatalogTests
         total.Children.Add(hiddenGroup);
         total.Children.Add(alone);
 
-        var scopes = TimelineScopeCatalog.Build(total);
+        var scopes = ReportAccountCatalog.Build(total);
 
         Assert.Equal(["Всего", "Отдельный"], scopes.Select(s => s.Name));
     }

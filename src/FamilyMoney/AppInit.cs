@@ -121,6 +121,7 @@ public static class AppInit
         services.AddSingleton<AccountsViewModel>();
         services.AddSingleton<TransactionsViewModel>();
         services.AddSingleton<TimelineViewModel>();
+        services.AddSingleton<TopExpensesViewModel>();
         services.AddSingleton<ReportsViewModel>();
         services.AddSingleton<MainViewModel>();
     }

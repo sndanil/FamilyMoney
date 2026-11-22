@@ -403,6 +403,8 @@ internal sealed class FakeSyncRepository : IRepository
 
         public IEnumerable<Account> GetAccounts() => [];
 
+    public IEnumerable<Account> GetAccounts(bool includeDeleted) => [];
+
         public void UpdateAccount(Account account) => throw new NotImplementedException();
 
         public void DeleteAccount(Guid id) => throw new NotImplementedException();

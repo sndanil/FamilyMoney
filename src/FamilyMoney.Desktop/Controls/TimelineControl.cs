@@ -458,11 +458,13 @@ public sealed class TimelineControl : Control
         var pen = new Pen(grid, 1d);
         var labelBrush = SecondaryTextBrush ?? Brushes.Gray;
 
+        var balanceStep = model.BalanceTicks.Count > 1 ? model.BalanceTicks[1] - model.BalanceTicks[0] : 0m;
+
         foreach (var tick in model.BalanceTicks)
         {
             var y = Math.Round(YBalance(tick, model, layout)) + 0.5d;
             context.DrawLine(pen, new Point(layout.BalanceBand.Left, y), new Point(layout.BalanceBand.Right, y));
-            DrawAxisLabel(context, MoneyFormat.Compact(tick), layout.BalanceBand, y, labelBrush);
+            DrawAxisLabel(context, tick, balanceStep, layout.BalanceBand, y, labelBrush);
         }
 
         var zero = layout.FlowBand.Center.Y;
@@ -473,7 +475,7 @@ public sealed class TimelineControl : Control
         {
             var y = Math.Round(zero - (flowMax == 0m ? 0d : ((double)(tick / flowMax) * halfHeight))) + 0.5d;
             context.DrawLine(pen, new Point(layout.FlowBand.Left, y), new Point(layout.FlowBand.Right, y));
-            DrawAxisLabel(context, MoneyFormat.Compact(tick), layout.FlowBand, y, labelBrush);
+            DrawAxisLabel(context, tick, flowMax, layout.FlowBand, y, labelBrush);
         }
 
         var zeroPen = new Pen(Alpha(SecondaryTextBrush, 0.55d), 1d);
@@ -503,9 +505,9 @@ public sealed class TimelineControl : Control
         }
     }
 
-    private void DrawAxisLabel(DrawingContext context, string value, Rect band, double y, IBrush brush)
+    private void DrawAxisLabel(DrawingContext context, decimal value, decimal step, Rect band, double y, IBrush brush)
     {
-        var text = Text(value, 10d, brush);
+        var text = Text(MoneyFormat.CompactAxis(value, step), 10d, brush);
         var labelY = Math.Clamp(y - (text.Height / 2d), band.Top, band.Bottom - text.Height);
         context.DrawText(text, new Point(band.Left - 10d - text.Width, labelY));
     }

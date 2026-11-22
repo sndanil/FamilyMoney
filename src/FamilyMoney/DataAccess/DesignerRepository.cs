@@ -50,7 +50,9 @@ public class DesignerRepository : IRepository
         throw new NotImplementedException();
     }
 
-    public IEnumerable<Account> GetAccounts()
+    public IEnumerable<Account> GetAccounts() => GetAccounts(includeDeleted: false);
+
+    public IEnumerable<Account> GetAccounts(bool includeDeleted)
     {
         return new [] { new Account { Name = "Тест", Id = Guid.NewGuid() } };
     }

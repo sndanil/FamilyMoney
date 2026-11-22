@@ -6,18 +6,23 @@ using System.Linq;
 namespace FamilyMoney.Analytics;
 
 /// <summary>
-/// Определяет, из каких счетов складывается выбранная область: «Всего», группа или один счёт.
-/// Правило <see cref="Account.IsNotSummable"/> соблюдается так же, как в левой панели:
-/// счёт с этим флагом не входит в сумму родителя, но считается, если выбран сам.
+/// Определяет, из каких счетов складывается выбранная область отчёта: «Всего», группа
+/// или один счёт. Правило <see cref="Account.IsNotSummable"/> соблюдается так же, как
+/// в левой панели: счёт с этим флагом не входит в сумму родителя, но считается, если выбран сам.
+/// <para>
+/// Счета с <see cref="Account.DeletedAt"/> не отбрасываются: в базе остаются их операции,
+/// и для отчётов это всё ещё траты. В списке выбора таких счетов нет — их отдаёт только «Всего»
+/// и группа, к которой счёт относился.
+/// </para>
 /// </summary>
-public static class TimelineScopeResolver
+public static class ReportScopeResolver
 {
     public static IReadOnlyCollection<Guid> Resolve(IEnumerable<Account> accounts, Guid? rootAccountId)
     {
         ArgumentNullException.ThrowIfNull(accounts);
 
-        var alive = accounts.Where(a => a.DeletedAt == null).ToList();
-        var byParent = alive
+        var all = accounts.ToList();
+        var byParent = all
             .Where(a => a.ParentId != null)
             .ToLookup(a => a.ParentId!.Value);
 
@@ -25,14 +30,14 @@ public static class TimelineScopeResolver
 
         if (rootAccountId is null)
         {
-            foreach (var root in alive.Where(a => a.ParentId == null).OrderBy(a => a.Order))
+            foreach (var root in all.Where(a => a.ParentId == null).OrderBy(a => a.Order))
             {
                 Walk(root, excluded: false);
             }
         }
         else
         {
-            var root = alive.FirstOrDefault(a => a.Id == rootAccountId.Value);
+            var root = all.FirstOrDefault(a => a.Id == rootAccountId.Value);
             if (root != null)
             {
                 Walk(root, excluded: false);

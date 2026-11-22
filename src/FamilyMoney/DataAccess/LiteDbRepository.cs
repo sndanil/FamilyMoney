@@ -923,11 +923,16 @@ public class LiteDbRepository : IRepository
         return collection.FindOne(c => c.Id == id);
     }
 
-    public IEnumerable<Account> GetAccounts()
+    public IEnumerable<Account> GetAccounts() => GetAccounts(includeDeleted: false);
+
+    public IEnumerable<Account> GetAccounts(bool includeDeleted)
     {
         using var db = OpenDatabase();
         var collection = db.GetCollection<Account>(nameof(Account));
-        return collection.Find(a => a.DeletedAt == null).ToList();
+
+        return includeDeleted
+            ? collection.FindAll().ToList()
+            : collection.Find(a => a.DeletedAt == null).ToList();
     }
 
     public void RecalculateAccountBalances()

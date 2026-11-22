@@ -31,6 +31,19 @@ public class MoneyFormatTests
     }
 
     [Fact]
+    public void CompactAxis_AddsDecimalsWhenRangeIsNarrow()
+    {
+        using var culture = new CultureScope("ru-RU");
+
+        Assert.Equal("1,105 млн", MoneyFormat.CompactAxis(1_105_000m, 5_000m));
+        Assert.Equal("1,110 млн", MoneyFormat.CompactAxis(1_110_000m, 5_000m));
+        Assert.Equal("-1,105 млн", MoneyFormat.CompactAxis(-1_105_000m, 5_000m));
+        Assert.Equal("500 тыс", MoneyFormat.CompactAxis(500_000m, 100_000m));
+        Assert.Equal("12,5", MoneyFormat.CompactAxis(12.5m, 0.5m));
+        Assert.Equal("0", MoneyFormat.CompactAxis(0m, 5_000m));
+    }
+
+    [Fact]
     public void Signed_AddsPlusOnlyForPositive()
     {
         using var culture = new CultureScope("ru-RU");

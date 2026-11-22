@@ -1,0 +1,155 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:c="using:FamilyMoney.Controls"
+             xmlns:icons="using:Material.Icons"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
+             xmlns:cv="using:FamilyMoney.Converters"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
+             x:DataType="vm:TimelineViewModel"
+             x:Class="FamilyMoney.Views.TimelineReportView">
+
+	<UserControl.Resources>
+		<cv:BoolToFontWeightConverter x:Key="boolToFontWeightConverter" />
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="Button.TimelineTool">
+			<Setter Property="Width" Value="34" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="CornerRadius" Value="8" />
+			<Setter Property="Background" Value="{DynamicResource GroupBackBrush}" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.TimelineTool:pointerover">
+			<Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
+		</Style>
+		<Style Selector="Border.LegendMark">
+			<Setter Property="Width" Value="10" />
+			<Setter Property="Height" Value="10" />
+			<Setter Property="CornerRadius" Value="2" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+		</Style>
+	</UserControl.Styles>
+
+	<Grid RowDefinitions="44,*">
+
+		<!-- Счёт и масштаб -->
+		<Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+			<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+				<TextBlock Text="Счёт"
+						   FontSize="12"
+						   Foreground="{DynamicResource TextSecondaryBrush}"
+						   VerticalAlignment="Center" />
+				<ComboBox Width="240"
+						  Height="36"
+						  VerticalAlignment="Center"
+						  ItemsSource="{Binding Scopes}"
+						  SelectedItem="{Binding SelectedScope, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate x:DataType="vm:ReportAccount">
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<Border Width="{Binding IndentWidth}" />
+								<controls:IconBadge BadgeSize="18"
+													ShowFallback="False"
+													CollapseWhenEmpty="True"
+													ImageData="{Binding ImageData}"
+													Icon="{Binding Icon}"
+													IconColor="{Binding IconColor}"
+													EntityName="{Binding Name}"
+													Fallback="{x:Static icons:MaterialIconKind.FolderOutline}"
+													VerticalAlignment="Center" />
+								<TextBlock Text="{Binding Name}"
+										   VerticalAlignment="Center"
+										   FontWeight="{Binding IsGroup, Converter={StaticResource boolToFontWeightConverter}}" />
+							</StackPanel>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</StackPanel>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+				<Button Classes="TimelineTool"
+						Command="{Binding ZoomOutCommand}"
+						ToolTip.Tip="Уменьшить масштаб">
+					<mi:MaterialIcon Kind="MagnifyMinus" />
+				</Button>
+				<Button Classes="TimelineTool"
+						Command="{Binding ZoomInCommand}"
+						ToolTip.Tip="Увеличить масштаб">
+					<mi:MaterialIcon Kind="MagnifyPlus" />
+				</Button>
+			</StackPanel>
+		</Grid>
+
+		<!-- Карточка графика -->
+		<Border Grid.Row="1"
+				Background="{DynamicResource CardBackBrush}"
+				BorderBrush="{DynamicResource LikeGridLinesBrush}"
+				BorderThickness="1"
+				CornerRadius="10">
+			<Grid RowDefinitions="36,*">
+				<Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16 4 16 0">
+					<StackPanel Orientation="Horizontal" Spacing="18" VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+							<Border Classes="LegendMark" Background="{DynamicResource AccentBrush}" />
+							<TextBlock Text="Баланс" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+							<Border Classes="LegendMark" Background="{DynamicResource PositiveBrush}" />
+							<TextBlock Text="Доходы" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+							<Border Classes="LegendMark" Background="{DynamicResource NegativeBrush}" />
+							<TextBlock Text="Расходы" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+						</StackPanel>
+					</StackPanel>
+
+					<StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Right">
+						<TextBlock Text="остаток на конец диапазона"
+								   FontSize="10"
+								   HorizontalAlignment="Right"
+								   Foreground="{DynamicResource TextSecondaryBrush}" />
+						<SelectableTextBlock Text="{Binding EndBalanceText}"
+											 FontSize="13"
+											 FontWeight="SemiBold"
+											 HorizontalAlignment="Right" />
+					</StackPanel>
+				</Grid>
+
+				<Panel Grid.Row="1">
+					<c:TimelineControl Name="TimelineChart"
+									   Model="{Binding RenderModel}"
+									   AccentBrush="{DynamicResource AccentBrush}"
+									   PositiveBrush="{DynamicResource PositiveBrush}"
+									   NegativeBrush="{DynamicResource NegativeBrush}"
+									   GridBrush="{DynamicResource LikeGridLinesBrush}"
+									   SecondaryTextBrush="{DynamicResource TextSecondaryBrush}"
+									   TextBrush="{DynamicResource TextPrimaryBrush}"
+									   CardBrush="{DynamicResource CardBackBrush}" />
+
+					<TextBlock Text="{Binding EmptyText}"
+							   IsVisible="{Binding EmptyText, Converter={x:Static ObjectConverters.IsNotNull}}"
+							   HorizontalAlignment="Center"
+							   VerticalAlignment="Center"
+							   FontSize="13"
+							   Foreground="{DynamicResource TextSecondaryBrush}" />
+
+					<TextBlock Text="Загрузка…"
+							   IsVisible="{Binding IsLoading}"
+							   HorizontalAlignment="Right"
+							   VerticalAlignment="Bottom"
+							   Margin="0 0 18 10"
+							   FontSize="11"
+							   Foreground="{DynamicResource TextSecondaryBrush}" />
+				</Panel>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

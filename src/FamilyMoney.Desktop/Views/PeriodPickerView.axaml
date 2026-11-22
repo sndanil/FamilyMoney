@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:FamilyMoney.Navigation.Controls"
+             xmlns:vm="using:FamilyMoney.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:DataType="vm:PeriodViewModel"
+             x:Class="FamilyMoney.Views.PeriodPickerView">
+
+	<Grid ColumnDefinitions="Auto,Auto,Auto" Height="32" VerticalAlignment="Center">
+		<Button Classes="ToolNav"
+				Command="{Binding PrevCommand}"
+				ToolTip.Tip="Предыдущий период">
+			<mi:MaterialIcon Kind="ChevronLeft" />
+		</Button>
+
+		<Button x:Name="PeriodButton"
+				Grid.Column="1"
+				Classes="ToolPill"
+				Margin="4 0"
+				Click="OnPeriodClick"
+				ToolTip.Tip="Выбрать период">
+			<StackPanel Orientation="Horizontal" Spacing="4">
+				<TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+				<mi:MaterialIcon Kind="ChevronDown" Width="12" Height="12" VerticalAlignment="Center" />
+			</StackPanel>
+		</Button>
+
+		<Button Grid.Column="2"
+				Classes="ToolNav"
+				Command="{Binding NextCommand}"
+				ToolTip.Tip="Следующий период">
+			<mi:MaterialIcon Kind="ChevronRight" />
+		</Button>
+
+		<Popup x:Name="PeriodPopup"
+			   PlacementTarget="{Binding #PeriodButton}"
+			   Placement="Bottom"
+			   VerticalOffset="4"
+			   IsLightDismissEnabled="True">
+			<controls:PeriodPicker x:Name="PeriodPickerControl" />
+		</Popup>
+	</Grid>
+</UserControl>

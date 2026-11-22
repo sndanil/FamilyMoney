@@ -64,10 +64,10 @@ public partial class TimelineViewModel : ViewModelBase
         SubscribeMessages();
     }
 
-    public ObservableCollection<TimelineScope> Scopes { get; } = [];
+    public ObservableCollection<ReportAccount> Scopes { get; } = [];
 
     [ObservableProperty]
-    public partial TimelineScope? SelectedScope { get; set; }
+    public partial ReportAccount? SelectedScope { get; set; }
 
     [ObservableProperty]
     public partial TimelineRenderModel? RenderModel { get; set; }
@@ -173,7 +173,7 @@ public partial class TimelineViewModel : ViewModelBase
     [RelayCommand]
     public void ZoomOut() => ZoomAt(0.5d, 1d / ZoomStep);
 
-    partial void OnSelectedScopeChanged(TimelineScope? value)
+    partial void OnSelectedScopeChanged(ReportAccount? value)
     {
         if (_suppressScopeChange || value == null || !_initialized)
         {
@@ -196,8 +196,8 @@ public partial class TimelineViewModel : ViewModelBase
 
         try
         {
-            var accounts = _repository.GetAccounts().ToList();
-            var accountIds = TimelineScopeResolver.Resolve(accounts, scopeId);
+            var accounts = _repository.GetAccounts(includeDeleted: true).ToList();
+            var accountIds = ReportScopeResolver.Resolve(accounts, scopeId);
 
             var series = accountIds.Count == 0
                 ? DailySeries.Empty
@@ -262,7 +262,7 @@ public partial class TimelineViewModel : ViewModelBase
         try
         {
             Scopes.Clear();
-            foreach (var scope in TimelineScopeCatalog.Build(total))
+            foreach (var scope in ReportAccountCatalog.Build(total))
             {
                 Scopes.Add(scope);
             }

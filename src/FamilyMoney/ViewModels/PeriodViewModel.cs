@@ -31,6 +31,12 @@ public partial class PeriodViewModel: ViewModelBase
         PeriodType = PeriodType.Month;
     }
 
+    /// <summary>
+    /// Писать ли выбранный период в общее состояние приложения. Отчётам нужен свой период:
+    /// они выставляют <c>false</c>, чтобы не менять главный экран и другие экраны.
+    /// </summary>
+    public bool UpdatesMainState { get; init; } = true;
+
     [ObservableProperty]
     public partial PeriodType PeriodType { get; set; }
 
@@ -224,6 +230,12 @@ public partial class PeriodViewModel: ViewModelBase
     private void Update()
     {
         this.OnPropertyChanged(nameof(Text));
+
+        if (!UpdatesMainState)
+        {
+            return;
+        }
+
         var state = _stateManager.GetMainState();
         _stateManager.SetMainState(state with { PeriodFrom = From, PeriodTo = To });
     }

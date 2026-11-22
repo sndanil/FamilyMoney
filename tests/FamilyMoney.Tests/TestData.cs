@@ -30,7 +30,13 @@ internal static class TestData
         };
     }
 
-    public static CreditTransaction Expense(Guid accountId, DateTime date, decimal sum)
+    public static CreditTransaction Expense(
+        Guid accountId,
+        DateTime date,
+        decimal sum,
+        Guid? categoryId = null,
+        Guid? subCategoryId = null,
+        string? comment = null)
     {
         return new CreditTransaction
         {
@@ -38,6 +44,9 @@ internal static class TestData
             AccountId = accountId,
             Date = date,
             Sum = sum,
+            CategoryId = categoryId,
+            SubCategoryId = subCategoryId,
+            Comment = comment,
         };
     }
 
