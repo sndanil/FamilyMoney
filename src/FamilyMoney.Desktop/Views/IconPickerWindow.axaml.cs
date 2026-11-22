@@ -7,9 +7,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using FamilyMoney.Navigation.Services;
 using FamilyMoney.Navigation.ViewModels;
 using FamilyMoney.Utils;
@@ -44,6 +46,7 @@ public partial class IconPickerWindow : Window
             Interval = TimeSpan.FromMilliseconds(180),
         };
         _normalizeTimer.Tick += OnNormalizeTimerTick;
+        AddHandler(KeyDownEvent, OnWindowKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
     }
 
     protected override void OnClosed(EventArgs e)
@@ -220,8 +223,89 @@ public partial class IconPickerWindow : Window
         }
     }
 
-    private void OnFileFitChanged(object? sender, RoutedEventArgs e)
+    private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
+        if (Tabs?.SelectedIndex != 3
+            || e.Key != Key.V
+            || (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Meta)) == 0)
+        {
+            return;
+        }
+
+        if (e.Source is Visual visual
+            && (visual is TextBox || visual.FindAncestorOfType<TextBox>() is not null))
+        {
+            return;
+        }
+
+        e.Handled = true;
+        OnPasteImage(this, new RoutedEventArgs());
+    }
+
+    private async void OnPasteImage(object? sender, RoutedEventArgs e)
+    {
+        var clipboard = GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            ShowFileError("Буфер обмена недоступен.");
+            return;
+        }
+
+        try
+        {
+            byte[]? data = null;
+            var fileName = "clipboard.png";
+
+            using (var bitmap = await clipboard.TryGetBitmapAsync())
+            {
+                if (bitmap is not null)
+                {
+                    using var memory = new MemoryStream();
+                    bitmap.Save(memory);
+                    data = memory.ToArray();
+                }
+            }
+
+            if (data is null)
+            {
+                var files = await clipboard.TryGetFilesAsync();
+                var file = files?.FirstOrDefault();
+                var path = file?.TryGetLocalPath();
+                if (!string.IsNullOrEmpty(path))
+                {
+                    data = await File.ReadAllBytesAsync(path);
+                    fileName = Path.GetFileName(path);
+                }
+            }
+
+            if (data is not { Length: > 0 })
+            {
+                ShowFileError("В буфере нет картинки. Скопируйте изображение или файл картинки.");
+                return;
+            }
+
+            if (data.Length > 20 * 1024 * 1024)
+            {
+                ShowFileError("Картинка больше 20 МБ. Скопируйте изображение поменьше.");
+                return;
+            }
+
+            Log.Info("IconPicker clipboard image selected ({Bytes} bytes, {File})", data.Length, fileName);
+            _normalizeTimer.Stop();
+            _normalizeCts?.Cancel();
+            _sourceImageData = data;
+            _sourceFileName = fileName;
+            ShowFileInfo($"Вставлено из буфера · {FormatBytes(data.Length)}. Обрабатываю…");
+            await NormalizeSelectedFileAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "IconPicker clipboard read failed");
+            ShowFileError("Не удалось прочитать картинку из буфера.");
+        }
+    }
+
+    private void OnFileFitChanged(object? sender, RoutedEventArgs e)    {
         if (FitMode is null)
         {
             return;

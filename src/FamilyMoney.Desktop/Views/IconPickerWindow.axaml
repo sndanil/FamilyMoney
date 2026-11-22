@@ -190,16 +190,24 @@
 
       <TabItem Header="Свой файл">
         <StackPanel Margin="8 12 8 0" Spacing="10">
-          <Button Content="Выбрать файл"
-                  Click="OnChooseFile"
-                  HorizontalAlignment="Left"
-                  Width="150"
-                  Classes="DialogButton" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Выбрать файл"
+                    Click="OnChooseFile"
+                    HorizontalAlignment="Left"
+                    Width="150"
+                    Classes="DialogButton" />
+            <Button Content="Вставить из буфера"
+                    Click="OnPasteImage"
+                    HorizontalAlignment="Left"
+                    Width="170"
+                    Classes="DialogButton"
+                    ToolTip.Tip="Вставить картинку или файл изображения из буфера (Ctrl+V)" />
+          </StackPanel>
           <TextBlock Classes="Hint"
                      Foreground="{DynamicResource TextSecondaryBrush}"
                      MaxWidth="700"
                      TextWrapping="Wrap"
-                     Text="PNG, JPEG, WebP, SVG, BMP или GIF. Автоматически повернётся по EXIF. «Заполнить» обрежет в квадрат, «Вписать» оставит поля. HEIC не поддерживается." />
+                     Text="PNG, JPEG, WebP, SVG, BMP или GIF. Можно выбрать файл или вставить картинку из буфера. Автоматически повернётся по EXIF. «Заполнить» обрежет в квадрат, «Вписать» оставит поля. HEIC не поддерживается." />
           <StackPanel Orientation="Horizontal" Spacing="14">
             <RadioButton x:Name="FillMode"
                          GroupName="FileFit"
