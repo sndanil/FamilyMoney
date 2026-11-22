@@ -19,6 +19,7 @@
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1B2733" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#707579" />
       <SolidColorBrush x:Key="HoverBackBrush" Color="#F4F4F5" />
+      <SolidColorBrush x:Key="DangerBackBrush" Color="#1AE53935" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="NavigationBarForeground" Color="#FFFFFF" />
@@ -36,6 +37,7 @@
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#708499" />
       <SolidColorBrush x:Key="HoverBackBrush" Color="#232E3C" />
+      <SolidColorBrush x:Key="DangerBackBrush" Color="#33FF5252" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

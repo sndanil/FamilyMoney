@@ -113,14 +113,28 @@
 				Click="ChangeImage"
 				/>
 
-		<StackPanel
-			Grid.Row="5"
-			Orientation="Horizontal"
-			HorizontalAlignment="Right"
-			Margin="0 5 0 10"
-			>
-			<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
-			<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
-		</StackPanel>
+		<Grid Grid.Row="5" ColumnDefinitions="Auto,*,Auto" Margin="15 5 15 10">
+			<Button Classes="DangerIcon"
+					Name="DeleteAccountButton"
+					VerticalAlignment="Center"
+					IsVisible="{Binding Id, Converter={x:Static ObjectConverters.IsNotNull}}"
+					ToolTip.Tip="{Binding DeleteHint, TargetNullValue='Удалить счёт'}">
+				<Button.Flyout>
+					<MenuFlyout Placement="TopEdgeAlignedLeft">
+						<MenuItem Header="Удалить" Command="{Binding DeleteCommand}" />
+					</MenuFlyout>
+				</Button.Flyout>
+				<mi:MaterialIcon Kind="Delete" Width="18" Height="18" />
+			</Button>
+
+			<StackPanel
+				Grid.Column="2"
+				Orientation="Horizontal"
+				HorizontalAlignment="Right"
+				>
+				<Button IsDefault="True" Classes="DialogButton" Content="OK" Command="{Binding OkCommand}" />
+				<Button IsCancel="True" Classes="DialogButton" Content="Отмена" Command="{Binding CancelCommand}"/>
+			</StackPanel>
+		</Grid>
 	</Grid>
 </Window>

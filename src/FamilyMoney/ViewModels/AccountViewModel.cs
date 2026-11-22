@@ -76,6 +76,20 @@ public partial class AccountViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(OkCommand))]
     public partial string? AnnualRateError { get; set; }
 
+    /// <summary>
+    /// Можно ли удалить счёт. Решается при открытии окна редактирования: удалять можно
+    /// только счёт с нулевой суммой, а группу — только пустую.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
+    public partial bool CanDelete { get; set; }
+
+    /// <summary>Почему удалить нельзя; <c>null</c> — можно. Показывается подсказкой на кнопке.</summary>
+    public string? DeleteHint { get; init; }
+
+    /// <summary>Окно закрыто кнопкой удаления: результат нужно не сохранять, а помечать удалённым.</summary>
+    public bool IsDeleted { get; private set; }
+
     private int _depositWarningDays = RootConfiguration.DefaultDepositWarningDays;
 
     public bool IsAloneGroup => Children.Count == 0;
@@ -148,6 +162,14 @@ public partial class AccountViewModel : ViewModelBase
     public async Task CancelAsync()
     {
         WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(null));
+    }
+
+    /// <summary>Мягкое удаление: помечаем счёт удалённым и закрываем окно.</summary>
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    private void Delete()
+    {
+        IsDeleted = true;
+        WeakReferenceMessenger.Default.Send(new ModelCloseMessage<AccountViewModel>(this));
     }
 
     public void AddFromAccount(IRepository repository, IAccountLocalSettingsStore localSettings, IEnumerable<Account> accounts)

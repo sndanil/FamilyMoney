@@ -110,6 +110,27 @@
     <Setter Property="Background" Value="{DynamicResource HoverBackBrush}" />
   </Style>
 
+  <!-- Опасное действие (удаление): красная иконка и красная подсветка при наведении. -->
+  <Style Selector="Button.DangerIcon">
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource NegativeBrush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.DangerIcon:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource DangerBackBrush}" />
+  </Style>
+
+  <Style Selector="Button.DangerIcon:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+
   <!-- Шапка навигации: сливается с фоном страницы, аккуратный шеврон. -->
   <Style Selector="NavigationPage /template/ Border#PART_NavigationBar">
     <Setter Property="Background" Value="{DynamicResource SidebarBackBrush}" />

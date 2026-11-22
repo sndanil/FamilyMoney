@@ -322,6 +322,7 @@ public partial class AccountsViewModel : ViewModelBase
             return;
         }
 
+        var deleteBlocked = GetDeleteBlockedReason(editAccount);
         var account = new AccountViewModel()
         {
             Id = editAccount!.Id,
@@ -335,13 +336,74 @@ public partial class AccountsViewModel : ViewModelBase
             IsNotSummable = editAccount.IsNotSummable,
             EndsOn = editAccount.EndsOn,
             AnnualRateText = DepositCaptionFormatter.FormatRateInput(editAccount.AnnualRate),
+            CanDelete = deleteBlocked == null,
+            DeleteHint = deleteBlocked,
         };
         var result = await WeakReferenceMessenger.Default.Send(new ModelEditMessage<AccountViewModel>(account));
+
+        if (result is { IsDeleted: true })
+        {
+            DeleteAccount(editAccount);
+            return;
+        }
+
         if (result != null)
         {
             result.ImageData = await ImageNormalizer.NormalizeLegacyAsync(result.ImageData);
             Save(editAccount, result);
         }
+    }
+
+    /// <summary>
+    /// Почему счёт нельзя удалить: <c>null</c> — можно. Удаляем только с нулевой суммой,
+    /// а группу — только пустую, иначе вложенные счета останутся без родителя.
+    /// </summary>
+    public static string? GetDeleteBlockedReason(AccountViewModel account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+
+        if (account.Id == null)
+        {
+            return "Счёт ещё не сохранён";
+        }
+
+        if (account.Sum != 0)
+        {
+            return "Удалить можно только счёт с нулевой суммой";
+        }
+
+        if (account.IsGroup && account.Children.Count > 0)
+        {
+            return "Сначала перенесите счета из группы";
+        }
+
+        return null;
+    }
+
+    /// <summary>Мягкое удаление счёта: помечаем удалённым, убираем из дерева и из выделения.</summary>
+    public void DeleteAccount(AccountViewModel account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+
+        if (account.Id is not { } id || account == Total)
+        {
+            return;
+        }
+
+        _repository.DeleteAccount(id);
+
+        account.Parent?.Children.Remove(account);
+
+        var state = _stateManager.GetMainState();
+        _stateManager.SetMainState(state with { Accounts = [.. Total.Children] });
+
+        if (state.SelectedAccountId == id)
+        {
+            WeakReferenceMessenger.Default.Send(new AccountSelectMessage(null));
+        }
+
+        RecalcAccounts();
+        RefreshVisibleOrder();
     }
 
     public bool IsDestinationValid(AccountViewModel account, AccountViewModel destAccount)
