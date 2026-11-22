@@ -18,9 +18,11 @@
 | `health` | Здоровье | 13 |
 
 SVG отрендерены в PNG 256×256 с прозрачным фоном; исходная графика OpenMoji
-не менялась, только масштаб. Скрипт повторной сборки — `resources/fetch_openmoji_packs.py`
-(OpenMoji зафиксирован на коммите `3e01de523ddefe9c5e46a7765b15efef04bf9002`).
-Для запуска нужны Python-пакеты `cairosvg` и `Pillow`.
+не менялась, только масштаб. Скрипт повторной сборки —
+`resources/fetch_openmoji_packs.csx` (OpenMoji зафиксирован на коммите
+`3e01de523ddefe9c5e46a7765b15efef04bf9002`). Запуск из корня репозитория:
+`dotnet script resources/fetch_openmoji_packs.csx`; нужны только SkiaSharp и
+Svg.Skia, которые подключает `resources/SvgPng.csx`.
 
 `banks` использует отдельный `NOTICE-banks.md`: логотипы принадлежат банкам,
 это не часть OpenMoji.

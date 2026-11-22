@@ -790,7 +790,7 @@ src/FamilyMoney.Navigation/Assets/Packs/
 - `pack.json` и `NOTICE-openmoji.md` в каждом каталоге, авторы указаны
   построчно; корневой обзор — `Assets/Packs/README-openmoji.md`;
 - OpenMoji зафиксирован на коммите `3e01de5`, повторная сборка —
-  `resources/fetch_openmoji_packs.py` (Python + cairosvg + Pillow);
+  `dotnet script resources/fetch_openmoji_packs.csx` (SkiaSharp + Svg.Skia);
 - лицензия CC BY-SA 4.0: при распространении набора сохраняются атрибуция и
   share-alike; это отдельно от пользовательских картинок.
 

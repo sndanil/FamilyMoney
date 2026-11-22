@@ -12,6 +12,22 @@ static SKBitmap RenderSvg(string svgPath, int width, int height)
         throw new InvalidOperationException($"Failed to load SVG: {svgPath}");
     }
 
+    return DrawSvg(svg, width, height);
+}
+
+static SKBitmap RenderSvg(Stream svgStream, int width, int height)
+{
+    var svg = new SKSvg();
+    if (svg.Load(svgStream) is null)
+    {
+        throw new InvalidOperationException("Failed to load SVG from stream.");
+    }
+
+    return DrawSvg(svg, width, height);
+}
+
+static SKBitmap DrawSvg(SKSvg svg, int width, int height)
+{
     var bitmap = new SKBitmap(width, height);
     using var canvas = new SKCanvas(bitmap);
     canvas.Clear(SKColors.Transparent);
