@@ -39,6 +39,50 @@ public class TopOperationsBuilderTests
     }
 
     [Fact]
+    public void MergesIgnoringCommentsWhenAsked()
+    {
+        var account = Guid.NewGuid();
+
+        var result = Build(
+            new Transaction[]
+            {
+                TestData.Expense(account, TestData.Day(2026, 7, 1), 100m, Food, Grocery, "пятёрочка"),
+                TestData.Expense(account, TestData.Day(2026, 7, 2), 200m, Food, Grocery, "магнит"),
+                TestData.Expense(account, TestData.Day(2026, 7, 3), 300m, Food, Transport, "метро"),
+            },
+            account,
+            ignoreComments: true);
+
+        Assert.Equal(2, result.Items.Count);
+
+        var grocery = result.Items[0];
+        Assert.Equal(300m, grocery.Sum);
+        Assert.Equal(2, grocery.Count);
+        Assert.Null(grocery.Comment);
+        Assert.Equal(Grocery, grocery.SubCategoryId);
+
+        Assert.Equal(300m, result.Items[1].Sum);
+        Assert.Equal(600m, result.Total);
+    }
+
+    [Fact]
+    public void MergesByCommentsByDefault()
+    {
+        var account = Guid.NewGuid();
+
+        var result = Build(
+            new Transaction[]
+            {
+                TestData.Expense(account, TestData.Day(2026, 7, 1), 100m, Food, Grocery, "пятёрочка"),
+                TestData.Expense(account, TestData.Day(2026, 7, 2), 200m, Food, Grocery, "магнит"),
+            },
+            account);
+
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal("пятёрочка", result.Items[1].Comment);
+    }
+
+    [Fact]
     public void IncomeReport_MergesByCategoryAndComment()
     {
         var account = Guid.NewGuid();
@@ -287,8 +331,17 @@ public class TopOperationsBuilderTests
         Guid account,
         int top = 10,
         bool merge = true,
+        bool ignoreComments = false,
         TopOperationKind kind = TopOperationKind.Expense)
     {
-        return TopOperationsBuilder.Build(transactions, new HashSet<Guid> { account }, From, To, top, merge, kind);
+        return TopOperationsBuilder.Build(
+            transactions,
+            new HashSet<Guid> { account },
+            From,
+            To,
+            top,
+            merge,
+            ignoreComments,
+            kind);
     }
 }

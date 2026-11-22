@@ -30,7 +30,8 @@ public static class TopOperations
         Guid? categoryId,
         Guid? subCategoryId,
         string? comment,
-        TopOperationKind kind)
+        TopOperationKind kind,
+        bool ignoreComment = false)
     {
         ArgumentNullException.ThrowIfNull(transactions);
 
@@ -40,7 +41,7 @@ public static class TopOperations
             .Where(transaction => Matches(transaction, kind)
                 && transaction.CategoryId == categoryId
                 && transaction.SubCategoryId == subCategoryId
-                && CommentNormalizer.Normalize(transaction.Comment) == normalizedComment)
+                && (ignoreComment || CommentNormalizer.Normalize(transaction.Comment) == normalizedComment))
             .ToList();
     }
 

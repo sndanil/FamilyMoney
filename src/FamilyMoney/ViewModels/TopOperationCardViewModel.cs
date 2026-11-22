@@ -21,6 +21,12 @@ public partial class TopOperationCardViewModel : ViewModelBase
     public string Comment { get; init; } = string.Empty;
 
     /// <summary>
+    /// Комментарий в карточке показываем, только когда по нему шла группировка.
+    /// Если объединяем без комментариев, он принадлежит операциям, а не карточке.
+    /// </summary>
+    public bool HasComment => !string.IsNullOrWhiteSpace(Comment);
+
+    /// <summary>
     /// Комментарий одной строкой: в карточке фиксированная высота, и переводы строк
     /// из длинного комментария её ломали.
     /// </summary>

@@ -87,6 +87,13 @@ public partial class TopOperationsViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool Merge { get; set; } = true;
 
+    /// <summary>
+    /// Объединять только по категории и подкатегории, не учитывая комментарий.
+    /// Имеет смысл только вместе с <see cref="Merge"/>.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool MergeWithoutComments { get; set; }
+
     [ObservableProperty]
     public partial ObservableCollection<TopOperationCardViewModel> Items { get; set; } = [];
 
@@ -247,6 +254,14 @@ public partial class TopOperationsViewModel : ViewModelBase
         }
     }
 
+    partial void OnMergeWithoutCommentsChanged(bool value)
+    {
+        if (_initialized)
+        {
+            Refresh();
+        }
+    }
+
     private void LoadScopes()
     {
         var total = _accounts.Total;
@@ -305,7 +320,7 @@ public partial class TopOperationsViewModel : ViewModelBase
 
             var result = accountIds.Count == 0
                 ? new TopOperationsResult([], 0m, 0, 0)
-                : TopOperationsBuilder.Build(scoped, ids, from, to, Top, Merge, _kind);
+                : TopOperationsBuilder.Build(scoped, ids, from, to, Top, Merge, IgnoresComments, _kind);
 
             if (version != _loadVersion)
             {
@@ -372,8 +387,13 @@ public partial class TopOperationsViewModel : ViewModelBase
             card.CategoryId,
             card.SubCategoryId,
             card.Comment,
-            _kind);
+            _kind,
+            ignoreComment: IgnoresComments);
         var days = TopOperations.GroupByDay(operations);
+
+        // Комментарий в карточке есть только тогда, когда по нему шла группировка;
+        // иначе он принадлежит конкретной операции и показывается в строке панели.
+        var showRowComments = string.IsNullOrEmpty(card.Comment);
 
         Details.Clear();
         foreach (var day in days)
@@ -382,7 +402,7 @@ public partial class TopOperationsViewModel : ViewModelBase
             {
                 Date = day.Date,
                 Sum = day.Sum,
-                Items = day.Items.Select(ToRow).ToList(),
+                Items = day.Items.Select(item => ToRow(item, showRowComments)).ToList(),
             });
         }
 
@@ -400,7 +420,7 @@ public partial class TopOperationsViewModel : ViewModelBase
             $"{days.Count} {Plural(days.Count, "день", "дня", "дней")}";
     }
 
-    private OperationRowViewModel ToRow(Transaction transaction)
+    private OperationRowViewModel ToRow(Transaction transaction, bool showComment)
     {
         var account = transaction.AccountId is { } accountId && _accountVisuals.TryGetValue(accountId, out var visual)
             ? visual
@@ -408,6 +428,8 @@ public partial class TopOperationsViewModel : ViewModelBase
 
         return new OperationRowViewModel
         {
+            Comment = showComment ? transaction.Comment ?? string.Empty : string.Empty,
+            ShowComment = showComment && !string.IsNullOrWhiteSpace(transaction.Comment),
             Tags = (transaction.Tags ?? [])
                 .Where(tag => !string.IsNullOrWhiteSpace(tag))
                 .Select(tag => tag.Trim())
@@ -432,6 +454,9 @@ public partial class TopOperationsViewModel : ViewModelBase
 
     /// <summary>Вид отчёта: доходы.</summary>
     protected bool IsIncome => _kind == TopOperationKind.Income;
+
+    /// <summary>Комментарий не участвует в объединении — только вместе с самим объединением.</summary>
+    private bool IgnoresComments => Merge && MergeWithoutComments;
 
     /// <summary>Название отчёта для документов и журнала.</summary>
     protected string Title => IsIncome ? "Топ доходов" : "Топ расходов";

@@ -6,6 +6,14 @@ namespace FamilyMoney.ViewModels;
 /// <summary>Одна операция в панели выбранной карточки.</summary>
 public sealed class OperationRowViewModel
 {
+    /// <summary>
+    /// Комментарий операции. Показываем, только когда карточка объединяет разные
+    /// комментарии: иначе он один на всю карточку и стоит в её шапке.
+    /// </summary>
+    public string Comment { get; init; } = string.Empty;
+
+    public bool ShowComment { get; init; }
+
     public IReadOnlyList<string> Tags { get; init; } = [];
 
     public bool HasTags => Tags.Count > 0;

@@ -24,6 +24,7 @@ public static class TopOperationsBuilder
         DateTime to,
         int top,
         bool merge,
+        bool ignoreComments,
         TopOperationKind kind)
     {
         ArgumentNullException.ThrowIfNull(transactions);
@@ -37,7 +38,7 @@ public static class TopOperationsBuilder
         var operations = 0;
 
         var items = merge
-            ? BuildMerged(transactions, accountIds, fromDate, toDate, ref total, ref operations, kind)
+            ? BuildMerged(transactions, accountIds, fromDate, toDate, ref total, ref operations, ignoreComments, kind)
             : BuildSeparate(transactions, accountIds, fromDate, toDate, ref total, ref operations, kind);
 
         order(items);
@@ -79,6 +80,7 @@ public static class TopOperationsBuilder
         DateTime to,
         ref decimal total,
         ref int operations,
+        bool ignoreComments,
         TopOperationKind kind)
     {
         var groups = new Dictionary<GroupKey, Accumulator>();
@@ -93,18 +95,21 @@ public static class TopOperationsBuilder
             total += transaction.Sum;
             operations++;
 
+            // В режиме «объединять без комментариев» комментарий не входит в ключ,
+            // поэтому в карточке его и не показываем.
             var key = new GroupKey(
                 transaction.CategoryId,
                 transaction.SubCategoryId,
-                CommentNormalizer.Normalize(transaction.Comment));
+                ignoreComments ? string.Empty : CommentNormalizer.Normalize(transaction.Comment));
+            var comment = ignoreComments ? null : transaction.Comment;
 
             if (groups.TryGetValue(key, out var accumulator))
             {
-                groups[key] = accumulator.Add(transaction.Sum, transaction.Comment);
+                groups[key] = accumulator.Add(transaction.Sum, comment);
             }
             else
             {
-                groups[key] = new Accumulator(transaction.Sum, 1, CleanComment(transaction.Comment));
+                groups[key] = new Accumulator(transaction.Sum, 1, CleanComment(comment));
             }
         }
 

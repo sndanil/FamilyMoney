@@ -179,6 +179,13 @@
 			<CheckBox IsChecked="{Binding Merge, Mode=TwoWay}"
 					  Content="Объединять повторы"
 					  VerticalAlignment="Center"
+					  Margin="0 0 10 8" />
+
+			<CheckBox IsChecked="{Binding MergeWithoutComments, Mode=TwoWay}"
+					  IsEnabled="{Binding Merge}"
+					  Content="без комментариев"
+					  ToolTip.Tip="Объединять только по категории и подкатегории, не учитывая комментарий"
+					  VerticalAlignment="Center"
 					  Margin="0 0 14 8" />
 		</WrapPanel>
 
@@ -240,6 +247,7 @@
 
 										<TextBlock Grid.Row="1"
 												   Text="{Binding CommentSingleLine}"
+												   IsVisible="{Binding HasComment}"
 												   MinHeight="15"
 												   Margin="0 6 0 0"
 												   FontSize="11"
@@ -412,6 +420,14 @@
 																		   Text="{Binding AccountName}"
 																		   MaxWidth="150"
 																		   Margin="6 0 0 0"
+																		   FontSize="12"
+																		   VerticalAlignment="Center"
+																		   TextTrimming="CharacterEllipsis" />
+
+																<TextBlock Grid.Column="2"
+																		   Text="{Binding Comment}"
+																		   IsVisible="{Binding ShowComment}"
+																		   Margin="8 0 6 0"
 																		   FontSize="12"
 																		   VerticalAlignment="Center"
 																		   TextTrimming="CharacterEllipsis" />
