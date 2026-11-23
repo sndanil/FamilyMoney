@@ -107,7 +107,7 @@
     <ItemsControl ItemsSource="{Binding Transactions.TransactionsDyDates}" Margin="5 5 5 88">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <StackPanel Orientation="Vertical" />
+          <VirtualizingStackPanel Orientation="Vertical" />
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
 

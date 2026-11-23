@@ -190,7 +190,7 @@
 		<ItemsControl ItemsSource="{Binding TransactionsDyDates}">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
-					<StackPanel Orientation="Vertical" />
+					<VirtualizingStackPanel Orientation="Vertical" />
 				</ItemsPanelTemplate>
 			</ItemsControl.ItemsPanel>
 
