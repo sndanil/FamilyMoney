@@ -12,13 +12,18 @@ namespace FamilyMoney.Navigation.Controls;
 public class CollapsiblePanel : ContentControl
 {
     public static readonly StyledProperty<bool> IsExpandedProperty =
-        AvaloniaProperty.Register<CollapsiblePanel, bool>(nameof(IsExpanded), defaultValue: true);
+        AvaloniaProperty.Register<CollapsiblePanel, bool>(nameof(IsExpanded), defaultValue: false);
 
     private const int FrameIntervalMs = 16;
     private const double DurationMs = 220;
 
     private bool _isAttached;
     private DispatcherTimer? _timer;
+
+    // Нужно ли сейчас измерять и раскладывать содержимое. У свёрнутой панели оно
+    // не живёт: иначе ItemsControl создаёт контейнеры всех скрытых строк и дерево
+    // в режиме «Год» строит тысячи визуалов на каждое переключение периода.
+    private bool _contentLive;
 
     static CollapsiblePanel()
     {
@@ -42,6 +47,7 @@ public class CollapsiblePanel : ContentControl
         _isAttached = true;
 
         // Начальное состояние показываем сразу, без анимации при открытии страницы.
+        _contentLive = IsExpanded;
         Height = IsExpanded ? double.NaN : 0;
     }
 
@@ -55,8 +61,13 @@ public class CollapsiblePanel : ContentControl
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        // Меряем содержимое без ограничения по высоте: при свёрнутом состоянии
-        // Height = 0, но для анимации раскрытия нужна полная высота.
+        if (!_contentLive)
+        {
+            return default;
+        }
+
+        // Меряем содержимое без ограничения по высоте: при раскрытии Height = auto,
+        // но для анимации нужна полная высота содержимого.
         if (Content is Control content)
         {
             content.Measure(new Size(availableSize.Width, double.PositiveInfinity));
@@ -65,23 +76,41 @@ public class CollapsiblePanel : ContentControl
         return base.MeasureOverride(availableSize);
     }
 
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        // Скрытое содержимое не раскладываем: именно раскладка заставляет
+        // ItemsControl создавать контейнеры всех строк, даже когда узел закрыт.
+        if (!_contentLive)
+        {
+            return finalSize;
+        }
+
+        return base.ArrangeOverride(finalSize);
+    }
+
     private void OnIsExpandedChanged()
     {
         if (!_isAttached)
         {
+            _contentLive = IsExpanded;
             return;
         }
 
         _timer?.Stop();
         _timer = null;
 
-        var current = double.IsNaN(Height) ? Bounds.Height : Height;
-
         if (!IsExpanded)
         {
+            // Содержимое остаётся живым до конца анимации сворачивания, чтобы
+            // уезжало под обрез, а не исчезало мгновенно.
+            var current = double.IsNaN(Height) ? Bounds.Height : Height;
             StartAnimation(current, 0, releaseToAuto: false);
             return;
         }
+
+        _contentLive = true;
+        InvalidateMeasure();
+        InvalidateArrange();
 
         var target = MeasureContentHeight();
         if (target <= 0)
@@ -91,7 +120,9 @@ public class CollapsiblePanel : ContentControl
         }
 
         // Если панель уже частично раскрыта, продолжаем с текущей высоты.
-        var from = current > 0 && current < target ? current : 0;
+        var from = double.IsNaN(Height)
+            ? 0
+            : Height > 0 && Height < target ? Height : 0;
         StartAnimation(from, target, releaseToAuto: true);
     }
 
@@ -128,7 +159,19 @@ public class CollapsiblePanel : ContentControl
                     _timer = null;
                 }
 
-                Height = releaseToAuto ? double.NaN : 0;
+                if (releaseToAuto)
+                {
+                    Height = double.NaN;
+                    return;
+                }
+
+                Height = 0;
+
+                // Свернулись: содержимое больше не требуется — снимаем нагрузку
+                // с раскладки и не создаём контейнеры скрытых строк.
+                _contentLive = false;
+                InvalidateMeasure();
+                InvalidateArrange();
                 return;
             }
 
